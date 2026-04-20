@@ -1,6 +1,8 @@
 import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
 
 import appCss from "../styles.css?url";
+import { AppProvider } from "../features/indicacao/AppContext";
+import { Toaster } from "sonner";
 
 function NotFoundComponent() {
   return (
@@ -29,14 +31,14 @@ export const Route = createRootRoute({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { title: "Projeto Indicação — Net Turbo" },
+      { name: "description", content: "Programa interno de indicações de vendas da Net Turbo." },
+      { name: "author", content: "Net Turbo" },
+      { property: "og:title", content: "Projeto Indicação — Net Turbo" },
+      { property: "og:description", content: "Indique. Ganhe. Faça o time crescer." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
-      { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:site", content: "@NetTurbo" },
     ],
     links: [
       {
@@ -52,7 +54,7 @@ export const Route = createRootRoute({
 
 function RootShell({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="pt-BR">
       <head>
         <HeadContent />
       </head>
@@ -65,5 +67,21 @@ function RootShell({ children }: { children: React.ReactNode }) {
 }
 
 function RootComponent() {
-  return <Outlet />;
+  return (
+    <AppProvider>
+      <Outlet />
+      <Toaster
+        theme="dark"
+        position="top-right"
+        toastOptions={{
+          style: {
+            background: "#1a1a1a",
+            border: "1px solid #2a2a2a",
+            color: "#ffffff",
+          },
+        }}
+      />
+    </AppProvider>
+  );
+}
 }
