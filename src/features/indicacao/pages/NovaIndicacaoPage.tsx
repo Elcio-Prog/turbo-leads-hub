@@ -26,20 +26,20 @@ function maskPhone(value: string) {
 
 export function NovaIndicacaoPage() {
   const { user, createIndicacao, countCltThisMonth, creditoAtual, indicacoes } = useApp();
-  if (!user) return null;
-
   const [form, setForm] = useState({
     leadNome: "",
     empresa: "",
     telefone: "",
     emailLead: "",
     produto: "Conectividade" as Produto,
-    emailIndicador: user.email,
-    setor: user.setor as Setor,
+    emailIndicador: user?.email ?? "",
+    setor: (user?.setor ?? "TI") as Setor,
     funcao: "",
-    contrato: user.contrato as Contrato,
+    contrato: (user?.contrato ?? "CLT") as Contrato,
     observacao: "",
   });
+
+  if (!user) return null;
 
   const cltCount = countCltThisMonth(user.id);
   const cltBlocked = user.role === "usuario" && form.contrato === "CLT" && cltCount >= LIMITE_CLT_MES;
