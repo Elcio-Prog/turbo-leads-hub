@@ -121,7 +121,8 @@ export function AnalyticsPage() {
         </Panel>
 
         <Panel title="Distribuição por Produto">
-          <div className="h-72">
+          <div className="flex flex-col">
+            <div className="h-60">
             {produtoData.length === 0 ? (
               <div className="grid h-full place-items-center text-sm text-[#666]">Sem dados</div>
             ) : (
@@ -151,7 +152,8 @@ export function AnalyticsPage() {
                 </PieChart>
               </ResponsiveContainer>
             )}
-            <div className="mt-2 flex flex-wrap justify-center gap-3 text-xs">
+            </div>
+            <div className="mt-3 flex flex-wrap justify-center gap-3 text-xs">
               {produtoData.map((d, i) => (
                 <div key={d.name} className="flex items-center gap-1.5 text-[#AAAAAA]">
                   <span
