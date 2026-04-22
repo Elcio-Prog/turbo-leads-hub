@@ -87,12 +87,12 @@ export function LoginPage() {
             </div>
           </div>
 
-          <h2 className="text-3xl font-bold text-white">Bem-vindo de volta</h2>
-          <p className="mt-2 text-sm text-[#AAAAAA]">
+          <h2 className="text-2xl font-bold text-white">Bem-vindo de volta</h2>
+          <p className="mt-1 text-sm text-[#AAAAAA]">
             Entre com seu e-mail Net Turbo para acessar o programa.
           </p>
 
-          <form onSubmit={handleEmailLogin} className="mt-8 space-y-4">
+          <form onSubmit={handleEmailLogin} className="mt-5 space-y-3">
             <Field
               label="E-mail Net Turbo"
               type="email"
@@ -107,12 +107,12 @@ export function LoginPage() {
               onChange={(v) => setSenha(v)}
               placeholder="••••••••"
             />
-            <PrimaryButton type="submit" className="w-full py-3">
+            <PrimaryButton type="submit" className="w-full py-2.5">
               Entrar <ArrowRight className="h-4 w-4" />
             </PrimaryButton>
           </form>
 
-          <div className="my-8 flex items-center gap-3">
+          <div className="my-5 flex items-center gap-3">
             <div className="h-px flex-1 bg-[#2a2a2a]" />
             <span className="text-[10px] uppercase tracking-widest text-[#666666]">
               Acesso rápido para teste
@@ -120,13 +120,13 @@ export function LoginPage() {
             <div className="h-px flex-1 bg-[#2a2a2a]" />
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             {users.map((u) => (
               <button
                 key={u.id}
                 type="button"
                 onClick={() => handleQuickLogin(u.id)}
-                className="group flex w-full items-center gap-3 rounded-xl border border-[#2a2a2a] bg-[#1a1a1a] p-3 text-left transition-colors hover:border-[#CCFF00]/50 hover:bg-[#1f1f1f]"
+                className="group flex w-full items-center gap-3 rounded-xl border border-[#2a2a2a] bg-[#1a1a1a] px-3 py-2 text-left transition-colors hover:border-[#CCFF00]/50 hover:bg-[#1f1f1f]"
               >
                 <Avatar name={u.name} />
                 <div className="min-w-0 flex-1">
