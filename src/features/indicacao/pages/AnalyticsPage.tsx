@@ -102,10 +102,10 @@ export function AnalyticsPage() {
         <Panel title="Funil de Status">
           <div className="h-72">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={funilData} layout="vertical" margin={{ left: 10, right: 20, top: 5, bottom: 5 }}>
+              <BarChart data={funilData} layout="vertical" margin={{ left: -10, right: 20, top: 5, bottom: 5 }}>
                 <CartesianGrid stroke="#1f1f1f" horizontal={false} />
                 <XAxis type="number" stroke="#444" fontSize={11} />
-                <YAxis dataKey="status" type="category" stroke="#AAA" fontSize={11} width={120} />
+                <YAxis dataKey="status" type="category" stroke="#AAA" fontSize={11} width={110} />
                 <Tooltip
                   contentStyle={{
                     background: "#111",
