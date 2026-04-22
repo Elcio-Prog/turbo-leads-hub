@@ -35,10 +35,14 @@ export const Route = createRootRoute({
       { name: "description", content: "Programa interno de indicações de vendas da Net Turbo." },
       { name: "author", content: "Net Turbo" },
       { property: "og:title", content: "Projeto Indicação — Net Turbo" },
-      { property: "og:description", content: "Indique. Ganhe. Faça o time crescer." },
+      { property: "og:description", content: "Programa interno de indicações de vendas da Net Turbo." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@NetTurbo" },
+      { name: "twitter:title", content: "Projeto Indicação — Net Turbo" },
+      { name: "twitter:description", content: "Programa interno de indicações de vendas da Net Turbo." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/0ab189c1-aac7-4485-b940-e0abd92a09d4/id-preview-212602ee--9864403c-8a44-4868-a5a6-052ee98366de.lovable.app-1776893404464.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/0ab189c1-aac7-4485-b940-e0abd92a09d4/id-preview-212602ee--9864403c-8a44-4868-a5a6-052ee98366de.lovable.app-1776893404464.png" },
     ],
     links: [
       {
