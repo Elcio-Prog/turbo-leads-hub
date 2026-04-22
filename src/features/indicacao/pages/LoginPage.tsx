@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { Zap, ArrowRight, Users, TrendingUp } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { useApp } from "../AppContext";
 import { PrimaryButton } from "../components/PrimaryButton";
 import { Avatar } from "../components/Avatar";
@@ -70,11 +70,6 @@ export function LoginPage() {
             recompensas em um só lugar.
           </p>
 
-          <div className="mt-10 grid grid-cols-3 gap-4">
-            <Stat icon={<Users className="h-4 w-4" />} value="380+" label="Colaboradores" />
-            <Stat icon={<TrendingUp className="h-4 w-4" />} value="62%" label="Conversão" />
-            <Stat icon={<Zap className="h-4 w-4" />} value="R$ 84k" label="Pagos em 2025" />
-          </div>
         </div>
 
         <p className="relative text-xs text-[#666666]">
