@@ -56,13 +56,13 @@ export function LoginPage() {
             </div>
           </div>
 
-          <div className="max-w-lg">
-            <h1 className="text-5xl font-black leading-tight text-white [text-shadow:0_0_30px_rgba(0,0,0,0.8)]">
+          <div className="max-w-lg backdrop-blur-sm bg-black/40 rounded-xl p-6">
+            <h1 className="text-5xl font-black leading-tight text-white">
               Indique. <span className="text-[#CCFF00]">Ganhe.</span>
               <br />
               Faça o time crescer.
             </h1>
-            <p className="mt-6 text-lg text-[#AAAAAA] backdrop-blur-sm bg-black/40 rounded-xl p-4">
+            <p className="mt-6 text-lg text-[#AAAAAA]">
               Cada cliente indicado que assina contrato gera R$ 200 de crédito
               para você. Acompanhe suas indicações, suas conversões e suas
               recompensas em um só lugar.
