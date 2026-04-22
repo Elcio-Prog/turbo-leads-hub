@@ -221,7 +221,6 @@ export function NovaIndicacaoPage() {
               `R$ ${VALOR_RECOMPENSA} por contrato implantado e confirmado.`,
               `Colaboradores CLT: até ${LIMITE_CLT_MES} indicações por mês.`,
               "Lead deve ser novo (sem proposta ativa).",
-              "Pagamento liberado após confirmação da implantação.",
             ].map((t) => (
               <li key={t} className="flex items-start gap-2">
                 <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#CCFF00]" />
