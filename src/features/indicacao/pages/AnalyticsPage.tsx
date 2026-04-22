@@ -102,10 +102,10 @@ export function AnalyticsPage() {
         <Panel title="Funil de Status">
           <div className="h-72">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={funilData} layout="vertical" margin={{ left: 30 }}>
+              <BarChart data={funilData} layout="vertical" margin={{ left: 10, right: 20, top: 5, bottom: 5 }}>
                 <CartesianGrid stroke="#1f1f1f" horizontal={false} />
                 <XAxis type="number" stroke="#444" fontSize={11} />
-                <YAxis dataKey="status" type="category" stroke="#AAA" fontSize={11} width={140} />
+                <YAxis dataKey="status" type="category" stroke="#AAA" fontSize={11} width={120} />
                 <Tooltip
                   contentStyle={{
                     background: "#111",
@@ -200,10 +200,10 @@ export function AnalyticsPage() {
         <Panel title="Evolução Mensal">
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={evolucaoMensal}>
-                <CartesianGrid stroke="#2a2a2a" />
-                <XAxis dataKey="mes" stroke="#AAA" fontSize={11} />
-                <YAxis stroke="#AAA" fontSize={11} />
+              <LineChart data={evolucaoMensal} margin={{ left: 0, right: 20, top: 5, bottom: 5 }}>
+                <CartesianGrid stroke="#1f1f1f" />
+                <XAxis dataKey="mes" stroke="#AAA" fontSize={11} tickMargin={4} />
+                <YAxis stroke="#AAA" fontSize={11} width={30} />
                 <Tooltip
                   contentStyle={{
                     background: "#111",
