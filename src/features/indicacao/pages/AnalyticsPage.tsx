@@ -113,6 +113,8 @@ export function AnalyticsPage() {
                     borderRadius: 8,
                     color: "#fff",
                   }}
+                  itemStyle={{ color: "#fff" }}
+                  labelStyle={{ color: "#aaa" }}
                 />
                 <Bar dataKey="qtd" fill="#CCFF00" radius={[0, 6, 6, 0]} />
               </BarChart>
@@ -148,6 +150,8 @@ export function AnalyticsPage() {
                       borderRadius: 8,
                       color: "#fff",
                     }}
+                    itemStyle={{ color: "#fff" }}
+                    labelStyle={{ color: "#aaa" }}
                   />
                 </PieChart>
               </ResponsiveContainer>
@@ -206,6 +210,8 @@ export function AnalyticsPage() {
                     borderRadius: 8,
                     color: "#fff",
                   }}
+                  itemStyle={{ color: "#fff" }}
+                  labelStyle={{ color: "#aaa" }}
                 />
                 <Line
                   type="monotone"
