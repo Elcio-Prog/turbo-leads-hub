@@ -31,17 +31,17 @@ export function Sidebar({ collapsed, onToggle }: { collapsed?: boolean; onToggle
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
 
+  // Close mobile menu on route change
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [location.pathname]);
+
   if (!user) return null;
 
   const handleLogout = () => {
     logout();
     navigate({ to: "/" });
   };
-
-  // Close mobile menu on route change
-  useEffect(() => {
-    setMobileOpen(false);
-  }, [location.pathname]);
 
   return (
     <>
