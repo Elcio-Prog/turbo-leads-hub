@@ -35,7 +35,7 @@ export function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen grid lg:grid-cols-2 bg-[#0a0a0a]">
+    <div className="h-screen grid lg:grid-cols-2 bg-[#0a0a0a] overflow-hidden">
       {/* Esquerda: headline + social proof */}
       <div className="relative hidden lg:block overflow-hidden">
         <BackgroundGradientAnimation
@@ -76,8 +76,8 @@ export function LoginPage() {
       </div>
 
       {/* Direita: formulário */}
-      <div className="flex items-center justify-center p-6 lg:p-12">
-        <div className="w-full max-w-md">
+      <div className="flex items-center justify-center p-6 lg:p-10 overflow-y-auto">
+        <div className="w-full max-w-md my-auto">
           <div className="lg:hidden mb-8 flex items-center gap-3">
             <div className="grid h-10 w-10 place-items-center rounded-xl bg-[#CCFF00] text-black font-black">
               NT
