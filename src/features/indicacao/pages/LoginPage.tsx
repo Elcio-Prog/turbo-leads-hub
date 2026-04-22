@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { Zap, ArrowRight, Users, TrendingUp } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { useApp } from "../AppContext";
 import { PrimaryButton } from "../components/PrimaryButton";
 import { Avatar } from "../components/Avatar";
@@ -70,11 +70,6 @@ export function LoginPage() {
             recompensas em um só lugar.
           </p>
 
-          <div className="mt-10 grid grid-cols-3 gap-4">
-            <Stat icon={<Users className="h-4 w-4" />} value="380+" label="Colaboradores" />
-            <Stat icon={<TrendingUp className="h-4 w-4" />} value="62%" label="Conversão" />
-            <Stat icon={<Zap className="h-4 w-4" />} value="R$ 84k" label="Pagos em 2025" />
-          </div>
         </div>
 
         <p className="relative text-xs text-[#666666]">
@@ -179,23 +174,5 @@ function Field({
         className="w-full rounded-lg border border-[#2a2a2a] bg-[#111111] px-3.5 py-2.5 text-sm text-white placeholder:text-[#555555] outline-none transition-colors focus:border-[#CCFF00] focus:ring-1 focus:ring-[#CCFF00]"
       />
     </label>
-  );
-}
-
-function Stat({
-  icon,
-  value,
-  label,
-}: {
-  icon: React.ReactNode;
-  value: string;
-  label: string;
-}) {
-  return (
-    <div className="rounded-xl border border-[#2a2a2a] bg-[#111111]/80 p-4">
-      <div className="flex items-center gap-2 text-[#CCFF00]">{icon}</div>
-      <div className="mt-2 text-2xl font-black text-white">{value}</div>
-      <div className="text-[11px] uppercase tracking-wide text-[#AAAAAA]">{label}</div>
-    </div>
   );
 }
