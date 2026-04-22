@@ -103,8 +103,8 @@ export function AnalyticsPage() {
           <div className="h-72">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={funilData} layout="vertical" margin={{ left: 30 }}>
-                <CartesianGrid stroke="#2a2a2a" horizontal={false} />
-                <XAxis type="number" stroke="#666" fontSize={11} />
+                <CartesianGrid stroke="#1f1f1f" horizontal={false} />
+                <XAxis type="number" stroke="#444" fontSize={11} />
                 <YAxis dataKey="status" type="category" stroke="#AAA" fontSize={11} width={140} />
                 <Tooltip
                   contentStyle={{
@@ -116,7 +116,7 @@ export function AnalyticsPage() {
                   itemStyle={{ color: "#fff" }}
                   labelStyle={{ color: "#aaa" }}
                 />
-                <Bar dataKey="qtd" fill="#CCFF00" radius={[0, 6, 6, 0]} />
+                <Bar dataKey="qtd" fill="#CCFF00" radius={[0, 6, 6, 0]} background={{ fill: "#1a1a1a", radius: 6 }} />
               </BarChart>
             </ResponsiveContainer>
           </div>
