@@ -4,6 +4,7 @@ import { ArrowRight } from "lucide-react";
 import { useApp } from "../AppContext";
 import { PrimaryButton } from "../components/PrimaryButton";
 import { Avatar } from "../components/Avatar";
+import { BackgroundGradientAnimation } from "@/components/ui/background-gradient-animation";
 
 const ROLE_LABEL: Record<string, string> = {
   admin: "Administrador",
@@ -36,45 +37,42 @@ export function LoginPage() {
   return (
     <div className="min-h-screen grid lg:grid-cols-2 bg-[#0a0a0a]">
       {/* Esquerda: headline + social proof */}
-      <div className="relative hidden lg:flex flex-col justify-between p-12 bg-gradient-to-br from-[#0f0f0f] via-[#111111] to-[#0a0a0a] overflow-hidden">
-        <div
-          aria-hidden
-          className="absolute -top-32 -right-32 h-96 w-96 rounded-full bg-[#CCFF00]/10 blur-3xl"
+      <div className="relative hidden lg:block overflow-hidden">
+        <BackgroundGradientAnimation
+          containerClassName="absolute inset-0"
+          className="h-full w-full"
+          interactive={true}
         />
-        <div
-          aria-hidden
-          className="absolute -bottom-32 -left-20 h-80 w-80 rounded-full bg-[#CCFF00]/5 blur-3xl"
-        />
-
-        <div className="relative flex items-center gap-3">
-          <div className="grid h-10 w-10 place-items-center rounded-xl bg-[#CCFF00] text-black font-black">
-            NT
-          </div>
-          <div className="text-white">
-            <div className="font-bold">Net Turbo</div>
-            <div className="text-[11px] uppercase tracking-widest text-[#CCFF00]">
-              Programa de Indicações
+        <div className="relative z-20 flex flex-col justify-between h-full p-12">
+          <div className="flex items-center gap-3">
+            <div className="grid h-10 w-10 place-items-center rounded-xl bg-[#CCFF00] text-black font-black">
+              NT
+            </div>
+            <div className="text-white">
+              <div className="font-bold">Net Turbo</div>
+              <div className="text-[11px] uppercase tracking-widest text-[#CCFF00]">
+                Programa de Indicações
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="relative max-w-lg">
-          <h1 className="text-5xl font-black leading-tight text-white">
-            Indique. <span className="text-[#CCFF00]">Ganhe.</span>
-            <br />
-            Faça o time crescer.
-          </h1>
-          <p className="mt-6 text-lg text-[#AAAAAA]">
-            Cada cliente indicado que assina contrato gera R$ 200 de crédito
-            para você. Acompanhe suas indicações, suas conversões e suas
-            recompensas em um só lugar.
+          <div className="max-w-lg">
+            <h1 className="text-5xl font-black leading-tight text-white">
+              Indique. <span className="text-[#CCFF00]">Ganhe.</span>
+              <br />
+              Faça o time crescer.
+            </h1>
+            <p className="mt-6 text-lg text-[#AAAAAA]">
+              Cada cliente indicado que assina contrato gera R$ 200 de crédito
+              para você. Acompanhe suas indicações, suas conversões e suas
+              recompensas em um só lugar.
+            </p>
+          </div>
+
+          <p className="text-xs text-[#666666]">
+            © {new Date().getFullYear()} Net Turbo • Todos os direitos reservados
           </p>
-
         </div>
-
-        <p className="relative text-xs text-[#666666]">
-          © {new Date().getFullYear()} Net Turbo • Todos os direitos reservados
-        </p>
       </div>
 
       {/* Direita: formulário */}
