@@ -115,6 +115,7 @@ export function AnalyticsPage() {
                   }}
                   itemStyle={{ color: "#fff" }}
                   labelStyle={{ color: "#aaa" }}
+                  cursor={{ fill: "rgba(255,255,255,0.05)" }}
                 />
                 <Bar dataKey="qtd" fill="#CCFF00" radius={[0, 6, 6, 0]} background={{ fill: "#1a1a1a", radius: 6 }} />
               </BarChart>
