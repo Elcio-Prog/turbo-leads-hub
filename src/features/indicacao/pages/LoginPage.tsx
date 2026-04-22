@@ -176,21 +176,3 @@ function Field({
     </label>
   );
 }
-
-function Stat({
-  icon,
-  value,
-  label,
-}: {
-  icon: React.ReactNode;
-  value: string;
-  label: string;
-}) {
-  return (
-    <div className="rounded-xl border border-[#2a2a2a] bg-[#111111]/80 p-4">
-      <div className="flex items-center gap-2 text-[#CCFF00]">{icon}</div>
-      <div className="mt-2 text-2xl font-black text-white">{value}</div>
-      <div className="text-[11px] uppercase tracking-wide text-[#AAAAAA]">{label}</div>
-    </div>
-  );
-}
