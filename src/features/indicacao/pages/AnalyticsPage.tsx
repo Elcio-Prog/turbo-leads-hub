@@ -151,7 +151,7 @@ export function AnalyticsPage() {
                 </PieChart>
               </ResponsiveContainer>
             )}
-            <div className="mt-2 flex flex-wrap gap-3 text-xs">
+            <div className="mt-2 flex flex-wrap justify-center gap-3 text-xs">
               {produtoData.map((d, i) => (
                 <div key={d.name} className="flex items-center gap-1.5 text-[#AAAAAA]">
                   <span
