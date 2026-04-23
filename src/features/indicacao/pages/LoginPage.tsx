@@ -62,11 +62,16 @@ export function LoginPage() {
               <br />
               Faça o time crescer.
             </h1>
-            <p className="mt-6 text-lg text-[#AAAAAA]">
-              Cada cliente indicado que assina contrato gera R$ 200 de crédito
-              para você. Acompanhe suas indicações, suas conversões e suas
-              recompensas em um só lugar.
-            </p>
+            <div className="mt-6 text-[#AAAAAA]">
+              <h3 className="text-xl font-bold text-white mb-2">Como Funciona?</h3>
+              <p className="text-base mb-4 leading-relaxed">
+                Para realizar uma indicação, o colaborador deverá registrar o potencial cliente através do canal oficial.
+                E após venda e confirmação da implantação do contrato os créditos do programa serão liberados.
+              </p>
+              <p className="text-lg font-bold text-[#CCFF00]">
+                R$ 200 em créditos por venda realizada
+              </p>
+            </div>
           </div>
 
           <p className="text-xs text-[#666666]">
