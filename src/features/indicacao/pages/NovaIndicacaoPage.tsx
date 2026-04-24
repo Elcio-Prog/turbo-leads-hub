@@ -80,27 +80,27 @@ export function NovaIndicacaoPage() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700 font-body">
+    <div className="max-w-5xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 font-body">
       {/* Header Editorial */}
-      <header className="relative py-10 border-b border-outline-variant/10">
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+      <header className="relative py-6 border-b border-outline-variant/10">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div className="space-y-2">
-            <h1 className="font-display text-5xl md:text-7xl font-bold tracking-tighter uppercase leading-none">
+            <h1 className="font-display text-3xl md:text-5xl font-bold tracking-tighter uppercase leading-none">
               Nova <br />
               <span className="italic font-light text-on-surface-variant">Indicação</span>
             </h1>
           </div>
           <div className="max-w-xs text-right hidden md:block">
-            <p className="text-sm text-on-surface-variant font-medium leading-relaxed">
+            <p className="text-xs text-on-surface-variant font-medium leading-relaxed">
               Expanda nossa rede conectando novos parceiros ao ecossistema Net Turbo. Precisão em cada detalhe.
             </p>
           </div>
         </div>
       </header>
 
-      <div className="grid lg:grid-cols-[1fr_320px] gap-12 items-start">
+      <div className="grid lg:grid-cols-[1fr_300px] gap-8 items-start">
         {/* Main Form Section */}
-        <form onSubmit={handleSubmit} className="space-y-12">
+        <form onSubmit={handleSubmit} className="space-y-8">
           {cltBlocked && (
             <div className="rounded-lg bg-destructive/10 border border-destructive/20 p-4 text-sm text-destructive font-bold uppercase tracking-widest">
               Limite mensal atingido ({LIMITE_CLT_MES} indicações).
@@ -108,14 +108,14 @@ export function NovaIndicacaoPage() {
           )}
 
           {/* Section 01: Identificação */}
-          <section className="space-y-8">
-            <div className="flex items-center gap-4">
-              <span className="font-display text-4xl font-bold text-outline-variant/30 italic">01</span>
-              <h2 className="font-display text-lg font-bold uppercase tracking-widest">Identificação do Lead</h2>
+          <section className="space-y-5">
+            <div className="flex items-center gap-3">
+              <span className="font-display text-2xl font-bold text-outline-variant/30 italic">01</span>
+              <h2 className="font-display text-sm font-bold uppercase tracking-widest">Identificação do Lead</h2>
               <div className="h-px flex-1 bg-outline-variant/10" />
             </div>
 
-            <div className="grid md:grid-cols-2 gap-x-10 gap-y-8">
+            <div className="grid md:grid-cols-2 gap-x-8 gap-y-5">
               <EditorialField
                 label="Nome do Lead *"
                 value={form.leadNome}
@@ -145,14 +145,14 @@ export function NovaIndicacaoPage() {
           </section>
 
           {/* Section 02: Seus Dados */}
-          <section className="space-y-8">
-            <div className="flex items-center gap-4">
-              <span className="font-display text-4xl font-bold text-outline-variant/30 italic">02</span>
-              <h2 className="font-display text-lg font-bold uppercase tracking-widest">Dados do Indicador</h2>
+          <section className="space-y-5">
+            <div className="flex items-center gap-3">
+              <span className="font-display text-2xl font-bold text-outline-variant/30 italic">02</span>
+              <h2 className="font-display text-sm font-bold uppercase tracking-widest">Dados do Indicador</h2>
               <div className="h-px flex-1 bg-outline-variant/10" />
             </div>
 
-            <div className="grid md:grid-cols-2 gap-x-10 gap-y-8">
+            <div className="grid md:grid-cols-2 gap-x-8 gap-y-5">
               <EditorialField
                 label="Seu Email"
                 value={form.emailIndicador}
@@ -180,10 +180,10 @@ export function NovaIndicacaoPage() {
           </section>
 
           {/* Section 03: Notas */}
-          <section className="space-y-8">
-            <div className="flex items-center gap-4">
-              <span className="font-display text-4xl font-bold text-outline-variant/30 italic">03</span>
-              <h2 className="font-display text-lg font-bold uppercase tracking-widest">Notas Adicionais</h2>
+          <section className="space-y-5">
+            <div className="flex items-center gap-3">
+              <span className="font-display text-2xl font-bold text-outline-variant/30 italic">03</span>
+              <h2 className="font-display text-sm font-bold uppercase tracking-widest">Notas Adicionais</h2>
               <div className="h-px flex-1 bg-outline-variant/10" />
             </div>
 
@@ -195,13 +195,13 @@ export function NovaIndicacaoPage() {
             />
           </section>
 
-          <footer className="pt-8 border-t border-outline-variant/10 flex flex-col sm:flex-row items-center justify-between gap-6">
-            <div className="flex items-center gap-4 text-xs font-medium text-on-surface-variant">
+          <footer className="pt-6 border-t border-outline-variant/10 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-3 text-xs font-medium text-on-surface-variant">
               <div className="h-2 w-2 rounded-full bg-primary-container animate-pulse" />
               R$ {VALOR_RECOMPENSA} por contrato implantado
             </div>
-            <div className="flex items-center gap-4 w-full sm:w-auto">
-              <PrimaryButton type="submit" disabled={cltBlocked} className="px-10 py-5 text-base tracking-[0.2em] uppercase">
+            <div className="flex items-center gap-3 w-full sm:w-auto">
+              <PrimaryButton type="submit" disabled={cltBlocked} className="px-8 py-4 text-xs tracking-[0.2em] uppercase">
                 Confirmar Registro
               </PrimaryButton>
             </div>
@@ -209,13 +209,13 @@ export function NovaIndicacaoPage() {
         </form>
 
         {/* Sidebar Info - Tonal Depth Layer */}
-        <aside className="space-y-6 lg:sticky lg:top-24">
-          <div className="bg-surface-low rounded-xl p-8 space-y-8">
+        <aside className="space-y-4 lg:sticky lg:top-24">
+          <div className="bg-surface-low rounded-xl p-6 space-y-6">
             <div>
-              <h3 className="font-display text-xs font-bold uppercase tracking-[0.2em] text-primary-container mb-6">
+              <h3 className="font-display text-xs font-bold uppercase tracking-[0.2em] text-primary-container mb-4">
                 Sua Performance
               </h3>
-              <div className="space-y-6">
+              <div className="space-y-4">
                 <div>
                   <div className="flex justify-between items-end mb-2">
                     <span className="text-[10px] uppercase font-bold text-outline">Meta Trimestral</span>
@@ -228,24 +228,24 @@ export function NovaIndicacaoPage() {
                     />
                   </div>
                 </div>
-                <div className="flex justify-between items-end border-b border-outline-variant/10 pb-4">
+                <div className="flex justify-between items-end border-b border-outline-variant/10 pb-3">
                   <span className="text-[10px] uppercase font-bold text-outline">Crédito Atual</span>
-                  <span className="text-lg font-display font-bold text-primary-container">R$ {credito.toLocaleString("pt-BR")}</span>
+                  <span className="text-base font-display font-bold text-primary-container">R$ {credito.toLocaleString("pt-BR")}</span>
                 </div>
               </div>
             </div>
 
             <div>
-              <h3 className="font-display text-xs font-bold uppercase tracking-[0.2em] text-outline mb-4">
+              <h3 className="font-display text-xs font-bold uppercase tracking-[0.2em] text-outline mb-3">
                 Diretrizes
               </h3>
-              <ul className="space-y-3">
+              <ul className="space-y-2">
                 {[
                   `Limite: ${LIMITE_CLT_MES}/mês (CLT)`,
                   "Apenas novos CNPJs",
                   "Crédito após implantação"
                 ].map((t, i) => (
-                  <li key={i} className="flex items-center gap-2 text-[11px] font-medium text-on-surface-variant">
+                  <li key={i} className="flex items-center gap-2 text-[10px] font-medium text-on-surface-variant">
                     <CheckCircle2 className="h-3 w-3 text-primary-container" />
                     {t}
                   </li>
@@ -254,10 +254,10 @@ export function NovaIndicacaoPage() {
             </div>
           </div>
 
-          <div className="bg-primary-container text-on-primary-container rounded-xl p-8 relative overflow-hidden group">
-             <div className="relative z-10 space-y-4">
-               <h4 className="font-display text-2xl font-bold italic leading-tight uppercase text-on-primary-container">Precisa de Ajuda?</h4>
-               <p className="text-xs font-medium leading-relaxed opacity-80">
+          <div className="bg-primary-container text-on-primary-container rounded-xl p-6 relative overflow-hidden group">
+             <div className="relative z-10 space-y-3">
+               <h4 className="font-display text-xl font-bold italic leading-tight uppercase text-on-primary-container">Precisa de Ajuda?</h4>
+               <p className="text-[11px] font-medium leading-relaxed opacity-80">
                  Dúvidas sobre o regulamento ou como preencher?
                </p>
                <button className="text-[10px] font-black uppercase tracking-widest border-b-2 border-on-primary-container/30 hover:border-on-primary-container transition-all">
@@ -295,7 +295,7 @@ function EditorialField({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full bg-transparent border-0 border-b border-outline-variant/30 py-3 px-0 text-on-surface placeholder:text-outline-variant/50 focus:ring-0 focus:border-primary-container transition-all text-base font-medium"
+        className="w-full bg-transparent border-0 border-b border-outline-variant/30 py-2 px-0 text-on-surface placeholder:text-outline-variant/50 focus:ring-0 focus:border-primary-container transition-all text-sm font-medium"
       />
     </div>
   );
@@ -320,7 +320,7 @@ function EditorialSelect({
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full bg-transparent border-0 border-b border-outline-variant/30 py-3 px-0 text-on-surface focus:ring-0 focus:border-primary-container transition-all text-base font-medium appearance-none"
+        className="w-full bg-transparent border-0 border-b border-outline-variant/30 py-2 px-0 text-on-surface focus:ring-0 focus:border-primary-container transition-all text-sm font-medium appearance-none"
       >
         {options.map((o) => (
           <option key={o} value={o} className="bg-surface-container text-on-surface">
@@ -352,8 +352,8 @@ function EditorialTextarea({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        rows={4}
-        className="w-full bg-surface-low rounded-lg border border-outline-variant/10 p-5 text-on-surface placeholder:text-outline-variant/50 focus:ring-1 focus:ring-primary-container/30 focus:border-primary-container/50 transition-all text-base font-medium resize-none"
+        rows={3}
+        className="w-full bg-surface-low rounded-lg border border-outline-variant/10 p-4 text-on-surface placeholder:text-outline-variant/50 focus:ring-1 focus:ring-primary-container/30 focus:border-primary-container/50 transition-all text-sm font-medium resize-none"
       />
     </div>
   );
