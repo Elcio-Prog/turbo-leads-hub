@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { CheckCircle2, Sparkles } from "lucide-react";
+import { CheckCircle2, Loader2 } from "lucide-react";
 import { useApp } from "../AppContext";
 import {
   PRODUTOS,
@@ -24,10 +24,20 @@ function maskPhone(value: string) {
   return out.trim();
 }
 
+function maskCnpj(value: string) {
+  const d = value.replace(/\D/g, "").slice(0, 14);
+  return d
+    .replace(/^(\d{2})(\d)/, "$1.$2")
+    .replace(/^(\d{2})\.(\d{3})(\d)/, "$1.$2.$3")
+    .replace(/\.(\d{3})(\d)/, ".$1/$2")
+    .replace(/(\d{4})(\d)/, "$1-$2");
+}
+
 export function NovaIndicacaoPage() {
   const { user, createIndicacao, countCltThisMonth, creditoAtual, indicacoes } = useApp();
   const [form, setForm] = useState({
     leadNome: "",
+    cnpj: "",
     empresa: "",
     telefone: "",
     emailLead: "",
@@ -38,6 +48,39 @@ export function NovaIndicacaoPage() {
     contrato: (user?.contrato ?? "CLT") as Contrato,
     observacao: "",
   });
+  const [loadingCnpj, setLoadingCnpj] = useState(false);
+  const lastFetchedRef = useRef<string>("");
+
+  useEffect(() => {
+    const digits = form.cnpj.replace(/\D/g, "");
+    if (digits.length === 14 && lastFetchedRef.current !== digits) {
+      lastFetchedRef.current = digits;
+      const t = setTimeout(async () => {
+        setLoadingCnpj(true);
+        try {
+          const res = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${digits}`);
+          if (!res.ok) {
+            toast.error("CNPJ não encontrado na BrasilAPI.");
+            return;
+          }
+          const data = await res.json();
+          setForm((f) => ({
+            ...f,
+            empresa: data.nome_fantasia || data.razao_social || f.empresa,
+          }));
+          toast.success("Empresa preenchida via BrasilAPI.");
+        } catch {
+          toast.error("Erro ao consultar BrasilAPI.");
+        } finally {
+          setLoadingCnpj(false);
+        }
+      }, 300);
+      return () => clearTimeout(t);
+    }
+    if (digits.length < 14) {
+      lastFetchedRef.current = "";
+    }
+  }, [form.cnpj]);
 
   if (!user) return null;
 
@@ -72,6 +115,7 @@ export function NovaIndicacaoPage() {
     setForm({
       ...form,
       leadNome: "",
+      cnpj: "",
       empresa: "",
       telefone: "",
       emailLead: "",
@@ -122,8 +166,21 @@ export function NovaIndicacaoPage() {
                 onChange={(v) => setForm({ ...form, leadNome: v })}
                 placeholder="Ex: Carlos Oliveira"
               />
+              <div className="relative">
+                <EditorialField
+                  label="CNPJ"
+                  value={form.cnpj}
+                  onChange={(v) => setForm({ ...form, cnpj: maskCnpj(v) })}
+                  placeholder="00.000.000/0000-00 (opcional)"
+                />
+                {loadingCnpj && (
+                  <div className="absolute right-0 bottom-2 flex items-center gap-2 text-[10px] uppercase tracking-widest text-primary-container font-bold">
+                    <Loader2 className="h-3 w-3 animate-spin" /> Buscando...
+                  </div>
+                )}
+              </div>
               <EditorialField
-                label="Empresa *"
+                label="Empresa / Nome Fantasia *"
                 value={form.empresa}
                 onChange={(v) => setForm({ ...form, empresa: v })}
                 placeholder="Ex: Tech Solutions"
@@ -140,6 +197,12 @@ export function NovaIndicacaoPage() {
                 value={form.emailLead}
                 onChange={(v) => setForm({ ...form, emailLead: v })}
                 placeholder="contato@empresa.com"
+              />
+              <EditorialSelect
+                label="Produto de Interesse"
+                value={form.produto}
+                onChange={(v) => setForm({ ...form, produto: v as Produto })}
+                options={PRODUTOS}
               />
             </div>
           </section>
@@ -169,12 +232,6 @@ export function NovaIndicacaoPage() {
                 value={form.setor}
                 onChange={(v) => setForm({ ...form, setor: v as Setor })}
                 options={SETORES}
-              />
-              <EditorialSelect
-                label="Produto de Interesse"
-                value={form.produto}
-                onChange={(v) => setForm({ ...form, produto: v as Produto })}
-                options={PRODUTOS}
               />
               <EditorialSelect
                 label="Tipo de Contrato"
