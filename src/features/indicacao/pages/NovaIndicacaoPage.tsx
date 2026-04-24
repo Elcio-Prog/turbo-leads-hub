@@ -295,7 +295,7 @@ function EditorialField({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full bg-transparent border-0 border-b border-outline-variant/30 py-3 px-0 text-on-surface placeholder:text-outline-variant/50 focus:ring-0 focus:border-primary-container transition-all text-base font-medium"
+        className="w-full bg-transparent border-0 border-b border-outline-variant/30 py-2 px-0 text-on-surface placeholder:text-outline-variant/50 focus:ring-0 focus:border-primary-container transition-all text-sm font-medium"
       />
     </div>
   );
@@ -320,7 +320,7 @@ function EditorialSelect({
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full bg-transparent border-0 border-b border-outline-variant/30 py-3 px-0 text-on-surface focus:ring-0 focus:border-primary-container transition-all text-base font-medium appearance-none"
+        className="w-full bg-transparent border-0 border-b border-outline-variant/30 py-2 px-0 text-on-surface focus:ring-0 focus:border-primary-container transition-all text-sm font-medium appearance-none"
       >
         {options.map((o) => (
           <option key={o} value={o} className="bg-surface-container text-on-surface">
@@ -352,8 +352,8 @@ function EditorialTextarea({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        rows={4}
-        className="w-full bg-surface-low rounded-lg border border-outline-variant/10 p-5 text-on-surface placeholder:text-outline-variant/50 focus:ring-1 focus:ring-primary-container/30 focus:border-primary-container/50 transition-all text-base font-medium resize-none"
+        rows={3}
+        className="w-full bg-surface-low rounded-lg border border-outline-variant/10 p-4 text-on-surface placeholder:text-outline-variant/50 focus:ring-1 focus:ring-primary-container/30 focus:border-primary-container/50 transition-all text-sm font-medium resize-none"
       />
     </div>
   );
