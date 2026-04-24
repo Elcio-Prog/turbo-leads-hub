@@ -39,8 +39,6 @@ export function NovoContatoPage() {
     celular: "",
   });
 
-  if (!user) return null;
-
   const lookupCnpj = async (digits: string) => {
     if (digits.length !== 14) return;
     if (lastFetchedRef.current === digits) return;
@@ -81,6 +79,8 @@ export function NovoContatoPage() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [form.cnpj]);
+
+  if (!user) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
