@@ -3,6 +3,28 @@ import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/r
 import appCss from "../styles.css?url";
 import { AppProvider } from "../features/indicacao/AppContext";
 import { Toaster } from "sonner";
+import { registerSW } from "virtual:pwa-register";
+
+if (typeof window !== "undefined" && "serviceWorker" in navigator) {
+  const isPreviewHost =
+    window.location.hostname.includes("id-preview--") ||
+    window.location.hostname.includes("lovableproject.com");
+  const isInIframe = (() => {
+    try {
+      return window.self !== window.top;
+    } catch {
+      return true;
+    }
+  })();
+
+  if (isPreviewHost || isInIframe) {
+    navigator.serviceWorker.getRegistrations().then((registrations) => {
+      registrations.forEach((registration) => registration.unregister());
+    });
+  } else {
+    registerSW({ immediate: true });
+  }
+}
 
 function NotFoundComponent() {
   return (
@@ -45,6 +67,14 @@ export const Route = createRootRoute({
       { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/8ce8f6ed-4131-4add-af56-3ec7e629912d" },
     ],
     links: [
+      {
+        rel: "manifest",
+        href: "/manifest.json",
+      },
+      {
+        rel: "apple-touch-icon",
+        href: "/apple-touch-icon.png",
+      },
       {
         rel: "preconnect",
         href: "https://fonts.googleapis.com",
