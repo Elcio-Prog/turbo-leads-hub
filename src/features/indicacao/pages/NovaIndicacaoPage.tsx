@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { CheckCircle2, Loader2 } from "lucide-react";
+import { CheckCircle2, ChevronDown, Loader2 } from "lucide-react";
 import { useApp } from "../AppContext";
 import {
   PRODUTOS,
@@ -358,7 +358,7 @@ function EditorialField({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full bg-transparent border-0 border-b border-outline-variant/30 py-2 px-0 text-on-surface placeholder:text-outline-variant/50 focus:ring-0 focus:border-primary-container transition-all text-sm font-medium"
+        className="w-full bg-transparent border-0 border-b border-outline-variant/30 py-2 px-0 text-on-surface placeholder:text-outline-variant/50 outline-none focus:outline-none focus:ring-0 focus:border-primary-container caret-primary-container transition-all text-sm font-medium"
       />
     </div>
   );
@@ -380,17 +380,23 @@ function EditorialSelect({
       <label className="block text-[10px] uppercase tracking-[0.2em] text-outline font-black group-focus-within:text-primary-container transition-colors">
         {label}
       </label>
-      <select
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="w-full bg-transparent border-0 border-b border-outline-variant/30 py-2 px-0 text-on-surface focus:ring-0 focus:border-primary-container transition-all text-sm font-medium appearance-none"
-      >
-        {options.map((o) => (
-          <option key={o} value={o} className="bg-surface-container text-on-surface">
-            {o}
-          </option>
-        ))}
-      </select>
+      <div className="relative">
+        <select
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className="w-full bg-transparent border-0 border-b border-outline-variant/30 py-2 pr-8 pl-0 text-on-surface outline-none focus:outline-none focus:ring-0 focus:border-primary-container transition-all text-sm font-medium appearance-none cursor-pointer hover:border-primary-container/50"
+        >
+          {options.map((o) => (
+            <option key={o} value={o} className="bg-surface-container text-on-surface">
+              {o}
+            </option>
+          ))}
+        </select>
+        <ChevronDown
+          aria-hidden
+          className="pointer-events-none absolute right-1 top-1/2 -translate-y-1/2 h-4 w-4 text-outline group-focus-within:text-primary-container transition-colors"
+        />
+      </div>
     </div>
   );
 }
@@ -416,7 +422,7 @@ function EditorialTextarea({
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         rows={3}
-        className="w-full bg-surface-low rounded-lg border border-outline-variant/10 p-4 text-on-surface placeholder:text-outline-variant/50 focus:ring-1 focus:ring-primary-container/30 focus:border-primary-container/50 transition-all text-sm font-medium resize-none"
+        className="w-full bg-surface-low rounded-lg border border-outline-variant/10 p-4 text-on-surface placeholder:text-outline-variant/50 outline-none focus:outline-none focus:ring-1 focus:ring-primary-container/30 focus:border-primary-container/50 caret-primary-container transition-all text-sm font-medium resize-none"
       />
     </div>
   );
