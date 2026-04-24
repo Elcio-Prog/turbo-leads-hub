@@ -10,6 +10,7 @@ const ROLE_LABEL: Record<string, string> = {
   admin: "Administrador",
   aprovador: "Aprovador",
   usuario: "Usuário",
+  usuario_ra: "Usuário RA",
 };
 
 export function LoginPage() {
