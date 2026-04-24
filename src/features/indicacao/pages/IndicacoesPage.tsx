@@ -49,6 +49,7 @@ export function IndicacoesPage() {
   const [openMenu, setOpenMenu] = useState<string | null>(null);
   const [editing, setEditing] = useState<Indicacao | null>(null);
   const [editingContato, setEditingContato] = useState<Contato | null>(null);
+  const [tab, setTab] = useState<"indicacoes" | "contatos">("indicacoes");
 
   const isAdmin = user?.role === "admin";
 
