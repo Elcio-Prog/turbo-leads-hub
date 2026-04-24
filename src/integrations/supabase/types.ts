@@ -14,16 +14,219 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      contatos: {
+        Row: {
+          celular: string
+          cnpj: string
+          created_at: string
+          criado_por_id: string
+          criado_por_nome: string
+          email: string
+          id: string
+          modificado_por_nome: string
+          nome: string
+          nome_fantasia: string
+          razao_social: string
+          telefone_fixo: string
+          updated_at: string
+        }
+        Insert: {
+          celular?: string
+          cnpj?: string
+          created_at?: string
+          criado_por_id: string
+          criado_por_nome: string
+          email?: string
+          id?: string
+          modificado_por_nome: string
+          nome: string
+          nome_fantasia?: string
+          razao_social?: string
+          telefone_fixo?: string
+          updated_at?: string
+        }
+        Update: {
+          celular?: string
+          cnpj?: string
+          created_at?: string
+          criado_por_id?: string
+          criado_por_nome?: string
+          email?: string
+          id?: string
+          modificado_por_nome?: string
+          nome?: string
+          nome_fantasia?: string
+          razao_social?: string
+          telefone_fixo?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      indicacoes: {
+        Row: {
+          contrato: Database["public"]["Enums"]["contrato_tipo"]
+          created_at: string
+          criado_por_id: string
+          criado_por_nome: string
+          email_indicador: string
+          email_lead: string
+          empresa: string
+          funcao: string
+          id: string
+          lead_nome: string
+          modificado_por_nome: string
+          observacao: string
+          produto: Database["public"]["Enums"]["produto_tipo"]
+          recompensa_paga: boolean
+          setor: Database["public"]["Enums"]["setor_tipo"]
+          status: Database["public"]["Enums"]["status_indicacao"]
+          telefone: string
+          updated_at: string
+        }
+        Insert: {
+          contrato: Database["public"]["Enums"]["contrato_tipo"]
+          created_at?: string
+          criado_por_id: string
+          criado_por_nome: string
+          email_indicador: string
+          email_lead?: string
+          empresa: string
+          funcao?: string
+          id?: string
+          lead_nome: string
+          modificado_por_nome: string
+          observacao?: string
+          produto: Database["public"]["Enums"]["produto_tipo"]
+          recompensa_paga?: boolean
+          setor: Database["public"]["Enums"]["setor_tipo"]
+          status?: Database["public"]["Enums"]["status_indicacao"]
+          telefone?: string
+          updated_at?: string
+        }
+        Update: {
+          contrato?: Database["public"]["Enums"]["contrato_tipo"]
+          created_at?: string
+          criado_por_id?: string
+          criado_por_nome?: string
+          email_indicador?: string
+          email_lead?: string
+          empresa?: string
+          funcao?: string
+          id?: string
+          lead_nome?: string
+          modificado_por_nome?: string
+          observacao?: string
+          produto?: Database["public"]["Enums"]["produto_tipo"]
+          recompensa_paga?: boolean
+          setor?: Database["public"]["Enums"]["setor_tipo"]
+          status?: Database["public"]["Enums"]["status_indicacao"]
+          telefone?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          contrato: Database["public"]["Enums"]["contrato_tipo"]
+          created_at: string
+          email: string
+          id: string
+          name: string
+          setor: Database["public"]["Enums"]["setor_tipo"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          contrato?: Database["public"]["Enums"]["contrato_tipo"]
+          created_at?: string
+          email: string
+          id?: string
+          name: string
+          setor?: Database["public"]["Enums"]["setor_tipo"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          contrato?: Database["public"]["Enums"]["contrato_tipo"]
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string
+          setor?: Database["public"]["Enums"]["setor_tipo"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "aprovador" | "usuario" | "usuario_ra"
+      contrato_tipo: "CLT" | "PJ"
+      produto_tipo:
+        | "Conectividade"
+        | "Wifi"
+        | "Firewall"
+        | "Switch"
+        | "Backup"
+        | "VOZ"
+      setor_tipo:
+        | "GT"
+        | "BACK OFFICE"
+        | "COMERCIAL"
+        | "COMPRAS"
+        | "FINANCEIRO"
+        | "IMPLANTAÇÃO"
+        | "LOGÍSTICA"
+        | "MANUTENÇÃO"
+        | "MARKETING"
+        | "NOC"
+        | "NT TECH"
+        | "O&M"
+        | "PROCESSO E QUALIDADE"
+        | "PROJETOS"
+        | "TI"
+      status_indicacao:
+        | "Indicado"
+        | "Qualificado"
+        | "Desqualificado"
+        | "Reunião agendada"
+        | "Reunião realizada"
+        | "Proposta em análise"
+        | "Contrato assinado"
+        | "Venda perdida"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +353,44 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "aprovador", "usuario", "usuario_ra"],
+      contrato_tipo: ["CLT", "PJ"],
+      produto_tipo: [
+        "Conectividade",
+        "Wifi",
+        "Firewall",
+        "Switch",
+        "Backup",
+        "VOZ",
+      ],
+      setor_tipo: [
+        "GT",
+        "BACK OFFICE",
+        "COMERCIAL",
+        "COMPRAS",
+        "FINANCEIRO",
+        "IMPLANTAÇÃO",
+        "LOGÍSTICA",
+        "MANUTENÇÃO",
+        "MARKETING",
+        "NOC",
+        "NT TECH",
+        "O&M",
+        "PROCESSO E QUALIDADE",
+        "PROJETOS",
+        "TI",
+      ],
+      status_indicacao: [
+        "Indicado",
+        "Qualificado",
+        "Desqualificado",
+        "Reunião agendada",
+        "Reunião realizada",
+        "Proposta em análise",
+        "Contrato assinado",
+        "Venda perdida",
+      ],
+    },
   },
 } as const
