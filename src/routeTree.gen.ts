@@ -11,8 +11,10 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AppNovoContatoRouteImport } from './routes/app.novo-contato'
 import { Route as AppNovaRouteImport } from './routes/app.nova'
 import { Route as AppIndicacoesRouteImport } from './routes/app.indicacoes'
+import { Route as AppContatosRouteImport } from './routes/app.contatos'
 import { Route as AppAnalyticsRouteImport } from './routes/app.analytics'
 
 const AppRoute = AppRouteImport.update({
@@ -25,6 +27,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppNovoContatoRoute = AppNovoContatoRouteImport.update({
+  id: '/novo-contato',
+  path: '/novo-contato',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppNovaRoute = AppNovaRouteImport.update({
   id: '/nova',
   path: '/nova',
@@ -33,6 +40,11 @@ const AppNovaRoute = AppNovaRouteImport.update({
 const AppIndicacoesRoute = AppIndicacoesRouteImport.update({
   id: '/indicacoes',
   path: '/indicacoes',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppContatosRoute = AppContatosRouteImport.update({
+  id: '/contatos',
+  path: '/contatos',
   getParentRoute: () => AppRoute,
 } as any)
 const AppAnalyticsRoute = AppAnalyticsRouteImport.update({
@@ -45,36 +57,58 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
   '/app/analytics': typeof AppAnalyticsRoute
+  '/app/contatos': typeof AppContatosRoute
   '/app/indicacoes': typeof AppIndicacoesRoute
   '/app/nova': typeof AppNovaRoute
+  '/app/novo-contato': typeof AppNovoContatoRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
   '/app/analytics': typeof AppAnalyticsRoute
+  '/app/contatos': typeof AppContatosRoute
   '/app/indicacoes': typeof AppIndicacoesRoute
   '/app/nova': typeof AppNovaRoute
+  '/app/novo-contato': typeof AppNovoContatoRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
   '/app/analytics': typeof AppAnalyticsRoute
+  '/app/contatos': typeof AppContatosRoute
   '/app/indicacoes': typeof AppIndicacoesRoute
   '/app/nova': typeof AppNovaRoute
+  '/app/novo-contato': typeof AppNovoContatoRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/app' | '/app/analytics' | '/app/indicacoes' | '/app/nova'
+  fullPaths:
+    | '/'
+    | '/app'
+    | '/app/analytics'
+    | '/app/contatos'
+    | '/app/indicacoes'
+    | '/app/nova'
+    | '/app/novo-contato'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/app' | '/app/analytics' | '/app/indicacoes' | '/app/nova'
+  to:
+    | '/'
+    | '/app'
+    | '/app/analytics'
+    | '/app/contatos'
+    | '/app/indicacoes'
+    | '/app/nova'
+    | '/app/novo-contato'
   id:
     | '__root__'
     | '/'
     | '/app'
     | '/app/analytics'
+    | '/app/contatos'
     | '/app/indicacoes'
     | '/app/nova'
+    | '/app/novo-contato'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -98,6 +132,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/app/novo-contato': {
+      id: '/app/novo-contato'
+      path: '/novo-contato'
+      fullPath: '/app/novo-contato'
+      preLoaderRoute: typeof AppNovoContatoRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/nova': {
       id: '/app/nova'
       path: '/nova'
@@ -112,6 +153,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppIndicacoesRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/contatos': {
+      id: '/app/contatos'
+      path: '/contatos'
+      fullPath: '/app/contatos'
+      preLoaderRoute: typeof AppContatosRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/analytics': {
       id: '/app/analytics'
       path: '/analytics'
@@ -124,14 +172,18 @@ declare module '@tanstack/react-router' {
 
 interface AppRouteChildren {
   AppAnalyticsRoute: typeof AppAnalyticsRoute
+  AppContatosRoute: typeof AppContatosRoute
   AppIndicacoesRoute: typeof AppIndicacoesRoute
   AppNovaRoute: typeof AppNovaRoute
+  AppNovoContatoRoute: typeof AppNovoContatoRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
   AppAnalyticsRoute: AppAnalyticsRoute,
+  AppContatosRoute: AppContatosRoute,
   AppIndicacoesRoute: AppIndicacoesRoute,
   AppNovaRoute: AppNovaRoute,
+  AppNovoContatoRoute: AppNovoContatoRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
