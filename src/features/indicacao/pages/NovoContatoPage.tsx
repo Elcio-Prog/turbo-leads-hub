@@ -1,0 +1,238 @@
+import { useState } from "react";
+import { toast } from "sonner";
+import { Loader2, Search } from "lucide-react";
+import { useApp } from "../AppContext";
+import { PrimaryButton } from "../components/PrimaryButton";
+
+function maskCnpj(value: string) {
+  const d = value.replace(/\D/g, "").slice(0, 14);
+  return d
+    .replace(/^(\d{2})(\d)/, "$1.$2")
+    .replace(/^(\d{2})\.(\d{3})(\d)/, "$1.$2.$3")
+    .replace(/\.(\d{3})(\d)/, ".$1/$2")
+    .replace(/(\d{4})(\d)/, "$1-$2");
+}
+
+function maskPhone(value: string) {
+  const d = value.replace(/\D/g, "").slice(0, 11);
+  if (d.length <= 10) {
+    return d
+      .replace(/^(\d{2})(\d)/, "($1) $2")
+      .replace(/(\d{4})(\d)/, "$1-$2");
+  }
+  return d
+    .replace(/^(\d{2})(\d)/, "($1) $2")
+    .replace(/(\d{5})(\d)/, "$1-$2");
+}
+
+export function NovoContatoPage() {
+  const { user, createContato } = useApp();
+  const [loadingCnpj, setLoadingCnpj] = useState(false);
+  const [form, setForm] = useState({
+    nome: "",
+    email: "",
+    cnpj: "",
+    razaoSocial: "",
+    nomeFantasia: "",
+    telefoneFixo: "",
+    celular: "",
+  });
+
+  if (!user) return null;
+
+  const lookupCnpj = async () => {
+    const digits = form.cnpj.replace(/\D/g, "");
+    if (digits.length !== 14) {
+      toast.error("CNPJ inválido. Informe os 14 dígitos.");
+      return;
+    }
+    setLoadingCnpj(true);
+    try {
+      const res = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${digits}`);
+      if (!res.ok) {
+        toast.error("CNPJ não encontrado na BrasilAPI.");
+        return;
+      }
+      const data = await res.json();
+      const ddd = data.ddd_telefone_1 ? String(data.ddd_telefone_1) : "";
+      setForm((f) => ({
+        ...f,
+        razaoSocial: data.razao_social ?? f.razaoSocial,
+        nomeFantasia: data.nome_fantasia || data.razao_social || f.nomeFantasia,
+        telefoneFixo: ddd ? maskPhone(ddd) : f.telefoneFixo,
+        email: data.email ?? f.email,
+      }));
+      toast.success("Dados preenchidos via BrasilAPI.");
+    } catch {
+      toast.error("Erro ao consultar BrasilAPI.");
+    } finally {
+      setLoadingCnpj(false);
+    }
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!form.nome.trim() || !form.email.trim() || !form.cnpj.trim()) {
+      toast.error("Preencha Nome, Email e CNPJ.");
+      return;
+    }
+    const result = createContato(form);
+    if (!result.ok) {
+      toast.error(result.error || "Erro ao criar contato.");
+      return;
+    }
+    toast.success("Contato registrado com sucesso!", {
+      description: `${form.nome} adicionado à base.`,
+    });
+    setForm({
+      nome: "",
+      email: "",
+      cnpj: "",
+      razaoSocial: "",
+      nomeFantasia: "",
+      telefoneFixo: "",
+      celular: "",
+    });
+  };
+
+  return (
+    <div className="max-w-5xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 font-body">
+      <header className="relative py-6 border-b border-outline-variant/10">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+          <div className="space-y-2">
+            <h1 className="font-display text-3xl md:text-5xl font-bold tracking-tighter uppercase leading-none">
+              Novo <br />
+              <span className="italic font-light text-on-surface-variant">Contato</span>
+            </h1>
+          </div>
+          <div className="max-w-xs text-right hidden md:block">
+            <p className="text-xs text-on-surface-variant font-medium leading-relaxed">
+              Registre um novo contato corporativo. Use o CNPJ para preencher os dados automaticamente via BrasilAPI.
+            </p>
+          </div>
+        </div>
+      </header>
+
+      <form onSubmit={handleSubmit} className="space-y-8">
+        {/* Section 01: CNPJ Lookup */}
+        <section className="space-y-5">
+          <div className="flex items-center gap-3">
+            <span className="font-display text-2xl font-bold text-outline-variant/30 italic">01</span>
+            <h2 className="font-display text-sm font-bold uppercase tracking-widest">Identificação Empresarial</h2>
+            <div className="h-px flex-1 bg-outline-variant/10" />
+          </div>
+
+          <div className="grid md:grid-cols-[1fr_auto] gap-x-8 gap-y-5 items-end">
+            <EditorialField
+              label="CNPJ *"
+              value={form.cnpj}
+              onChange={(v) => setForm({ ...form, cnpj: maskCnpj(v) })}
+              placeholder="00.000.000/0000-00"
+            />
+            <PrimaryButton
+              type="button"
+              variant="secondary"
+              onClick={lookupCnpj}
+              disabled={loadingCnpj}
+              className="px-5 py-3 text-[10px] tracking-widest"
+            >
+              {loadingCnpj ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Search className="h-3.5 w-3.5" />}
+              Buscar
+            </PrimaryButton>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-x-8 gap-y-5">
+            <EditorialField
+              label="Razão Social"
+              value={form.razaoSocial}
+              onChange={(v) => setForm({ ...form, razaoSocial: v })}
+              placeholder="Preenchido via BrasilAPI"
+            />
+            <EditorialField
+              label="Nome Fantasia"
+              value={form.nomeFantasia}
+              onChange={(v) => setForm({ ...form, nomeFantasia: v })}
+              placeholder="Preenchido via BrasilAPI"
+            />
+          </div>
+        </section>
+
+        {/* Section 02: Contato */}
+        <section className="space-y-5">
+          <div className="flex items-center gap-3">
+            <span className="font-display text-2xl font-bold text-outline-variant/30 italic">02</span>
+            <h2 className="font-display text-sm font-bold uppercase tracking-widest">Dados de Contato</h2>
+            <div className="h-px flex-1 bg-outline-variant/10" />
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-x-8 gap-y-5">
+            <EditorialField
+              label="Nome *"
+              value={form.nome}
+              onChange={(v) => setForm({ ...form, nome: v })}
+              placeholder="Ex: Carlos Oliveira"
+            />
+            <EditorialField
+              label="Email *"
+              type="email"
+              value={form.email}
+              onChange={(v) => setForm({ ...form, email: v })}
+              placeholder="contato@empresa.com"
+            />
+            <EditorialField
+              label="Telefone Fixo"
+              value={form.telefoneFixo}
+              onChange={(v) => setForm({ ...form, telefoneFixo: maskPhone(v) })}
+              placeholder="(XX) XXXX-XXXX"
+            />
+            <EditorialField
+              label="Celular"
+              value={form.celular}
+              onChange={(v) => setForm({ ...form, celular: maskPhone(v) })}
+              placeholder="(XX) XXXXX-XXXX"
+            />
+          </div>
+        </section>
+
+        <footer className="pt-6 border-t border-outline-variant/10 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-3 text-xs font-medium text-on-surface-variant">
+            <div className="h-2 w-2 rounded-full bg-primary-container animate-pulse" />
+            Dados enriquecidos via BrasilAPI
+          </div>
+          <PrimaryButton type="submit" className="px-8 py-4 text-xs tracking-[0.2em] uppercase">
+            Registrar Contato
+          </PrimaryButton>
+        </footer>
+      </form>
+    </div>
+  );
+}
+
+function EditorialField({
+  label,
+  value,
+  onChange,
+  placeholder,
+  type = "text",
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+  type?: string;
+}) {
+  return (
+    <div className="group space-y-2">
+      <label className="block text-[10px] uppercase tracking-[0.2em] text-outline font-black group-focus-within:text-primary-container transition-colors">
+        {label}
+      </label>
+      <input
+        type={type}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        className="w-full bg-transparent border-0 border-b border-outline-variant/30 py-2 px-0 text-on-surface placeholder:text-outline-variant/50 focus:ring-0 focus:border-primary-container transition-all text-sm font-medium"
+      />
+    </div>
+  );
+}
