@@ -21,8 +21,15 @@ function colorFor(name: string) {
   return PALETTE[h % PALETTE.length];
 }
 
-export function Avatar({ name, size = "md", className = "" }: { name: string; size?: "sm" | "md" | "lg"; className?: string }) {
-  const dim = size === "sm" ? "h-8 w-8 text-[10px]" : size === "lg" ? "h-14 w-14 text-base" : "h-10 w-10 text-xs";
+export function Avatar({ name, size = "md", className = "" }: { name: string; size?: "xs" | "sm" | "md" | "lg"; className?: string }) {
+  const dim =
+    size === "xs"
+      ? "h-6 w-6 text-[8px]"
+      : size === "sm"
+      ? "h-8 w-8 text-[10px]"
+      : size === "lg"
+      ? "h-14 w-14 text-base"
+      : "h-10 w-10 text-xs";
   return (
     <div
       className={`grid place-items-center rounded-full font-bold shrink-0 ${dim} ${colorFor(name)} ${className}`}
