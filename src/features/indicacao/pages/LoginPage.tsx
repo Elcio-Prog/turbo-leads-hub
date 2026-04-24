@@ -95,7 +95,7 @@ export function LoginPage() {
           {/* Right Side: Login Form & Quick Access */}
           <div className="lg:col-span-5 bg-surface-low p-6 lg:p-10 flex flex-col justify-center border-l border-outline-variant/10 relative">
             <header className="mb-8">
-              <h2 className="font-display text-2xl lg:text-3xl font-bold tracking-tight mb-2 uppercase text-white leading-none">Acesso <br />Restrito</h2>
+              <h2 className="font-display text-2xl lg:text-3xl font-bold tracking-tight mb-2 uppercase text-white leading-none">Indique um cliente!</h2>
               <p className="text-on-surface-variant text-[10px] uppercase tracking-[0.2em] font-black mt-3">Identifique-se para continuar.</p>
             </header>
 
