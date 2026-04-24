@@ -161,6 +161,33 @@ export function IndicacoesPage() {
         </div>
       </header>
 
+      {isAdmin && (
+        <div className="flex flex-wrap gap-2 -mt-4">
+          <button
+            type="button"
+            onClick={() => setTab("indicacoes")}
+            className={`px-5 py-2.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ring-1 ring-inset ${
+              tab === "indicacoes"
+                ? "ring-primary-container bg-primary-container/20 text-primary-container"
+                : "ring-outline-variant/20 bg-surface-low text-outline hover:text-white"
+            }`}
+          >
+            Indicações · {filtered.length}
+          </button>
+          <button
+            type="button"
+            onClick={() => setTab("contatos")}
+            className={`px-5 py-2.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ring-1 ring-inset ${
+              tab === "contatos"
+                ? "ring-sky-400 bg-sky-500/20 text-sky-300"
+                : "ring-outline-variant/20 bg-surface-low text-outline hover:text-white"
+            }`}
+          >
+            Contatos · {contatos.length}
+          </button>
+        </div>
+      )}
+
       {showFilter && (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 p-8 bg-surface-low rounded-xl animate-in slide-in-from-top-4 duration-500">
           <FilterSelect label="Status" value={fStatus} onChange={(v) => setFStatus(v as StatusIndicacao | "")} options={STATUSES} />
