@@ -240,7 +240,7 @@ function EditorialField({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full bg-transparent border-0 border-b border-outline-variant/30 py-2 px-0 text-on-surface placeholder:text-outline-variant/50 focus:ring-0 focus:border-primary-container transition-all text-sm font-medium"
+        className="w-full bg-transparent border-0 border-b border-outline-variant/30 py-2 px-0 text-on-surface placeholder:text-outline-variant/50 outline-none focus:outline-none focus:ring-0 focus:border-primary-container caret-primary-container transition-all text-sm font-medium"
       />
     </div>
   );
