@@ -7,22 +7,19 @@ import {
   LogOut,
   Menu,
   X,
+  UserPlus,
+  Contact,
 } from "lucide-react";
 import { useApp } from "../AppContext";
 import { Logo } from "./Logo";
 import { Avatar } from "./Avatar";
 import { useState, useEffect } from "react";
 
-const NAV = [
-  { to: "/app/nova", label: "Nova Indicação", Icon: PlusCircle },
-  { to: "/app/indicacoes", label: "Indicações", Icon: ListChecks },
-  { to: "/app/analytics", label: "Analytics", Icon: BarChart3 },
-] as const;
-
 const ROLE_LABEL: Record<string, string> = {
   admin: "Administrador",
   aprovador: "Aprovador",
   usuario: "Usuário",
+  usuario_ra: "Usuário RA",
 };
 
 export function Sidebar({ collapsed, onToggle }: { collapsed?: boolean; onToggle?: () => void }) {
@@ -42,6 +39,21 @@ export function Sidebar({ collapsed, onToggle }: { collapsed?: boolean; onToggle
     logout();
     navigate({ to: "/" });
   };
+
+  const NAV =
+    user.role === "usuario_ra"
+      ? ([
+          { to: "/app/nova", label: "Nova Indicação", Icon: PlusCircle },
+          { to: "/app/indicacoes", label: "Indicações", Icon: ListChecks },
+          { to: "/app/novo-contato", label: "Novo Contato", Icon: UserPlus },
+          { to: "/app/contatos", label: "Contatos", Icon: Contact },
+          { to: "/app/analytics", label: "Analytics", Icon: BarChart3 },
+        ] as const)
+      : ([
+          { to: "/app/nova", label: "Nova Indicação", Icon: PlusCircle },
+          { to: "/app/indicacoes", label: "Indicações", Icon: ListChecks },
+          { to: "/app/analytics", label: "Analytics", Icon: BarChart3 },
+        ] as const);
 
   return (
     <>
