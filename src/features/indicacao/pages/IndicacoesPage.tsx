@@ -206,6 +206,7 @@ export function IndicacoesPage() {
       )}
 
       {/* Tabela de Indicações */}
+      {(!isAdmin || tab === "indicacoes") && (
       <section className="space-y-4">
         <div className="flex items-center gap-3">
           <span className="inline-flex items-center justify-center h-7 w-7 rounded-md bg-primary-container/15 text-primary-container">
@@ -342,9 +343,10 @@ export function IndicacoesPage() {
           </div>
         </div>
       </section>
+      )}
 
       {/* Tabela de Contatos - apenas admin */}
-      {isAdmin && (
+      {isAdmin && tab === "contatos" && (
         <section className="space-y-4">
           <div className="flex items-center justify-between gap-3 flex-wrap">
             <div className="flex items-center gap-3">
