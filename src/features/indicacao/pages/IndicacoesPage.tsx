@@ -49,6 +49,7 @@ export function IndicacoesPage() {
   const [openMenu, setOpenMenu] = useState<string | null>(null);
   const [editing, setEditing] = useState<Indicacao | null>(null);
   const [editingContato, setEditingContato] = useState<Contato | null>(null);
+  const [tab, setTab] = useState<"indicacoes" | "contatos">("indicacoes");
 
   const isAdmin = user?.role === "admin";
 
@@ -160,6 +161,33 @@ export function IndicacoesPage() {
         </div>
       </header>
 
+      {isAdmin && (
+        <div className="flex flex-wrap gap-2 -mt-4">
+          <button
+            type="button"
+            onClick={() => setTab("indicacoes")}
+            className={`px-5 py-2.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ring-1 ring-inset ${
+              tab === "indicacoes"
+                ? "ring-primary-container bg-primary-container/20 text-primary-container"
+                : "ring-outline-variant/20 bg-surface-low text-outline hover:text-white"
+            }`}
+          >
+            Indicações · {filtered.length}
+          </button>
+          <button
+            type="button"
+            onClick={() => setTab("contatos")}
+            className={`px-5 py-2.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ring-1 ring-inset ${
+              tab === "contatos"
+                ? "ring-sky-400 bg-sky-500/20 text-sky-300"
+                : "ring-outline-variant/20 bg-surface-low text-outline hover:text-white"
+            }`}
+          >
+            Contatos · {contatos.length}
+          </button>
+        </div>
+      )}
+
       {showFilter && (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 p-8 bg-surface-low rounded-xl animate-in slide-in-from-top-4 duration-500">
           <FilterSelect label="Status" value={fStatus} onChange={(v) => setFStatus(v as StatusIndicacao | "")} options={STATUSES} />
@@ -178,6 +206,7 @@ export function IndicacoesPage() {
       )}
 
       {/* Tabela de Indicações */}
+      {(!isAdmin || tab === "indicacoes") && (
       <section className="space-y-4">
         <div className="flex items-center gap-3">
           <span className="inline-flex items-center justify-center h-7 w-7 rounded-md bg-primary-container/15 text-primary-container">
@@ -314,9 +343,10 @@ export function IndicacoesPage() {
           </div>
         </div>
       </section>
+      )}
 
       {/* Tabela de Contatos - apenas admin */}
-      {isAdmin && (
+      {isAdmin && tab === "contatos" && (
         <section className="space-y-4">
           <div className="flex items-center justify-between gap-3 flex-wrap">
             <div className="flex items-center gap-3">
