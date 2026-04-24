@@ -167,6 +167,99 @@ const SEED_INDICACOES: Indicacao[] = [
   },
 ];
 
+const SEED_CONTATOS: Contato[] = [
+  {
+    id: "cont-001",
+    nome: "Roberto Silveira",
+    email: "roberto@transportadoraalfa.com.br",
+    cnpj: "12.345.678/0001-90",
+    razaoSocial: "Transportadora Alfa LTDA",
+    nomeFantasia: "Alfa Logística",
+    telefoneFixo: "+55 (11) 3344-5566",
+    celular: "+55 (11) 99887-7766",
+    criadoPorId: 4,
+    criadoPorNome: "Diego Ramos",
+    criadoEm: daysAgo(15),
+    modificadoEm: daysAgo(4),
+    modificadoPorNome: "Diego Ramos",
+  },
+  {
+    id: "cont-002",
+    nome: "Mariana Cardoso",
+    email: "mariana@verdecampoagro.com.br",
+    cnpj: "23.456.789/0001-12",
+    razaoSocial: "Verde Campo Agronegócios S.A.",
+    nomeFantasia: "Verde Campo",
+    telefoneFixo: "+55 (62) 3211-4400",
+    celular: "+55 (62) 98123-4567",
+    criadoPorId: 4,
+    criadoPorNome: "Diego Ramos",
+    criadoEm: daysAgo(10),
+    modificadoEm: daysAgo(2),
+    modificadoPorNome: "Diego Ramos",
+  },
+  {
+    id: "cont-003",
+    nome: "Eduardo Pacheco",
+    email: "eduardo@pachecoadvogados.com.br",
+    cnpj: "34.567.890/0001-34",
+    razaoSocial: "Pacheco Advogados Associados",
+    nomeFantasia: "Pacheco & Associados",
+    telefoneFixo: "+55 (21) 2233-9988",
+    celular: "+55 (21) 99765-4321",
+    criadoPorId: 4,
+    criadoPorNome: "Diego Ramos",
+    criadoEm: daysAgo(7),
+    modificadoEm: daysAgo(7),
+    modificadoPorNome: "Diego Ramos",
+  },
+  {
+    id: "cont-004",
+    nome: "Beatriz Nogueira",
+    email: "beatriz@clinicasaudeplena.com.br",
+    cnpj: "45.678.901/0001-56",
+    razaoSocial: "Clínica Saúde Plena LTDA",
+    nomeFantasia: "Saúde Plena",
+    telefoneFixo: "+55 (41) 3055-2200",
+    celular: "+55 (41) 98444-1122",
+    criadoPorId: 4,
+    criadoPorNome: "Diego Ramos",
+    criadoEm: daysAgo(5),
+    modificadoEm: daysAgo(1),
+    modificadoPorNome: "Diego Ramos",
+  },
+  {
+    id: "cont-005",
+    nome: "Felipe Andrade",
+    email: "felipe@metalurgicasul.com.br",
+    cnpj: "56.789.012/0001-78",
+    razaoSocial: "Metalúrgica Sul Brasil LTDA",
+    nomeFantasia: "MetalSul",
+    telefoneFixo: "+55 (51) 3666-7788",
+    celular: "+55 (51) 99222-3344",
+    criadoPorId: 4,
+    criadoPorNome: "Diego Ramos",
+    criadoEm: daysAgo(3),
+    modificadoEm: daysAgo(3),
+    modificadoPorNome: "Diego Ramos",
+  },
+  {
+    id: "cont-006",
+    nome: "Larissa Monteiro",
+    email: "larissa@boutiqueencanto.com.br",
+    cnpj: "67.890.123/0001-90",
+    razaoSocial: "Encanto Comércio de Roupas LTDA",
+    nomeFantasia: "Boutique Encanto",
+    telefoneFixo: "+55 (11) 4002-8922",
+    celular: "+55 (11) 97654-3210",
+    criadoPorId: 4,
+    criadoPorNome: "Diego Ramos",
+    criadoEm: daysAgo(1),
+    modificadoEm: daysAgo(1),
+    modificadoPorNome: "Diego Ramos",
+  },
+];
+
 const STORAGE_AUTH = "ni:auth";
 const STORAGE_DATA = "ni:indicacoes";
 const STORAGE_CONTATOS = "ni:contatos";
@@ -220,7 +313,7 @@ function saveJSON(key: string, value: unknown) {
 export function AppProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [indicacoes, setIndicacoes] = useState<Indicacao[]>(SEED_INDICACOES);
-  const [contatos, setContatos] = useState<Contato[]>([]);
+  const [contatos, setContatos] = useState<Contato[]>(SEED_CONTATOS);
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
@@ -234,7 +327,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setIndicacoes(savedData);
     }
     const savedContatos = loadJSON<Contato[] | null>(STORAGE_CONTATOS, null);
-    if (savedContatos && Array.isArray(savedContatos)) {
+    if (savedContatos && Array.isArray(savedContatos) && savedContatos.length > 0) {
       setContatos(savedContatos);
     }
     setHydrated(true);
