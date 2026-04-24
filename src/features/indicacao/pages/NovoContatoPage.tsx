@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { Loader2, Search } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useApp } from "../AppContext";
 import { PrimaryButton } from "../components/PrimaryButton";
 
@@ -28,6 +28,7 @@ function maskPhone(value: string) {
 export function NovoContatoPage() {
   const { user, createContato } = useApp();
   const [loadingCnpj, setLoadingCnpj] = useState(false);
+  const lastFetchedRef = useRef<string>("");
   const [form, setForm] = useState({
     nome: "",
     email: "",
@@ -38,14 +39,10 @@ export function NovoContatoPage() {
     celular: "",
   });
 
-  if (!user) return null;
-
-  const lookupCnpj = async () => {
-    const digits = form.cnpj.replace(/\D/g, "");
-    if (digits.length !== 14) {
-      toast.error("CNPJ inválido. Informe os 14 dígitos.");
-      return;
-    }
+  const lookupCnpj = async (digits: string) => {
+    if (digits.length !== 14) return;
+    if (lastFetchedRef.current === digits) return;
+    lastFetchedRef.current = digits;
     setLoadingCnpj(true);
     try {
       const res = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${digits}`);
@@ -69,6 +66,21 @@ export function NovoContatoPage() {
       setLoadingCnpj(false);
     }
   };
+
+  // Auto-lookup quando o CNPJ atingir 14 dígitos
+  useEffect(() => {
+    const digits = form.cnpj.replace(/\D/g, "");
+    if (digits.length === 14 && lastFetchedRef.current !== digits) {
+      const t = setTimeout(() => lookupCnpj(digits), 300);
+      return () => clearTimeout(t);
+    }
+    if (digits.length < 14) {
+      lastFetchedRef.current = "";
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form.cnpj]);
+
+  if (!user) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -122,23 +134,20 @@ export function NovoContatoPage() {
             <div className="h-px flex-1 bg-outline-variant/10" />
           </div>
 
-          <div className="grid md:grid-cols-[1fr_auto] gap-x-8 gap-y-5 items-end">
-            <EditorialField
-              label="CNPJ *"
-              value={form.cnpj}
-              onChange={(v) => setForm({ ...form, cnpj: maskCnpj(v) })}
-              placeholder="00.000.000/0000-00"
-            />
-            <PrimaryButton
-              type="button"
-              variant="secondary"
-              onClick={lookupCnpj}
-              disabled={loadingCnpj}
-              className="px-5 py-3 text-[10px] tracking-widest"
-            >
-              {loadingCnpj ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Search className="h-3.5 w-3.5" />}
-              Buscar
-            </PrimaryButton>
+          <div className="grid md:grid-cols-2 gap-x-8 gap-y-5">
+            <div className="relative">
+              <EditorialField
+                label="CNPJ *"
+                value={form.cnpj}
+                onChange={(v) => setForm({ ...form, cnpj: maskCnpj(v) })}
+                placeholder="00.000.000/0000-00"
+              />
+              {loadingCnpj && (
+                <div className="absolute right-0 bottom-2 flex items-center gap-2 text-[10px] uppercase tracking-widest text-primary-container font-bold">
+                  <Loader2 className="h-3 w-3 animate-spin" /> Buscando...
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="grid md:grid-cols-2 gap-x-8 gap-y-5">
