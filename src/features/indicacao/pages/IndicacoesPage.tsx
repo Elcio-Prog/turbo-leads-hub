@@ -93,80 +93,83 @@ export function IndicacoesPage() {
   };
 
   return (
-    <div className="space-y-5">
-      <header className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h2 className="text-2xl font-bold text-white">
-            {user.role === "usuario" ? "Minhas Indicações" : "Indicações"}
-          </h2>
-          <p className="mt-1 text-sm text-[#AAAAAA]">
-            {filtered.length} item(ns) {fStatus || fProduto || fSetor ? "filtrado(s)" : "no total"}
+    <div className="max-w-7xl mx-auto space-y-10 animate-in fade-in duration-700 font-body">
+      {/* Header Editorial */}
+      <header className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-8 border-b border-outline-variant/10">
+        <div className="space-y-2">
+          <h1 className="font-display text-5xl md:text-7xl font-bold tracking-tighter uppercase leading-none">
+            {user.role === "usuario" ? "Minhas" : "Todas"} <br />
+            <span className="italic font-light text-on-surface-variant">Indicações</span>
+          </h1>
+          <p className="text-[10px] text-outline uppercase tracking-widest font-bold">
+            {filtered.length} itens encontrados no banco de dados
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <PrimaryButton variant="secondary" onClick={() => setShowFilter((v) => !v)}>
-            <Filter className="h-4 w-4" /> FILTRAR
+        
+        <div className="flex items-center gap-3">
+          <PrimaryButton variant="secondary" onClick={() => setShowFilter((v) => !v)} className="px-4 py-2 text-[10px] tracking-widest">
+            <Filter className="h-3 w-3" /> FILTRAR
           </PrimaryButton>
-          <PrimaryButton variant="secondary" onClick={handleExport}>
-            <Download className="h-4 w-4" /> EXPORTAR
+          <PrimaryButton variant="secondary" onClick={handleExport} className="px-4 py-2 text-[10px] tracking-widest">
+            <Download className="h-3 w-3" /> EXPORTAR
           </PrimaryButton>
         </div>
       </header>
 
       {showFilter && (
-        <div className="flex flex-wrap items-end gap-3 rounded-xl border border-[#2a2a2a] bg-[#1a1a1a] p-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 p-8 bg-surface-low rounded-xl animate-in slide-in-from-top-4 duration-500">
           <FilterSelect label="Status" value={fStatus} onChange={(v) => setFStatus(v as StatusIndicacao | "")} options={STATUSES} />
           <FilterSelect label="Produto" value={fProduto} onChange={(v) => setFProduto(v as Produto | "")} options={PRODUTOS} />
           <FilterSelect label="Setor" value={fSetor} onChange={(v) => setFSetor(v as Setor | "")} options={SETORES} />
-          <button
-            type="button"
-            onClick={clearFilters}
-            className="text-xs text-[#AAAAAA] underline hover:text-white"
-          >
-            Limpar
-          </button>
+          <div className="flex items-end pb-1">
+            <button
+              type="button"
+              onClick={clearFilters}
+              className="text-[10px] font-black uppercase tracking-widest text-primary-container hover:underline underline-offset-4"
+            >
+              Resetar Filtros
+            </button>
+          </div>
         </div>
       )}
 
-      <div className="overflow-hidden rounded-2xl border border-[#2a2a2a] bg-[#1a1a1a]">
+      {/* Table Container with Tonal Depth */}
+      <div className="overflow-hidden rounded-xl bg-surface-low shadow-2xl">
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-[#2a2a2a] bg-[#141414] text-left text-[10px] uppercase tracking-wider text-[#888888]">
-                <th className="px-4 py-3 font-semibold">Status</th>
-                <th className="px-4 py-3 font-semibold">Criado por</th>
-                <th className="px-4 py-3 font-semibold">Lead</th>
-                <th className="px-4 py-3 font-semibold">Produto</th>
-                <th className="px-4 py-3 font-semibold">Setor</th>
-                <th className="px-4 py-3 font-semibold">Contrato</th>
-                <th className="px-4 py-3 font-semibold">Criado</th>
-                <th className="px-4 py-3 font-semibold">Modificado</th>
-                <th className="px-4 py-3 font-semibold">Por</th>
-                <th className="px-4 py-3 font-semibold text-right">Ações</th>
+              <tr className="bg-surface-highest/50 border-b border-outline-variant/10">
+                <th className="px-6 py-5 text-[10px] uppercase tracking-[0.2em] font-black text-outline">Status</th>
+                <th className="px-6 py-5 text-[10px] uppercase tracking-[0.2em] font-black text-outline">Colaborador</th>
+                <th className="px-6 py-5 text-[10px] uppercase tracking-[0.2em] font-black text-outline">Lead / Empresa</th>
+                <th className="px-6 py-5 text-[10px] uppercase tracking-[0.2em] font-black text-outline hidden md:table-cell">Produto</th>
+                <th className="px-6 py-5 text-[10px] uppercase tracking-[0.2em] font-black text-outline hidden lg:table-cell">Contrato</th>
+                <th className="px-6 py-5 text-[10px] uppercase tracking-[0.2em] font-black text-outline">Datas</th>
+                <th className="px-6 py-5 text-[10px] uppercase tracking-[0.2em] font-black text-outline text-right">Ações</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-outline-variant/5">
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={10} className="px-4 py-12 text-center text-sm text-[#666666]">
-                    Nenhuma indicação encontrada.
+                  <td colSpan={7} className="px-6 py-20 text-center">
+                    <div className="text-outline-variant font-display text-lg uppercase tracking-widest italic">Nenhum registro encontrado</div>
                   </td>
                 </tr>
               ) : (
                 filtered.map((i) => (
-                  <tr key={i.id} className="border-b border-[#2a2a2a] transition-colors hover:bg-[#141414]">
-                    <td className="px-4 py-4">
+                  <tr key={i.id} className="group hover:bg-surface-high/50 transition-colors">
+                    <td className="px-6 py-6">
                       {canChangeStatus ? (
                         <select
                           value={i.status}
                           onChange={(e) => {
                             updateStatus(i.id, e.target.value as StatusIndicacao);
-                            toast.success(`Status atualizado para "${e.target.value}"`);
+                            toast.success(`Status atualizado`);
                           }}
-                          className={`cursor-pointer rounded-full border px-2 py-1 text-xs font-medium outline-none ${STATUS_STYLES[i.status].bg} ${STATUS_STYLES[i.status].text} ${STATUS_STYLES[i.status].border}`}
+                          className={`cursor-pointer rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-widest outline-none border-0 ring-1 ring-inset ${STATUS_STYLES[i.status].bg} ${STATUS_STYLES[i.status].text} ring-current/20`}
                         >
                           {STATUSES.map((s) => (
-                            <option key={s} value={s} className="bg-[#1a1a1a] text-white">
+                            <option key={s} value={s} className="bg-surface-container text-white">
                               {s}
                             </option>
                           ))}
@@ -175,42 +178,44 @@ export function IndicacoesPage() {
                         <StatusBadge status={i.status} />
                       )}
                     </td>
-                    <td className="px-4 py-4">
-                      <div className="flex items-center gap-2">
-                        <Avatar name={i.criadoPorNome} size="sm" />
-                        <span className="text-white">{i.criadoPorNome}</span>
+                    <td className="px-6 py-6">
+                      <div className="flex items-center gap-3">
+                        <Avatar name={i.criadoPorNome} size="sm" className="ring-2 ring-primary-container/20" />
+                        <span className="text-xs font-bold uppercase tracking-tight text-on-surface">{i.criadoPorNome}</span>
                       </div>
                     </td>
-                    <td className="px-4 py-4">
-                      <div className="font-semibold text-white">{i.leadNome}</div>
-                      <div className="text-xs text-[#AAAAAA]">{i.empresa}</div>
-                      <div className="mt-0.5 text-[11px] text-[#666666]">
-                        {i.emailLead} • {i.telefone || "—"}
+                    <td className="px-6 py-6">
+                      <div className="space-y-1">
+                        <div className="text-sm font-bold uppercase tracking-tight text-white group-hover:text-primary-container transition-colors">{i.leadNome}</div>
+                        <div className="text-[10px] font-medium text-outline uppercase tracking-wider">{i.empresa}</div>
                       </div>
                     </td>
-                    <td className="px-4 py-4 text-[#DDDDDD]">{i.produto}</td>
-                    <td className="px-4 py-4 text-[#DDDDDD]">{i.setor}</td>
-                    <td className="px-4 py-4">
-                      <span className="rounded-md bg-[#2a2a2a] px-2 py-0.5 text-[11px] font-semibold text-white">
+                    <td className="px-6 py-6 hidden md:table-cell">
+                      <span className="text-xs font-medium text-on-surface-variant">{i.produto}</span>
+                    </td>
+                    <td className="px-6 py-6 hidden lg:table-cell">
+                      <span className="inline-block px-2 py-0.5 rounded bg-surface-highest text-[10px] font-black text-on-surface-variant uppercase tracking-tighter">
                         {i.contrato}
                       </span>
                     </td>
-                    <td className="px-4 py-4 text-xs text-[#AAAAAA]">{fmtDate(i.criadoEm)}</td>
-                    <td className="px-4 py-4 text-xs text-[#AAAAAA]">{fmtDate(i.modificadoEm)}</td>
-                    <td className="px-4 py-4 text-xs text-[#AAAAAA]">{i.modificadoPorNome}</td>
-                    <td className="px-4 py-4 text-right">
+                    <td className="px-6 py-6">
+                      <div className="space-y-0.5">
+                        <div className="text-[10px] font-bold text-on-surface-variant">C: {fmtDate(i.criadoEm)}</div>
+                        <div className="text-[10px] font-medium text-outline">M: {fmtDate(i.modificadoEm)}</div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-6 text-right">
                       <div className="relative inline-block">
                         <button
                           type="button"
                           onClick={() => setOpenMenu(openMenu === i.id ? null : i.id)}
-                          className="rounded-md p-1.5 text-[#AAAAAA] hover:bg-[#2a2a2a] hover:text-white"
-                          aria-label="Ações"
+                          className="p-2 rounded-lg text-outline hover:text-white hover:bg-surface-highest transition-all"
                         >
                           <MoreVertical className="h-4 w-4" />
                         </button>
                         {openMenu === i.id && (
                           <div
-                            className="absolute right-0 top-full z-10 mt-1 w-44 overflow-hidden rounded-lg border border-[#2a2a2a] bg-[#1f1f1f] shadow-xl"
+                            className="absolute right-0 top-full z-20 mt-2 w-48 overflow-hidden rounded-xl bg-surface-high border border-outline-variant/20 shadow-2xl animate-in zoom-in-95 duration-200"
                             onMouseLeave={() => setOpenMenu(null)}
                           >
                             {canEditItem(i) && (
@@ -220,7 +225,7 @@ export function IndicacoesPage() {
                                   setEditing(i);
                                   setOpenMenu(null);
                                 }}
-                                className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-white hover:bg-[#2a2a2a]"
+                                className="flex w-full items-center gap-3 px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-white hover:bg-primary-container hover:text-on-primary-container transition-colors"
                               >
                                 <Pencil className="h-3.5 w-3.5" /> Editar
                               </button>
@@ -232,23 +237,13 @@ export function IndicacoesPage() {
                                   if (confirm("Excluir esta indicação?")) {
                                     deleteIndicacao(i.id);
                                     setOpenMenu(null);
-                                    toast.success("Indicação excluída.");
+                                    toast.success("Excluído.");
                                   }
                                 }}
-                                className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-red-400 hover:bg-[#2a2a2a]"
+                                className="flex w-full items-center gap-3 px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-red-400 hover:bg-red-500 hover:text-white transition-colors"
                               >
                                 <Trash2 className="h-3.5 w-3.5" /> Excluir
                               </button>
-                            )}
-                            {!canEditItem(i) && !canDeleteItem(i) && !canChangeStatus && (
-                              <div className="px-3 py-2 text-xs text-[#666666]">
-                                Sem ações disponíveis
-                              </div>
-                            )}
-                            {!canEditItem(i) && !canDeleteItem(i) && canChangeStatus && (
-                              <div className="px-3 py-2 text-xs text-[#666666]">
-                                Use a coluna Status para alterar.
-                              </div>
                             )}
                           </div>
                         )}

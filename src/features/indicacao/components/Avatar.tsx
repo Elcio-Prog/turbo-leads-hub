@@ -8,12 +8,11 @@ function initials(name: string) {
 }
 
 const PALETTE = [
-  "bg-[#CCFF00] text-black",
-  "bg-blue-500/80 text-white",
-  "bg-purple-500/80 text-white",
-  "bg-pink-500/80 text-white",
-  "bg-orange-500/80 text-white",
-  "bg-teal-500/80 text-white",
+  "bg-primary-container text-on-primary-container",
+  "bg-secondary text-secondary-foreground",
+  "bg-surface-highest text-white border border-outline-variant/30",
+  "bg-[#3d3d3d] text-[#ffffff]",
+  "bg-[#4a5e00] text-[#f3ffca]",
 ];
 
 function colorFor(name: string) {
@@ -22,11 +21,11 @@ function colorFor(name: string) {
   return PALETTE[h % PALETTE.length];
 }
 
-export function Avatar({ name, size = "md" }: { name: string; size?: "sm" | "md" | "lg" }) {
-  const dim = size === "sm" ? "h-7 w-7 text-[10px]" : size === "lg" ? "h-12 w-12 text-base" : "h-9 w-9 text-xs";
+export function Avatar({ name, size = "md", className = "" }: { name: string; size?: "sm" | "md" | "lg"; className?: string }) {
+  const dim = size === "sm" ? "h-8 w-8 text-[10px]" : size === "lg" ? "h-14 w-14 text-base" : "h-10 w-10 text-xs";
   return (
     <div
-      className={`grid place-items-center rounded-full font-bold ${dim} ${colorFor(name)}`}
+      className={`grid place-items-center rounded-full font-bold shrink-0 ${dim} ${colorFor(name)} ${className}`}
       title={name}
     >
       {initials(name)}

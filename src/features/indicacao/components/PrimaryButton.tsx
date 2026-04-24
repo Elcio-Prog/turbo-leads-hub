@@ -8,11 +8,11 @@ interface Props extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const VARIANTS: Record<Variant, string> = {
   primary:
-    "bg-[#CCFF00] text-black hover:bg-[#b8e600] active:bg-[#a3cc00] disabled:opacity-50 disabled:cursor-not-allowed",
+    "bg-primary-container text-on-primary-container font-headline font-bold hover:shadow-[0_0_30px_rgba(202,253,0,0.3)] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed",
   secondary:
-    "bg-[#1a1a1a] text-white border border-[#2a2a2a] hover:bg-[#222222]",
-  ghost: "bg-transparent text-[#AAAAAA] hover:bg-[#1a1a1a] hover:text-white",
-  danger: "bg-red-500/90 text-white hover:bg-red-500",
+    "bg-surface-container text-white border border-outline-variant/20 hover:bg-surface-high",
+  ghost: "bg-transparent text-on-surface-variant hover:text-white hover:underline decoration-primary-container decoration-2 underline-offset-4",
+  danger: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
 };
 
 export function PrimaryButton({
@@ -23,7 +23,7 @@ export function PrimaryButton({
   return (
     <button
       {...rest}
-      className={`inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition-colors ${VARIANTS[variant]} ${className}`}
+      className={`inline-flex items-center justify-center gap-2 rounded-lg px-6 py-3 text-sm transition-all duration-200 ${VARIANTS[variant]} ${className}`}
     />
   );
 }

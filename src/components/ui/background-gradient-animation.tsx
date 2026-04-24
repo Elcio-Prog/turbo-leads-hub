@@ -104,7 +104,7 @@ export const BackgroundGradientAnimation = ({
           </filter>
         </defs>
       </svg>
-      <div className={cn("relative z-10", className)}>{children}</div>
+      <div className={cn("relative z-10 h-full w-full", className)}>{children}</div>
       <div
         className={cn(
           "absolute inset-0 [filter:url(#blurMe)_blur(40px)]",
@@ -161,10 +161,10 @@ export const BackgroundGradientAnimation = ({
           <div
             ref={interactiveRef}
             className={cn(
-              "absolute [background:radial-gradient(circle_at_center,_rgba(var(--pointer-color),_0.8)_0,_rgba(var(--pointer-color),_0)_50%)_no-repeat]",
+              "absolute [background:radial-gradient(circle_at_center,_rgba(var(--pointer-color),_0.8)_0,_rgba(var(--pointer-color),_0)_25%)_no-repeat]",
               "w-full h-full -top-1/2 -left-1/2",
               "[mix-blend-mode:var(--blending-value)]",
-              "opacity-70"
+              "opacity-40"
             )}
           />
         )}

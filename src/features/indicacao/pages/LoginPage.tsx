@@ -35,121 +35,121 @@ export function LoginPage() {
   };
 
   return (
-    <div className="h-screen grid lg:grid-cols-2 bg-[#0a0a0a] overflow-hidden">
-      {/* Esquerda: headline + social proof */}
-      <div className="relative hidden lg:block overflow-hidden">
-        <BackgroundGradientAnimation
-          containerClassName="absolute inset-0"
-          className="h-full w-full"
-          interactive={true}
-        />
-        <div className="relative z-20 flex flex-col justify-between h-full p-12">
-          <div className="flex items-center gap-3">
-            <div className="grid h-10 w-10 place-items-center rounded-xl bg-[#CCFF00] text-black font-black">
-              NT
-            </div>
-            <div className="text-white">
-              <div className="font-bold">Net Turbo</div>
-              <div className="text-[11px] uppercase tracking-widest text-[#CCFF00]">
-                Programa de Indicações
+    <BackgroundGradientAnimation 
+      containerClassName="h-screen w-full"
+      firstColor="14, 14, 14"
+      secondColor="10, 10, 10"
+      thirdColor="18, 18, 18"
+      fourthColor="12, 12, 12"
+      fifthColor="15, 15, 15"
+      pointerColor="202, 253, 0"
+    >
+      <div className="fixed inset-0 z-10 flex items-center justify-center p-4 selection:bg-primary-container selection:text-on-primary-container font-body overflow-y-auto">
+        {/* Main Editorial Card */}
+        <main className="relative w-full max-w-4xl grid lg:grid-cols-12 gap-0 overflow-hidden rounded-2xl shadow-[0_24px_64px_rgba(0,0,0,0.8)] bg-surface/20 backdrop-blur-3xl border border-outline-variant/10 my-auto">
+          
+          {/* Mancha Verde / Green Glow at the division */}
+          <div className="absolute top-0 right-[41.666%] w-px h-full bg-gradient-to-b from-transparent via-primary-container/40 to-transparent z-20 hidden lg:block shadow-[0_0_40px_rgba(202,253,0,0.3)]" />
+
+          {/* Left Side: Marketing Content */}
+          <div className="hidden lg:flex lg:col-span-7 flex-col justify-between p-12 lg:p-14 relative overflow-hidden">
+            <div className="z-10 flex items-center gap-4">
+              <img src="/logo.png" alt="Logo" className="h-14 w-14 object-contain shadow-[0_0_30px_rgba(202,253,0,0.2)] rounded-xl mix-blend-screen brightness-125" />
+              <div className="flex flex-col">
+                <span className="text-primary-container font-display text-3xl font-bold italic tracking-tighter uppercase leading-none">Net Turbo</span>
+                <span className="text-[10px] uppercase tracking-[0.4em] text-white/50 font-black mt-1">Programa de Indicações</span>
               </div>
             </div>
-          </div>
 
-          <div className="max-w-lg backdrop-blur-sm bg-black/40 rounded-xl p-6">
-            <h1 className="text-5xl font-black leading-tight text-white">
-              Indique. <span className="text-[#CCFF00]">Ganhe.</span>
-              <br />
-              Faça o time crescer.
-            </h1>
-            <div className="mt-6 text-[#AAAAAA]">
-              <h3 className="text-xl font-bold text-white mb-2">Como Funciona?</h3>
-              <p className="text-base mb-4 leading-relaxed">
-                Para realizar uma indicação, o colaborador deverá registrar o potencial cliente através do canal oficial.
-                E após venda e confirmação da implantação do contrato os créditos do programa serão liberados.
-              </p>
-              <p className="text-lg font-bold text-[#CCFF00]">
-                R$ 200 em créditos por venda realizada
-              </p>
-            </div>
-          </div>
-
-          <p className="text-xs text-[#666666]">
-            © {new Date().getFullYear()} Net Turbo • Todos os direitos reservados
-          </p>
-        </div>
-      </div>
-
-      {/* Direita: formulário */}
-      <div className="flex items-center justify-center p-6 lg:p-10 overflow-y-auto">
-        <div className="w-full max-w-md my-auto">
-          <div className="lg:hidden mb-8 flex items-center gap-3">
-            <div className="grid h-10 w-10 place-items-center rounded-xl bg-[#CCFF00] text-black font-black">
-              NT
-            </div>
-            <div className="text-[11px] uppercase tracking-widest text-[#CCFF00]">
-              Programa de Indicações
-            </div>
-          </div>
-
-          <h2 className="text-2xl font-bold text-white">Bem-vindo de volta</h2>
-          <p className="mt-1 text-sm text-[#AAAAAA]">
-            Entre com seu e-mail Net Turbo para acessar o programa.
-          </p>
-
-          <form onSubmit={handleEmailLogin} className="mt-5 space-y-3">
-            <Field
-              label="E-mail Net Turbo"
-              type="email"
-              value={email}
-              onChange={(v) => setEmail(v)}
-              placeholder="seu.nome@netturbo.com.br"
-            />
-            <Field
-              label="Senha"
-              type="password"
-              value={senha}
-              onChange={(v) => setSenha(v)}
-              placeholder="••••••••"
-            />
-            <PrimaryButton type="submit" className="w-full py-2.5">
-              Entrar <ArrowRight className="h-4 w-4" />
-            </PrimaryButton>
-          </form>
-
-          <div className="my-5 flex items-center gap-3">
-            <div className="h-px flex-1 bg-[#2a2a2a]" />
-            <span className="text-[10px] uppercase tracking-widest text-[#666666]">
-              Acesso rápido para teste
-            </span>
-            <div className="h-px flex-1 bg-[#2a2a2a]" />
-          </div>
-
-          <div className="space-y-1.5">
-            {users.map((u) => (
-              <button
-                key={u.id}
-                type="button"
-                onClick={() => handleQuickLogin(u.id)}
-                className="group flex w-full items-center gap-3 rounded-xl border border-[#2a2a2a] bg-[#1a1a1a] px-3 py-2 text-left transition-colors hover:border-[#CCFF00]/50 hover:bg-[#1f1f1f]"
-              >
-                <Avatar name={u.name} />
-                <div className="min-w-0 flex-1">
-                  <div className="truncate text-sm font-semibold text-white">{u.name}</div>
-                  <div className="truncate text-[11px] text-[#AAAAAA]">{u.email}</div>
+            <div className="z-10 space-y-6">
+              <h1 className="font-display text-4xl lg:text-5xl font-bold tracking-tight leading-[0.95] uppercase text-white animate-in slide-in-from-left duration-700">
+                Indique. Ganhe. <br />
+                <span className="text-primary-container italic font-light lowercase">Faça o time crescer.</span>
+              </h1>
+              
+              <div className="space-y-4 max-w-sm">
+                <div className="space-y-1">
+                  <h2 className="font-display text-xl font-bold uppercase tracking-tight text-white">Como Funciona?</h2>
+                  <div className="h-[2px] w-10 bg-primary-container" />
                 </div>
-                <div className="flex flex-col items-end gap-1">
-                  <span className="rounded-full bg-[#CCFF00]/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[#CCFF00]">
-                    {ROLE_LABEL[u.role]}
+                <p className="text-on-surface-variant text-sm leading-relaxed font-light">
+                  Para realizar uma indicação, o colaborador deverá registrar o potencial cliente através do canal oficial. E após venda e confirmação da implantação do contrato os créditos do programa serão liberados.
+                </p>
+                <div className="pt-2">
+                  <span className="text-primary-container font-display text-lg font-bold uppercase tracking-tighter">
+                    R$ 200 em créditos por venda realizada
                   </span>
-                  <span className="text-[10px] text-[#666666]">{u.contrato} • {u.setor}</span>
                 </div>
-              </button>
-            ))}
+              </div>
+            </div>
+
+            <div className="z-10" />
+
+            {/* Kinetic Texture Overlay */}
+            <div className="absolute top-0 right-0 w-full h-full opacity-[0.04] pointer-events-none">
+              <div className="absolute inset-0" style={{ backgroundImage: "radial-gradient(circle at 1.5px 1.5px, #cafd00 1px, transparent 0)", backgroundSize: "40px 40px" }}></div>
+            </div>
           </div>
-        </div>
+
+          {/* Right Side: Login Form & Quick Access */}
+          <div className="lg:col-span-5 bg-surface-low p-6 lg:p-10 flex flex-col justify-center border-l border-outline-variant/10 relative">
+            <header className="mb-8">
+              <h2 className="font-display text-2xl lg:text-3xl font-bold tracking-tight mb-2 uppercase text-white leading-none">Acesso <br />Restrito</h2>
+              <p className="text-on-surface-variant text-[10px] uppercase tracking-[0.2em] font-black mt-3">Identifique-se para continuar.</p>
+            </header>
+
+            <form onSubmit={handleEmailLogin} className="space-y-6">
+              <Field
+                label="Seu E-mail"
+                type="email"
+                value={email}
+                onChange={(v) => setEmail(v)}
+                placeholder="nome@empresa.com.br"
+              />
+              <Field
+                label="Sua Senha"
+                type="password"
+                value={senha}
+                onChange={(v) => setSenha(v)}
+                placeholder="••••••••"
+                showForgot
+              />
+              <div className="pt-2">
+                <PrimaryButton type="submit" className="w-full py-5 text-[10px] tracking-[0.2em] uppercase shadow-[0_15px_30px_rgba(202,253,0,0.1)]">
+                  ENTRAR NO DASHBOARD
+                  <ArrowRight className="h-3 w-3" />
+                </PrimaryButton>
+              </div>
+            </form>
+
+            <div className="my-6 flex items-center gap-3">
+              <div className="h-px flex-1 bg-outline-variant/10" />
+              <span className="text-[9px] uppercase tracking-[0.2em] text-outline font-black">Acesso Rápido</span>
+              <div className="h-px flex-1 bg-outline-variant/10" />
+            </div>
+
+            <div className="grid grid-cols-1 gap-2">
+              {users.map((u) => (
+                <button
+                  key={u.id}
+                  type="button"
+                  onClick={() => handleQuickLogin(u.id)}
+                  className="group flex w-full items-center gap-3 rounded-xl border border-outline-variant/5 bg-surface-high/30 px-3 py-2 text-left transition-all hover:border-primary-container/30 hover:bg-surface-high/60 hover:translate-x-1"
+                >
+                  <Avatar name={u.name} size="xs" className="ring-2 ring-primary-container/10 group-hover:ring-primary-container/40" />
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate text-[10px] font-bold text-white group-hover:text-primary-container transition-colors uppercase tracking-tight">{u.name}</div>
+                    <div className="truncate text-[8px] text-outline font-black uppercase tracking-widest">{ROLE_LABEL[u.role]}</div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        </main>
+
+        <div className="flex-1" />
       </div>
-    </div>
+    </BackgroundGradientAnimation>
   );
 }
 
@@ -159,23 +159,34 @@ function Field({
   value,
   onChange,
   placeholder,
+  showForgot = false,
 }: {
   label: string;
   type: string;
   value: string;
   onChange: (v: string) => void;
   placeholder?: string;
+  showForgot?: boolean;
 }) {
   return (
-    <label className="block">
-      <span className="mb-1.5 block text-xs font-medium text-[#AAAAAA]">{label}</span>
+    <div className="group relative">
+      <div className="flex justify-between items-end mb-1">
+        <label className="block text-[10px] uppercase tracking-[0.2em] text-on-surface-variant font-bold group-focus-within:text-primary-container transition-colors">
+          {label}
+        </label>
+        {showForgot && (
+          <a className="text-[10px] uppercase tracking-wider text-outline hover:text-primary-container transition-colors font-bold" href="#">
+            Esqueceu?
+          </a>
+        )}
+      </div>
       <input
         type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full rounded-lg border border-[#2a2a2a] bg-[#111111] px-3.5 py-2.5 text-sm text-white placeholder:text-[#555555] outline-none transition-colors focus:border-[#CCFF00] focus:ring-1 focus:ring-[#CCFF00]"
+        className="w-full bg-transparent border-0 border-b border-outline-variant/30 py-3 px-0 text-on-surface placeholder:text-outline focus:ring-0 focus:border-primary-container transition-all text-base font-medium"
       />
-    </label>
+    </div>
   );
 }

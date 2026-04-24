@@ -105,14 +105,14 @@ export const STATUSES: StatusIndicacao[] = [
 ];
 
 export const STATUS_STYLES: Record<StatusIndicacao, { dot: string; bg: string; text: string; border: string }> = {
-  Indicado: { dot: "bg-yellow-400", bg: "bg-yellow-500/10", text: "text-yellow-300", border: "border-yellow-500/30" },
-  Qualificado: { dot: "bg-blue-400", bg: "bg-blue-500/10", text: "text-blue-300", border: "border-blue-500/30" },
-  Desqualificado: { dot: "bg-red-500", bg: "bg-red-500/10", text: "text-red-300", border: "border-red-500/30" },
-  "Reunião agendada": { dot: "bg-orange-400", bg: "bg-orange-500/10", text: "text-orange-300", border: "border-orange-500/30" },
-  "Reunião realizada": { dot: "bg-purple-400", bg: "bg-purple-500/10", text: "text-purple-300", border: "border-purple-500/30" },
-  "Proposta em análise": { dot: "bg-amber-700", bg: "bg-amber-900/20", text: "text-amber-300", border: "border-amber-700/40" },
-  "Contrato assinado": { dot: "bg-[#CCFF00]", bg: "bg-[#CCFF00]/10", text: "text-[#CCFF00]", border: "border-[#CCFF00]/40" },
-  "Venda perdida": { dot: "bg-zinc-500", bg: "bg-zinc-500/10", text: "text-zinc-300", border: "border-zinc-500/40" },
+  Indicado: { dot: "bg-amber-400", bg: "bg-amber-500/10", text: "text-amber-400", border: "border-amber-500/20" },
+  Qualificado: { dot: "bg-sky-400", bg: "bg-sky-500/10", text: "text-sky-400", border: "border-sky-500/20" },
+  Desqualificado: { dot: "bg-rose-500", bg: "bg-rose-500/10", text: "text-rose-400", border: "border-rose-500/20" },
+  "Reunião agendada": { dot: "bg-indigo-400", bg: "bg-indigo-500/10", text: "text-indigo-400", border: "border-indigo-500/20" },
+  "Reunião realizada": { dot: "bg-violet-400", bg: "bg-violet-500/10", text: "text-violet-400", border: "border-violet-500/20" },
+  "Proposta em análise": { dot: "bg-emerald-400", bg: "bg-emerald-500/10", text: "text-emerald-400", border: "border-emerald-500/20" },
+  "Contrato assinado": { dot: "bg-primary-container", bg: "bg-primary-container/10", text: "text-primary-container", border: "border-primary-container/20" },
+  "Venda perdida": { dot: "bg-zinc-500", bg: "bg-zinc-500/10", text: "text-zinc-400", border: "border-zinc-500/20" },
 };
 
 export const VALOR_RECOMPENSA = 200;

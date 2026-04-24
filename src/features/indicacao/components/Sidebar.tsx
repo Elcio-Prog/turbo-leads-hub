@@ -49,7 +49,7 @@ export function Sidebar({ collapsed, onToggle }: { collapsed?: boolean; onToggle
       <button
         type="button"
         onClick={() => setMobileOpen(true)}
-        className="fixed top-4 left-4 z-50 lg:hidden grid h-10 w-10 place-items-center rounded-lg bg-[#1a1a1a] border border-[#2a2a2a] text-white"
+        className="fixed top-4 left-4 z-50 lg:hidden grid h-10 w-10 place-items-center rounded-lg bg-surface-highest border border-outline-variant/20 text-white"
       >
         <Menu className="h-5 w-5" />
       </button>
@@ -57,20 +57,21 @@ export function Sidebar({ collapsed, onToggle }: { collapsed?: boolean; onToggle
       {/* Mobile overlay */}
       {mobileOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/60 lg:hidden"
+          className="fixed inset-0 z-40 bg-black/80 lg:hidden backdrop-blur-sm"
           onClick={() => setMobileOpen(false)}
         />
       )}
 
       <aside
         className={`
-          flex h-screen shrink-0 flex-col border-r border-[#2a2a2a] bg-[#111111] sticky top-0 transition-all duration-300
-          ${collapsed ? "w-16" : "w-64"}
-          max-lg:fixed max-lg:z-50 max-lg:w-64
+          flex h-screen shrink-0 flex-col bg-surface-low sticky top-0 transition-all duration-300 z-50
+          ${collapsed ? "w-20" : "w-72"}
+          max-lg:fixed max-lg:w-72
           ${mobileOpen ? "max-lg:translate-x-0" : "max-lg:-translate-x-full"}
+          font-body shadow-[1px_0_0_0_rgba(255,255,255,0.05)]
         `}
       >
-        <div className={`flex items-center border-b border-[#2a2a2a] ${collapsed ? "justify-center px-2 py-5" : "justify-between px-5 py-5"}`}>
+        <div className={`flex items-center ${collapsed ? "justify-center px-2 py-8" : "justify-between px-8 py-8"}`}>
           {!collapsed && <Logo />}
           <button
             type="button"
@@ -81,26 +82,23 @@ export function Sidebar({ collapsed, onToggle }: { collapsed?: boolean; onToggle
                 onToggle?.();
               }
             }}
-            className="grid h-8 w-8 place-items-center rounded-lg text-[#AAAAAA] hover:bg-[#1a1a1a] hover:text-white transition-colors"
+            className="grid h-10 w-10 place-items-center rounded-lg text-outline hover:bg-surface-high hover:text-white transition-all"
           >
-            {mobileOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+            {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
         </div>
 
-        <div className={`flex items-center gap-3 border-b border-[#2a2a2a] ${collapsed ? "justify-center px-2 py-4" : "px-5 py-4"}`}>
-          <Avatar name={user.name} />
+        <div className={`flex items-center gap-4 py-6 mb-4 ${collapsed ? "justify-center px-2" : "px-8"}`}>
+          <Avatar name={user.name} size={collapsed ? "sm" : "md"} className="ring-2 ring-primary-container/20" />
           {!collapsed && (
             <div className="min-w-0">
-              <div className="truncate text-sm font-semibold text-white">{user.name}</div>
-              <div className="truncate text-[11px] text-[#AAAAAA]">{user.setor}</div>
-              <div className="mt-0.5 inline-flex items-center rounded-full bg-[#CCFF00]/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[#CCFF00]">
-                {ROLE_LABEL[user.role]}
-              </div>
+              <div className="truncate text-sm font-bold text-white uppercase tracking-tight">{user.name}</div>
+              <div className="truncate text-[10px] font-black uppercase tracking-widest text-primary-container/70">{ROLE_LABEL[user.role]}</div>
             </div>
           )}
         </div>
 
-        <nav className="flex-1 px-3 py-4 space-y-1">
+        <nav className="flex-1 px-4 space-y-2">
           {NAV.map(({ to, label, Icon }) => {
             const active = location.pathname.startsWith(to);
             return (
@@ -108,40 +106,40 @@ export function Sidebar({ collapsed, onToggle }: { collapsed?: boolean; onToggle
                 key={to}
                 to={to}
                 title={collapsed ? label : undefined}
-                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+                className={`flex items-center gap-4 rounded-xl px-4 py-3 text-[11px] font-black uppercase tracking-[0.15em] transition-all duration-200 ${
                   collapsed ? "justify-center" : ""
                 } ${
                   active
-                    ? "bg-[#CCFF00] text-black"
-                    : "text-[#AAAAAA] hover:bg-[#1a1a1a] hover:text-white"
+                    ? "bg-primary-container text-on-primary-container shadow-[0_10px_20px_rgba(202,253,0,0.2)]"
+                    : "text-outline hover:bg-surface-high hover:text-white"
                 }`}
               >
-                <Icon className="h-4 w-4 shrink-0" />
-                {!collapsed && label}
+                <Icon className={`h-4 w-4 shrink-0 transition-transform ${active ? "scale-110" : ""}`} />
+                {!collapsed && <span className="font-display">{label}</span>}
               </Link>
             );
           })}
         </nav>
 
-        <div className="border-t border-[#2a2a2a] p-3 space-y-1">
+        <div className="p-4 space-y-2 mt-auto border-t border-outline-variant/5">
           <button
             type="button"
             title={collapsed ? "Configurações" : undefined}
-            className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-[#AAAAAA] hover:bg-[#1a1a1a] hover:text-white ${collapsed ? "justify-center" : ""}`}
+            className={`flex w-full items-center gap-4 rounded-xl px-4 py-3 text-[11px] font-black uppercase tracking-[0.15em] text-outline hover:bg-surface-high hover:text-white transition-all ${collapsed ? "justify-center" : ""}`}
           >
             <Settings className="h-4 w-4 shrink-0" />
-            {!collapsed && "Configurações"}
+            {!collapsed && <span className="font-display">Configurações</span>}
           </button>
           <button
             type="button"
             onClick={handleLogout}
             title={collapsed ? "Sair" : undefined}
-            className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-[#AAAAAA] hover:bg-[#1a1a1a] hover:text-white ${collapsed ? "justify-center" : ""}`}
+            className={`flex w-full items-center gap-4 rounded-xl px-4 py-3 text-[11px] font-black uppercase tracking-[0.15em] text-outline hover:bg-destructive/10 hover:text-destructive transition-all ${collapsed ? "justify-center" : ""}`}
           >
             <LogOut className="h-4 w-4 shrink-0" />
-            {!collapsed && "Sair"}
+            {!collapsed && <span className="font-display">Sair</span>}
           </button>
-          </div>
+        </div>
       </aside>
     </>
   );

@@ -45,7 +45,6 @@ export function NovaIndicacaoPage() {
   const cltBlocked = user.role === "usuario" && form.contrato === "CLT" && cltCount >= LIMITE_CLT_MES;
 
   const credito = creditoAtual(user.id);
-  // Meta trimestral: indicações criadas pelo usuário no trimestre atual
   const trimAtual = (() => {
     const now = new Date();
     const q = Math.floor(now.getMonth() / 3);
@@ -81,220 +80,281 @@ export function NovaIndicacaoPage() {
   };
 
   return (
-    <div className="grid gap-6 lg:grid-cols-3">
-      <form
-        onSubmit={handleSubmit}
-        className="lg:col-span-2 rounded-2xl border border-[#2a2a2a] bg-[#1a1a1a] p-6 lg:p-8"
-      >
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-2xl font-bold text-white">Nova Indicação</h2>
-            <p className="mt-1 text-sm text-[#AAAAAA]">
-              Cadastre um lead e acompanhe sua jornada até o contrato.
+    <div className="max-w-6xl mx-auto space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700 font-body">
+      {/* Header Editorial */}
+      <header className="relative py-10 border-b border-outline-variant/10">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+          <div className="space-y-2">
+            <h1 className="font-display text-5xl md:text-7xl font-bold tracking-tighter uppercase leading-none">
+              Nova <br />
+              <span className="italic font-light text-on-surface-variant">Indicação</span>
+            </h1>
+          </div>
+          <div className="max-w-xs text-right hidden md:block">
+            <p className="text-sm text-on-surface-variant font-medium leading-relaxed">
+              Expanda nossa rede conectando novos parceiros ao ecossistema Net Turbo. Precisão em cada detalhe.
             </p>
           </div>
-          <div className="hidden md:flex items-center gap-1 rounded-full border border-[#CCFF00]/30 bg-[#CCFF00]/10 px-3 py-1 text-[11px] font-semibold text-[#CCFF00]">
-            <Sparkles className="h-3 w-3" /> R$ {VALOR_RECOMPENSA} por contrato
-          </div>
         </div>
+      </header>
 
-        {cltBlocked && (
-          <div className="mt-6 rounded-xl border border-red-500/40 bg-red-500/10 p-4 text-sm text-red-300">
-            Você atingiu o limite de {LIMITE_CLT_MES} indicações para este mês.
-          </div>
-        )}
+      <div className="grid lg:grid-cols-[1fr_320px] gap-12 items-start">
+        {/* Main Form Section */}
+        <form onSubmit={handleSubmit} className="space-y-12">
+          {cltBlocked && (
+            <div className="rounded-lg bg-destructive/10 border border-destructive/20 p-4 text-sm text-destructive font-bold uppercase tracking-widest">
+              Limite mensal atingido ({LIMITE_CLT_MES} indicações).
+            </div>
+          )}
 
-        <div className="mt-6 grid gap-4 md:grid-cols-2">
-          <Input
-            label="Nome do Lead *"
-            value={form.leadNome}
-            onChange={(v) => setForm({ ...form, leadNome: v })}
-          />
-          <Input
-            label="Nome da Empresa *"
-            value={form.empresa}
-            onChange={(v) => setForm({ ...form, empresa: v })}
-          />
-          <Input
-            label="Telefone do Lead"
-            value={form.telefone}
-            onChange={(v) => setForm({ ...form, telefone: maskPhone(v) })}
-            placeholder="+55 (XX) XXXXX-XXXX"
-          />
-          <Input
-            label="Email do Lead *"
-            type="email"
-            value={form.emailLead}
-            onChange={(v) => setForm({ ...form, emailLead: v })}
-          />
-          <Select
-            label="Produto de Interesse"
-            value={form.produto}
-            onChange={(v) => setForm({ ...form, produto: v as Produto })}
-            options={PRODUTOS}
-          />
-          <Input
-            label="Seu Email Net Turbo"
-            type="email"
-            value={form.emailIndicador}
-            onChange={(v) => setForm({ ...form, emailIndicador: v })}
-          />
-          <Select
-            label="Seu Setor"
-            value={form.setor}
-            onChange={(v) => setForm({ ...form, setor: v as Setor })}
-            options={SETORES}
-          />
-          <Input
-            label="Sua Função"
-            value={form.funcao}
-            onChange={(v) => setForm({ ...form, funcao: v })}
-            placeholder="Opcional"
-          />
-          <Select
-            label="Tipo de Contrato"
-            value={form.contrato}
-            onChange={(v) => setForm({ ...form, contrato: v as Contrato })}
-            options={["CLT", "PJ"]}
-          />
-          <div className="md:col-span-2">
-            <label className="block">
-              <span className="mb-1.5 block text-xs font-medium text-[#AAAAAA]">
-                Observação
-              </span>
-              <textarea
-                value={form.observacao}
-                onChange={(e) => setForm({ ...form, observacao: e.target.value })}
-                rows={4}
-                className="w-full resize-none rounded-lg border border-[#2a2a2a] bg-[#111111] px-3.5 py-2.5 text-sm text-white placeholder:text-[#555555] outline-none transition-colors focus:border-[#CCFF00] focus:ring-1 focus:ring-[#CCFF00]"
-                placeholder="Conte um pouco sobre o lead, contexto, urgência..."
+          {/* Section 01: Identificação */}
+          <section className="space-y-8">
+            <div className="flex items-center gap-4">
+              <span className="font-display text-4xl font-bold text-outline-variant/30 italic">01</span>
+              <h2 className="font-display text-lg font-bold uppercase tracking-widest">Identificação do Lead</h2>
+              <div className="h-px flex-1 bg-outline-variant/10" />
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-x-10 gap-y-8">
+              <EditorialField
+                label="Nome do Lead *"
+                value={form.leadNome}
+                onChange={(v) => setForm({ ...form, leadNome: v })}
+                placeholder="Ex: Carlos Oliveira"
               />
-            </label>
-          </div>
-        </div>
-
-        <div className="mt-6 flex items-center justify-end gap-3">
-          <PrimaryButton type="submit" disabled={cltBlocked} className="px-6 py-3">
-            Enviar Indicação
-          </PrimaryButton>
-        </div>
-      </form>
-
-      {/* Painel lateral */}
-      <aside className="space-y-4">
-        <div className="rounded-2xl border border-[#2a2a2a] bg-gradient-to-br from-[#1a1a1a] to-[#141414] p-6">
-          <div className="text-xs uppercase tracking-widest text-[#AAAAAA]">
-            Crédito Atual
-          </div>
-          <div className="mt-2 text-4xl font-black text-[#CCFF00]">
-            R$ {credito.toLocaleString("pt-BR")}
-          </div>
-          <p className="mt-1 text-xs text-[#666666]">
-            Acumulado de contratos assinados.
-          </p>
-        </div>
-
-        <div className="rounded-2xl border border-[#2a2a2a] bg-[#1a1a1a] p-6">
-          <div className="flex items-center justify-between">
-            <div className="text-xs uppercase tracking-widest text-[#AAAAAA]">
-              Meta Trimestral
+              <EditorialField
+                label="Empresa *"
+                value={form.empresa}
+                onChange={(v) => setForm({ ...form, empresa: v })}
+                placeholder="Ex: Tech Solutions"
+              />
+              <EditorialField
+                label="Telefone"
+                value={form.telefone}
+                onChange={(v) => setForm({ ...form, telefone: maskPhone(v) })}
+                placeholder="+55 (XX) XXXXX-XXXX"
+              />
+              <EditorialField
+                label="Email *"
+                type="email"
+                value={form.emailLead}
+                onChange={(v) => setForm({ ...form, emailLead: v })}
+                placeholder="contato@empresa.com"
+              />
             </div>
-            <div className="text-xs font-semibold text-white">
-              {trimAtual}/{META_TRIMESTRAL}
+          </section>
+
+          {/* Section 02: Seus Dados */}
+          <section className="space-y-8">
+            <div className="flex items-center gap-4">
+              <span className="font-display text-4xl font-bold text-outline-variant/30 italic">02</span>
+              <h2 className="font-display text-lg font-bold uppercase tracking-widest">Dados do Indicador</h2>
+              <div className="h-px flex-1 bg-outline-variant/10" />
             </div>
-          </div>
-          <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-[#2a2a2a]">
-            <div
-              className="h-full rounded-full bg-[#CCFF00] transition-all"
-              style={{ width: `${progresso}%` }}
+
+            <div className="grid md:grid-cols-2 gap-x-10 gap-y-8">
+              <EditorialField
+                label="Seu Email"
+                value={form.emailIndicador}
+                onChange={(v) => setForm({ ...form, emailIndicador: v })}
+              />
+              <EditorialField
+                label="Sua Função"
+                value={form.funcao}
+                onChange={(v) => setForm({ ...form, funcao: v })}
+                placeholder="Cargo atual"
+              />
+              <EditorialSelect
+                label="Produto de Interesse"
+                value={form.produto}
+                onChange={(v) => setForm({ ...form, produto: v as Produto })}
+                options={PRODUTOS}
+              />
+              <EditorialSelect
+                label="Tipo de Contrato"
+                value={form.contrato}
+                onChange={(v) => setForm({ ...form, contrato: v as Contrato })}
+                options={["CLT", "PJ"]}
+              />
+            </div>
+          </section>
+
+          {/* Section 03: Notas */}
+          <section className="space-y-8">
+            <div className="flex items-center gap-4">
+              <span className="font-display text-4xl font-bold text-outline-variant/30 italic">03</span>
+              <h2 className="font-display text-lg font-bold uppercase tracking-widest">Notas Adicionais</h2>
+              <div className="h-px flex-1 bg-outline-variant/10" />
+            </div>
+
+            <EditorialTextarea
+              label="Observações e Contexto"
+              value={form.observacao}
+              onChange={(v) => setForm({ ...form, observacao: v })}
+              placeholder="Descreva detalhes que possam ajudar na abordagem comercial..."
             />
-          </div>
-          <p className="mt-2 text-xs text-[#AAAAAA]">
-            Próximo bônus ao atingir {META_TRIMESTRAL} indicações no trimestre.
-          </p>
-        </div>
+          </section>
 
-        <div className="rounded-2xl border border-[#2a2a2a] bg-[#1a1a1a] p-6">
-          <div className="text-sm font-bold text-white">Diretrizes do programa</div>
-          <ul className="mt-3 space-y-2 text-xs text-[#AAAAAA]">
-            {[
-              `R$ ${VALOR_RECOMPENSA} por contrato implantado e confirmado.`,
-              `Colaboradores CLT: até ${LIMITE_CLT_MES} indicações por mês.`,
-              "Lead deve ser novo (sem proposta ativa).",
-            ].map((t) => (
-              <li key={t} className="flex items-start gap-2">
-                <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#CCFF00]" />
-                <span>{t}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
+          <footer className="pt-8 border-t border-outline-variant/10 flex flex-col sm:flex-row items-center justify-between gap-6">
+            <div className="flex items-center gap-4 text-xs font-medium text-on-surface-variant">
+              <div className="h-2 w-2 rounded-full bg-primary-container animate-pulse" />
+              R$ {VALOR_RECOMPENSA} por contrato implantado
+            </div>
+            <div className="flex items-center gap-4 w-full sm:w-auto">
+              <PrimaryButton type="submit" disabled={cltBlocked} className="px-10 py-5 text-base tracking-[0.2em] uppercase">
+                Confirmar Registro
+              </PrimaryButton>
+            </div>
+          </footer>
+        </form>
 
-        {user.role === "usuario" && user.contrato === "CLT" && (
-          <div className="rounded-2xl border border-[#2a2a2a] bg-[#1a1a1a] p-4 text-xs text-[#AAAAAA]">
-            Indicações neste mês:{" "}
-            <span className="font-bold text-white">
-              {cltCount}/{LIMITE_CLT_MES}
-            </span>
+        {/* Sidebar Info - Tonal Depth Layer */}
+        <aside className="space-y-6 lg:sticky lg:top-24">
+          <div className="bg-surface-low rounded-xl p-8 space-y-8">
+            <div>
+              <h3 className="font-display text-xs font-bold uppercase tracking-[0.2em] text-primary-container mb-6">
+                Sua Performance
+              </h3>
+              <div className="space-y-6">
+                <div>
+                  <div className="flex justify-between items-end mb-2">
+                    <span className="text-[10px] uppercase font-bold text-outline">Meta Trimestral</span>
+                    <span className="text-xs font-bold text-white">{trimAtual}/{META_TRIMESTRAL}</span>
+                  </div>
+                  <div className="h-1.5 w-full bg-surface-highest rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-primary-container transition-all duration-1000 ease-out"
+                      style={{ width: `${progresso}%` }}
+                    />
+                  </div>
+                </div>
+                <div className="flex justify-between items-end border-b border-outline-variant/10 pb-4">
+                  <span className="text-[10px] uppercase font-bold text-outline">Crédito Atual</span>
+                  <span className="text-lg font-display font-bold text-primary-container">R$ {credito.toLocaleString("pt-BR")}</span>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <h3 className="font-display text-xs font-bold uppercase tracking-[0.2em] text-outline mb-4">
+                Diretrizes
+              </h3>
+              <ul className="space-y-3">
+                {[
+                  `Limite: ${LIMITE_CLT_MES}/mês (CLT)`,
+                  "Apenas novos CNPJs",
+                  "Crédito após implantação"
+                ].map((t, i) => (
+                  <li key={i} className="flex items-center gap-2 text-[11px] font-medium text-on-surface-variant">
+                    <CheckCircle2 className="h-3 w-3 text-primary-container" />
+                    {t}
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
-        )}
-      </aside>
+
+          <div className="bg-primary-container text-on-primary-container rounded-xl p-8 relative overflow-hidden group">
+             <div className="relative z-10 space-y-4">
+               <h4 className="font-display text-2xl font-bold italic leading-tight uppercase text-on-primary-container">Precisa de Ajuda?</h4>
+               <p className="text-xs font-medium leading-relaxed opacity-80">
+                 Dúvidas sobre o regulamento ou como preencher?
+               </p>
+               <button className="text-[10px] font-black uppercase tracking-widest border-b-2 border-on-primary-container/30 hover:border-on-primary-container transition-all">
+                 Ver Regulamento
+               </button>
+             </div>
+             <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full translate-x-16 -translate-y-16 group-hover:scale-110 transition-transform duration-700" />
+          </div>
+        </aside>
+      </div>
     </div>
   );
 }
 
-function Input({
+function EditorialField({
   label,
   value,
   onChange,
-  type = "text",
   placeholder,
+  type = "text",
 }: {
   label: string;
   value: string;
   onChange: (v: string) => void;
-  type?: string;
   placeholder?: string;
+  type?: string;
 }) {
   return (
-    <label className="block">
-      <span className="mb-1.5 block text-xs font-medium text-[#AAAAAA]">{label}</span>
+    <div className="group space-y-2">
+      <label className="block text-[10px] uppercase tracking-[0.2em] text-outline font-black group-focus-within:text-primary-container transition-colors">
+        {label}
+      </label>
       <input
         type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full rounded-lg border border-[#2a2a2a] bg-[#111111] px-3.5 py-2.5 text-sm text-white placeholder:text-[#555555] outline-none transition-colors focus:border-[#CCFF00] focus:ring-1 focus:ring-[#CCFF00]"
+        className="w-full bg-transparent border-0 border-b border-outline-variant/30 py-3 px-0 text-on-surface placeholder:text-outline-variant/50 focus:ring-0 focus:border-primary-container transition-all text-base font-medium"
       />
-    </label>
+    </div>
   );
 }
 
-function Select({
+function EditorialSelect({
   label,
   value,
-  onChange,
   options,
+  onChange,
 }: {
   label: string;
   value: string;
-  onChange: (v: string) => void;
   options: readonly string[];
+  onChange: (v: string) => void;
 }) {
   return (
-    <label className="block">
-      <span className="mb-1.5 block text-xs font-medium text-[#AAAAAA]">{label}</span>
+    <div className="group space-y-2">
+      <label className="block text-[10px] uppercase tracking-[0.2em] text-outline font-black group-focus-within:text-primary-container transition-colors">
+        {label}
+      </label>
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded-lg border border-[#2a2a2a] bg-[#111111] px-3.5 py-2.5 text-sm text-white outline-none transition-colors focus:border-[#CCFF00] focus:ring-1 focus:ring-[#CCFF00]"
+        className="w-full bg-transparent border-0 border-b border-outline-variant/30 py-3 px-0 text-on-surface focus:ring-0 focus:border-primary-container transition-all text-base font-medium appearance-none"
       >
         {options.map((o) => (
-          <option key={o} value={o}>
+          <option key={o} value={o} className="bg-surface-container text-on-surface">
             {o}
           </option>
         ))}
       </select>
-    </label>
+    </div>
+  );
+}
+
+function EditorialTextarea({
+  label,
+  value,
+  onChange,
+  placeholder,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+}) {
+  return (
+    <div className="group space-y-2">
+      <label className="block text-[10px] uppercase tracking-[0.2em] text-outline font-black group-focus-within:text-primary-container transition-colors">
+        {label}
+      </label>
+      <textarea
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        rows={4}
+        className="w-full bg-surface-low rounded-lg border border-outline-variant/10 p-5 text-on-surface placeholder:text-outline-variant/50 focus:ring-1 focus:ring-primary-container/30 focus:border-primary-container/50 transition-all text-base font-medium resize-none"
+      />
+    </div>
   );
 }
