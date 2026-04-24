@@ -146,8 +146,6 @@ export function LoginPage() {
             </div>
           </div>
         </main>
-
-        <div className="flex-1" />
       </div>
     </BackgroundGradientAnimation>
   );
