@@ -11,6 +11,7 @@ import type {
   Indicacao,
   StatusIndicacao,
   User,
+  Contato,
 } from "./types";
 import { LIMITE_CLT_MES, VALOR_RECOMPENSA } from "./types";
 
@@ -18,6 +19,7 @@ export const MOCK_USERS: User[] = [
   { id: 1, name: "Ana Lima", email: "ana.lima@netturbo.com.br", role: "admin", contrato: "CLT", setor: "TI" },
   { id: 2, name: "Bruno Costa", email: "bruno.costa@netturbo.com.br", role: "aprovador", contrato: "PJ", setor: "COMERCIAL" },
   { id: 3, name: "Carla Souza", email: "carla.souza@netturbo.com.br", role: "usuario", contrato: "CLT", setor: "FINANCEIRO" },
+  { id: 4, name: "Diego Ramos", email: "diego.ramos@netturbo.com.br", role: "usuario_ra", contrato: "CLT", setor: "COMERCIAL" },
 ];
 
 const now = () => new Date().toISOString();
@@ -167,6 +169,7 @@ const SEED_INDICACOES: Indicacao[] = [
 
 const STORAGE_AUTH = "ni:auth";
 const STORAGE_DATA = "ni:indicacoes";
+const STORAGE_CONTATOS = "ni:contatos";
 
 interface AppContextValue {
   user: User | null;
@@ -183,6 +186,13 @@ interface AppContextValue {
   deleteIndicacao: (id: string) => void;
   countCltThisMonth: (userId: number) => number;
   creditoAtual: (userId: number) => number;
+  contatos: Contato[];
+  visibleContatos: Contato[];
+  createContato: (
+    data: Omit<Contato, "id" | "criadoEm" | "modificadoEm" | "criadoPorId" | "criadoPorNome" | "modificadoPorNome">,
+  ) => { ok: boolean; error?: string };
+  updateContato: (id: string, patch: Partial<Contato>) => void;
+  deleteContato: (id: string) => void;
 }
 
 const AppContext = createContext<AppContextValue | null>(null);
@@ -210,6 +220,7 @@ function saveJSON(key: string, value: unknown) {
 export function AppProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [indicacoes, setIndicacoes] = useState<Indicacao[]>(SEED_INDICACOES);
+  const [contatos, setContatos] = useState<Contato[]>([]);
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
@@ -222,12 +233,20 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (savedData && Array.isArray(savedData) && savedData.length > 0) {
       setIndicacoes(savedData);
     }
+    const savedContatos = loadJSON<Contato[] | null>(STORAGE_CONTATOS, null);
+    if (savedContatos && Array.isArray(savedContatos)) {
+      setContatos(savedContatos);
+    }
     setHydrated(true);
   }, []);
 
   useEffect(() => {
     if (hydrated) saveJSON(STORAGE_DATA, indicacoes);
   }, [indicacoes, hydrated]);
+
+  useEffect(() => {
+    if (hydrated) saveJSON(STORAGE_CONTATOS, contatos);
+  }, [contatos, hydrated]);
 
   const login = useCallback((userId: number) => {
     const found = MOCK_USERS.find((u) => u.id === userId);
@@ -320,6 +339,49 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return indicacoes;
   }, [indicacoes, user]);
 
+  const createContato: AppContextValue["createContato"] = useCallback(
+    (data) => {
+      if (!user) return { ok: false, error: "Não autenticado" };
+      const stamp = now();
+      const novo: Contato = {
+        ...data,
+        id: `cont-${Date.now()}`,
+        criadoPorId: user.id,
+        criadoPorNome: user.name,
+        criadoEm: stamp,
+        modificadoEm: stamp,
+        modificadoPorNome: user.name,
+      };
+      setContatos((prev) => [novo, ...prev]);
+      return { ok: true };
+    },
+    [user],
+  );
+
+  const updateContato: AppContextValue["updateContato"] = useCallback(
+    (id, patch) => {
+      if (!user) return;
+      setContatos((prev) =>
+        prev.map((c) =>
+          c.id === id
+            ? { ...c, ...patch, modificadoEm: now(), modificadoPorNome: user.name }
+            : c,
+        ),
+      );
+    },
+    [user],
+  );
+
+  const deleteContato = useCallback((id: string) => {
+    setContatos((prev) => prev.filter((c) => c.id !== id));
+  }, []);
+
+  const visibleContatos = useMemo(() => {
+    if (!user) return [];
+    if (user.role === "usuario_ra") return contatos.filter((c) => c.criadoPorId === user.id);
+    return contatos;
+  }, [contatos, user]);
+
   const value: AppContextValue = {
     user,
     users: MOCK_USERS,
@@ -333,6 +395,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
     deleteIndicacao,
     countCltThisMonth,
     creditoAtual,
+    contatos,
+    visibleContatos,
+    createContato,
+    updateContato,
+    deleteContato,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

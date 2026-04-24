@@ -1,4 +1,4 @@
-export type Role = "admin" | "aprovador" | "usuario";
+export type Role = "admin" | "aprovador" | "usuario" | "usuario_ra";
 export type Contrato = "CLT" | "PJ";
 
 export type Setor =
@@ -118,3 +118,19 @@ export const STATUS_STYLES: Record<StatusIndicacao, { dot: string; bg: string; t
 export const VALOR_RECOMPENSA = 200;
 export const META_TRIMESTRAL = 10;
 export const LIMITE_CLT_MES = 2;
+
+export interface Contato {
+  id: string;
+  nome: string;
+  email: string;
+  cnpj: string;
+  razaoSocial: string;
+  nomeFantasia: string;
+  telefoneFixo: string;
+  celular: string;
+  criadoPorId: number;
+  criadoPorNome: string;
+  criadoEm: string;
+  modificadoEm: string;
+  modificadoPorNome: string;
+}
