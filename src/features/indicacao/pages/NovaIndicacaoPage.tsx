@@ -165,6 +165,12 @@ export function NovaIndicacaoPage() {
                 placeholder="Cargo atual"
               />
               <EditorialSelect
+                label="Seu Setor"
+                value={form.setor}
+                onChange={(v) => setForm({ ...form, setor: v as Setor })}
+                options={SETORES}
+              />
+              <EditorialSelect
                 label="Produto de Interesse"
                 value={form.produto}
                 onChange={(v) => setForm({ ...form, produto: v as Produto })}
