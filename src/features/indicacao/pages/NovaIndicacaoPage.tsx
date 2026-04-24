@@ -1,7 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { CheckCircle2, ChevronDown, Loader2 } from "lucide-react";
+import { CheckCircle2, Loader2 } from "lucide-react";
 import { useApp } from "../AppContext";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   PRODUTOS,
   SETORES,
@@ -380,23 +387,28 @@ function EditorialSelect({
       <label className="block text-[10px] uppercase tracking-[0.2em] text-outline font-black group-focus-within:text-primary-container transition-colors">
         {label}
       </label>
-      <div className="relative">
-        <select
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          className="w-full bg-transparent border-0 border-b border-outline-variant/30 py-2 pr-8 pl-0 text-on-surface outline-none focus:outline-none focus:ring-0 focus:border-primary-container transition-all text-sm font-medium appearance-none cursor-pointer hover:border-primary-container/50"
+      <Select value={value} onValueChange={onChange}>
+        <SelectTrigger
+          className="w-full bg-transparent border-0 border-b border-outline-variant/30 rounded-none px-0 py-2 h-auto text-sm font-medium text-on-surface shadow-none outline-none focus:outline-none focus:ring-0 focus:border-primary-container hover:border-primary-container/50 transition-colors data-[state=open]:border-primary-container [&>svg]:opacity-60 [&>svg]:text-outline group-focus-within:[&>svg]:text-primary-container"
+        >
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent
+          position="popper"
+          sideOffset={6}
+          className="border border-outline-variant/20 bg-surface-low backdrop-blur-xl text-on-surface rounded-xl shadow-2xl shadow-black/60 max-h-72 min-w-[--radix-select-trigger-width] p-1.5"
         >
           {options.map((o) => (
-            <option key={o} value={o} className="bg-surface-container text-on-surface">
+            <SelectItem
+              key={o}
+              value={o}
+              className="text-xs font-bold uppercase tracking-widest text-on-surface-variant rounded-md py-2 px-3 cursor-pointer focus:bg-primary-container/15 focus:text-primary-container data-[state=checked]:bg-primary-container/20 data-[state=checked]:text-primary-container transition-colors"
+            >
               {o}
-            </option>
+            </SelectItem>
           ))}
-        </select>
-        <ChevronDown
-          aria-hidden
-          className="pointer-events-none absolute right-1 top-1/2 -translate-y-1/2 h-4 w-4 text-outline group-focus-within:text-primary-container transition-colors"
-        />
-      </div>
+        </SelectContent>
+      </Select>
     </div>
   );
 }
