@@ -12,9 +12,12 @@ import type {
   StatusIndicacao,
   User,
   Contato,
+  Contrato,
+  Setor,
 } from "./types";
 import { LIMITE_CLT_MES, VALOR_RECOMPENSA } from "./types";
 import { authEmailForIdentifier } from "./authIdentifiers";
+import { supabase } from "@/integrations/supabase/client";
 
 export const MOCK_USERS: User[] = [
   { id: 1, name: "Ana Lima", email: "ana.lima@netturbo.com.br", role: "admin", contrato: "CLT", setor: "TI" },
@@ -269,6 +272,21 @@ const STORAGE_CONTATOS = "ni:contatos";
 interface RegisterUserInput {
   identifier: string;
   password: string;
+  authUserId?: string;
+  name?: string;
+  cpf?: string;
+  funcao?: string;
+  contrato?: Contrato;
+  setor?: Setor;
+}
+
+interface UpdateProfileInput {
+  name: string;
+  loginId: string;
+  cpf: string;
+  funcao: string;
+  setor: Setor;
+  contrato: Contrato;
 }
 
 interface AppContextValue {
@@ -276,6 +294,7 @@ interface AppContextValue {
   users: User[];
   login: (userId: number) => void;
   registerUser: (data: RegisterUserInput) => { ok: boolean; error?: string };
+  updateProfile: (data: UpdateProfileInput) => Promise<{ ok: boolean; error?: string }>;
   logout: () => void;
   indicacoes: Indicacao[];
   visibleIndicacoes: Indicacao[];
