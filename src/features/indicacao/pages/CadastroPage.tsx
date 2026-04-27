@@ -4,6 +4,8 @@ import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useApp } from "../AppContext";
 import { PrimaryButton } from "../components/PrimaryButton";
 import { BackgroundGradientAnimation } from "@/components/ui/background-gradient-animation";
+import { supabase } from "@/integrations/supabase/client";
+import { registerAuthUser } from "../authActions";
 
 export function CadastroPage() {
   const navigate = useNavigate();
@@ -11,14 +13,32 @@ export function CadastroPage() {
   const [identifier, setIdentifier] = useState("");
   const [senha, setSenha] = useState("");
   const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const result = registerUser({ identifier, password: senha });
-    if (!result.ok) {
-      setError(result.error || "Não foi possível concluir o cadastro.");
+    setError("");
+    setIsSubmitting(true);
+
+    const registered = await registerAuthUser({ data: { identifier, password: senha } });
+    if (!registered.ok || !registered.email) {
+      setError(registered.error || "Não foi possível concluir o cadastro.");
+      setIsSubmitting(false);
       return;
     }
+
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email: registered.email,
+      password: senha,
+    });
+
+    if (signInError) {
+      setError("Cadastro criado, mas não foi possível entrar automaticamente.");
+      setIsSubmitting(false);
+      return;
+    }
+
+    registerUser({ identifier, password: senha });
     navigate({ to: "/app/nova" });
   };
 
@@ -95,8 +115,8 @@ export function CadastroPage() {
 
               {error && <p className="text-xs font-bold text-destructive">{error}</p>}
 
-              <PrimaryButton type="submit" className="w-full py-5 text-[10px] tracking-[0.2em] uppercase shadow-[0_15px_30px_rgba(202,253,0,0.1)]">
-                CADASTRAR E ENTRAR
+              <PrimaryButton disabled={isSubmitting} type="submit" className="w-full py-5 text-[10px] tracking-[0.2em] uppercase shadow-[0_15px_30px_rgba(202,253,0,0.1)]">
+                {isSubmitting ? "CADASTRANDO..." : "CADASTRAR E ENTRAR"}
                 <ArrowRight className="h-3 w-3" />
               </PrimaryButton>
             </form>
