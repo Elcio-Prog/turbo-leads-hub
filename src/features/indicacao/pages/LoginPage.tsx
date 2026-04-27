@@ -16,7 +16,7 @@ const ROLE_LABEL: Record<string, string> = {
 };
 
 export function LoginPage() {
-  const { users, login } = useApp();
+  const { users, login, registerUser } = useApp();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
@@ -35,27 +35,23 @@ export function LoginPage() {
 
     const authEmail = authEmailForIdentifier(email);
 
-    if (authEmail) {
-      const { error: signInError } = await supabase.auth.signInWithPassword({
-        email: authEmail,
-        password: senha,
-      });
-      if (!signInError) {
-        const found = users.find((u) => u.email.toLowerCase() === authEmail.toLowerCase() || u.loginId?.toLowerCase() === email.toLowerCase().trim());
-        if (found) login(found.id);
-        navigate({ to: "/app/nova" });
-        return;
-      }
-    }
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email: authEmail,
+      password: senha,
+    });
 
-    const found = users.find((u) => u.email.toLowerCase() === email.toLowerCase().trim() || u.loginId?.toLowerCase() === email.toLowerCase().trim());
-    if (found) {
-      login(found.id);
+    if (!signInError) {
+      const found = users.find((u) => u.email.toLowerCase() === authEmail.toLowerCase() || u.loginId?.toLowerCase() === email.toLowerCase().trim());
+      if (!found) {
+        registerUser({ identifier: email, password: senha });
+      } else {
+        login(found.id);
+      }
       navigate({ to: "/app/nova" });
     } else {
       setError("Cadastro não encontrado ou senha inválida.");
+      setIsSubmitting(false);
     }
-    setIsSubmitting(false);
   };
 
   return (

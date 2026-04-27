@@ -23,10 +23,11 @@ export function CadastroPage() {
     const normalized = normalizeIdentifier(identifier);
     const authEmail = authEmailForIdentifier(identifier);
 
-    const { error: signUpError } = await supabase.auth.signUp({
+    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
       email: authEmail,
       password: senha,
       options: {
+        emailRedirectTo: typeof window !== "undefined" ? window.location.origin : undefined,
         data: {
           login_identifier: normalized.value,
           name: normalized.type === "email" ? normalized.value.split("@")[0] : `Usuário ${identifier.trim()}`,
@@ -44,13 +45,15 @@ export function CadastroPage() {
       return;
     }
 
-    const { error: signInError } = await supabase.auth.signInWithPassword({
-      email: authEmail,
-      password: senha,
-    });
+    const signInError = signUpData.session
+      ? null
+      : (await supabase.auth.signInWithPassword({
+          email: authEmail,
+          password: senha,
+        })).error;
 
     if (signInError) {
-      setError("Cadastro criado, mas não foi possível entrar automaticamente.");
+      setError("Cadastro criado. Se o login não entrar agora, confirme o acesso pelo e-mail e tente novamente.");
       setIsSubmitting(false);
       return;
     }

@@ -14,6 +14,7 @@ import type {
   Contato,
 } from "./types";
 import { LIMITE_CLT_MES, VALOR_RECOMPENSA } from "./types";
+import { authEmailForIdentifier } from "./authIdentifiers";
 
 export const MOCK_USERS: User[] = [
   { id: 1, name: "Ana Lima", email: "ana.lima@netturbo.com.br", role: "admin", contrato: "CLT", setor: "TI" },
@@ -375,7 +376,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const nextUser: User = {
       id: Date.now(),
       name: identifier.includes("@") ? identifier.split("@")[0] : `Usuário ${identifier}`,
-      email: identifier.includes("@") ? identifier : `${identifier.replace(/\D/g, "") || identifier}@cadastro.local`,
+      email: authEmailForIdentifier(identifier),
       loginId: identifier,
       role: "usuario",
       contrato: "CLT",
