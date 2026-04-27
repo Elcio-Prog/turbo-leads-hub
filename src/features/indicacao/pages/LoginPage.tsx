@@ -43,7 +43,8 @@ export function LoginPage() {
     if (!signInError) {
       const found = users.find((u) => u.email.toLowerCase() === authEmail.toLowerCase() || u.loginId?.toLowerCase() === email.toLowerCase().trim());
       if (!found) {
-        registerUser({ identifier: email, password: senha });
+        const { data: sessionData } = await supabase.auth.getSession();
+        registerUser({ identifier: email, password: senha, authUserId: sessionData.session?.user.id });
       } else {
         login(found.id);
       }
