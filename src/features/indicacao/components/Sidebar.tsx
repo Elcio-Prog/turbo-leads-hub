@@ -131,17 +131,28 @@ export function Sidebar({ collapsed, onToggle }: { collapsed?: boolean; onToggle
               </Link>
             );
           })}
+          {(() => {
+            const active = location.pathname.startsWith("/app/configuracoes");
+            return (
+              <Link
+                to="/app/configuracoes"
+                title={collapsed ? "Configurações" : undefined}
+                className={`flex items-center gap-4 rounded-xl px-4 py-3 text-[11px] font-black uppercase tracking-[0.15em] transition-all duration-200 ${
+                  collapsed ? "justify-center" : ""
+                } ${
+                  active
+                    ? "bg-primary-container text-on-primary-container shadow-[0_10px_20px_rgba(202,253,0,0.2)]"
+                    : "text-outline hover:bg-surface-high hover:text-white"
+                }`}
+              >
+                <Settings className={`h-4 w-4 shrink-0 transition-transform ${active ? "scale-110" : ""}`} />
+                {!collapsed && <span className="font-display">Configurações</span>}
+              </Link>
+            );
+          })()}
         </nav>
 
         <div className="p-4 space-y-2 mt-auto border-t border-outline-variant/5">
-          <button
-            type="button"
-            title={collapsed ? "Configurações" : undefined}
-            className={`flex w-full items-center gap-4 rounded-xl px-4 py-3 text-[11px] font-black uppercase tracking-[0.15em] text-outline hover:bg-surface-high hover:text-white transition-all ${collapsed ? "justify-center" : ""}`}
-          >
-            <Settings className="h-4 w-4 shrink-0" />
-            {!collapsed && <span className="font-display">Configurações</span>}
-          </button>
           <button
             type="button"
             onClick={handleLogout}
