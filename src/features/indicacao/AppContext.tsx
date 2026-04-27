@@ -436,7 +436,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       // 4. Hydrate Auth using Supabase Session as source of truth
       const { data: { session } } = await supabase.auth.getSession();
       
-      let currentUser = null;
+      let currentUser: User | null = null;
       if (session) {
         // Find in already loaded profiles
         currentUser = activeUsers.find(u => u.id === session.user.id) || null;
