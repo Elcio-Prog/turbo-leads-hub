@@ -40,6 +40,7 @@ export interface User {
   id: number;
   name: string;
   email: string;
+  loginId?: string;
   role: Role;
   contrato: Contrato;
   setor: Setor;
