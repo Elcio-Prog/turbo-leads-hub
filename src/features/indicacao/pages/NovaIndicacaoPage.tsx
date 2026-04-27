@@ -59,6 +59,17 @@ export function NovaIndicacaoPage() {
   const lastFetchedRef = useRef<string>("");
 
   useEffect(() => {
+    if (!user) return;
+    setForm((f) => ({
+      ...f,
+      emailIndicador: user.loginId || user.email,
+      setor: user.setor,
+      funcao: user.funcao || "",
+      contrato: user.contrato,
+    }));
+  }, [user]);
+
+  useEffect(() => {
     const digits = form.cnpj.replace(/\D/g, "");
     if (digits.length === 14 && lastFetchedRef.current !== digits) {
       lastFetchedRef.current = digits;

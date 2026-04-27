@@ -38,9 +38,12 @@ export type StatusIndicacao =
 
 export interface User {
   id: number;
+  authUserId?: string;
   name: string;
   email: string;
   loginId?: string;
+  cpf?: string;
+  funcao?: string;
   role: Role;
   contrato: Contrato;
   setor: Setor;

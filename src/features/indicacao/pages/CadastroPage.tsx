@@ -23,6 +23,9 @@ export function CadastroPage() {
     const normalized = normalizeIdentifier(identifier);
     const authEmail = authEmailForIdentifier(identifier);
 
+    const displayName = normalized.type === "email" ? normalized.value.split("@")[0] : `Usuário ${identifier.trim()}`;
+    const cpf = normalized.type === "cpf" ? normalized.digits : undefined;
+
     const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
       email: authEmail,
       password: senha,
@@ -30,9 +33,10 @@ export function CadastroPage() {
         emailRedirectTo: typeof window !== "undefined" ? window.location.origin : undefined,
         data: {
           login_identifier: normalized.value,
-          name: normalized.type === "email" ? normalized.value.split("@")[0] : `Usuário ${identifier.trim()}`,
+          name: displayName,
           ra: normalized.type === "ra" ? normalized.value : undefined,
-          cpf: normalized.type === "cpf" ? normalized.digits : undefined,
+          cpf,
+          funcao: "",
           contrato: "CLT",
           setor: "COMERCIAL",
         },
@@ -58,7 +62,16 @@ export function CadastroPage() {
       return;
     }
 
-    registerUser({ identifier, password: senha });
+    registerUser({
+      identifier,
+      password: senha,
+      authUserId: signUpData.user?.id,
+      name: displayName,
+      cpf,
+      funcao: "",
+      contrato: "CLT",
+      setor: "COMERCIAL",
+    });
     navigate({ to: "/app/nova" });
   };
 

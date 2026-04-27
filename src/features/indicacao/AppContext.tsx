@@ -12,9 +12,12 @@ import type {
   StatusIndicacao,
   User,
   Contato,
+  Contrato,
+  Setor,
 } from "./types";
 import { LIMITE_CLT_MES, VALOR_RECOMPENSA } from "./types";
 import { authEmailForIdentifier } from "./authIdentifiers";
+import { supabase } from "@/integrations/supabase/client";
 
 export const MOCK_USERS: User[] = [
   { id: 1, name: "Ana Lima", email: "ana.lima@netturbo.com.br", role: "admin", contrato: "CLT", setor: "TI" },
@@ -269,6 +272,21 @@ const STORAGE_CONTATOS = "ni:contatos";
 interface RegisterUserInput {
   identifier: string;
   password: string;
+  authUserId?: string;
+  name?: string;
+  cpf?: string;
+  funcao?: string;
+  contrato?: Contrato;
+  setor?: Setor;
+}
+
+interface UpdateProfileInput {
+  name: string;
+  loginId: string;
+  cpf: string;
+  funcao: string;
+  setor: Setor;
+  contrato: Contrato;
 }
 
 interface AppContextValue {
@@ -276,6 +294,7 @@ interface AppContextValue {
   users: User[];
   login: (userId: number) => void;
   registerUser: (data: RegisterUserInput) => { ok: boolean; error?: string };
+  updateProfile: (data: UpdateProfileInput) => Promise<{ ok: boolean; error?: string }>;
   logout: () => void;
   indicacoes: Indicacao[];
   visibleIndicacoes: Indicacao[];
@@ -375,12 +394,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
     const nextUser: User = {
       id: Date.now(),
-      name: identifier.includes("@") ? identifier.split("@")[0] : `Usuário ${identifier}`,
+      authUserId: data.authUserId,
+      name: data.name?.trim() || (identifier.includes("@") ? identifier.split("@")[0] : `Usuário ${identifier}`),
       email: authEmailForIdentifier(identifier),
       loginId: identifier,
+      cpf: data.cpf?.trim(),
+      funcao: data.funcao?.trim() || "",
       role: "usuario",
-      contrato: "CLT",
-      setor: "COMERCIAL",
+      contrato: data.contrato ?? "CLT",
+      setor: data.setor ?? "COMERCIAL",
     };
 
     setUsers((prev) => [nextUser, ...prev]);
@@ -388,6 +410,44 @@ export function AppProvider({ children }: { children: ReactNode }) {
     saveJSON(STORAGE_AUTH, nextUser.id);
     return { ok: true };
   }, [users]);
+
+  const updateProfile: AppContextValue["updateProfile"] = useCallback(async (data) => {
+    if (!user) return { ok: false, error: "Não autenticado" };
+    const name = data.name.trim();
+    const loginId = data.loginId.trim();
+    if (!name || !loginId) return { ok: false, error: "Nome completo e Email/RA são obrigatórios." };
+
+    const nextUser: User = {
+      ...user,
+      name,
+      loginId,
+      cpf: data.cpf.trim(),
+      funcao: data.funcao.trim(),
+      setor: data.setor,
+      contrato: data.contrato,
+    };
+
+    if (user.authUserId) {
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          name: nextUser.name,
+          login_identifier: loginId.toLowerCase(),
+          cpf: nextUser.cpf || null,
+          funcao: nextUser.funcao || "",
+          setor: nextUser.setor,
+          contrato: nextUser.contrato,
+        })
+        .eq("user_id", user.authUserId);
+
+      if (error) return { ok: false, error: "Não foi possível salvar no banco de dados." };
+    }
+
+    setUsers((prev) => prev.map((u) => (u.id === user.id ? nextUser : u)));
+    setUser(nextUser);
+    saveJSON(STORAGE_AUTH, nextUser.id);
+    return { ok: true };
+  }, [user]);
 
   const logout = useCallback(() => {
     setUser(null);
@@ -521,6 +581,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     users,
     login,
     registerUser,
+    updateProfile,
     logout,
     indicacoes,
     visibleIndicacoes,

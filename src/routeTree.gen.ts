@@ -16,6 +16,7 @@ import { Route as AppNovoContatoRouteImport } from './routes/app.novo-contato'
 import { Route as AppNovaRouteImport } from './routes/app.nova'
 import { Route as AppIndicacoesRouteImport } from './routes/app.indicacoes'
 import { Route as AppContatosRouteImport } from './routes/app.contatos'
+import { Route as AppConfiguracoesRouteImport } from './routes/app.configuracoes'
 import { Route as AppAnalyticsRouteImport } from './routes/app.analytics'
 
 const CadastroRoute = CadastroRouteImport.update({
@@ -53,6 +54,11 @@ const AppContatosRoute = AppContatosRouteImport.update({
   path: '/contatos',
   getParentRoute: () => AppRoute,
 } as any)
+const AppConfiguracoesRoute = AppConfiguracoesRouteImport.update({
+  id: '/configuracoes',
+  path: '/configuracoes',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppAnalyticsRoute = AppAnalyticsRouteImport.update({
   id: '/analytics',
   path: '/analytics',
@@ -64,6 +70,7 @@ export interface FileRoutesByFullPath {
   '/app': typeof AppRouteWithChildren
   '/cadastro': typeof CadastroRoute
   '/app/analytics': typeof AppAnalyticsRoute
+  '/app/configuracoes': typeof AppConfiguracoesRoute
   '/app/contatos': typeof AppContatosRoute
   '/app/indicacoes': typeof AppIndicacoesRoute
   '/app/nova': typeof AppNovaRoute
@@ -74,6 +81,7 @@ export interface FileRoutesByTo {
   '/app': typeof AppRouteWithChildren
   '/cadastro': typeof CadastroRoute
   '/app/analytics': typeof AppAnalyticsRoute
+  '/app/configuracoes': typeof AppConfiguracoesRoute
   '/app/contatos': typeof AppContatosRoute
   '/app/indicacoes': typeof AppIndicacoesRoute
   '/app/nova': typeof AppNovaRoute
@@ -85,6 +93,7 @@ export interface FileRoutesById {
   '/app': typeof AppRouteWithChildren
   '/cadastro': typeof CadastroRoute
   '/app/analytics': typeof AppAnalyticsRoute
+  '/app/configuracoes': typeof AppConfiguracoesRoute
   '/app/contatos': typeof AppContatosRoute
   '/app/indicacoes': typeof AppIndicacoesRoute
   '/app/nova': typeof AppNovaRoute
@@ -97,6 +106,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/cadastro'
     | '/app/analytics'
+    | '/app/configuracoes'
     | '/app/contatos'
     | '/app/indicacoes'
     | '/app/nova'
@@ -107,6 +117,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/cadastro'
     | '/app/analytics'
+    | '/app/configuracoes'
     | '/app/contatos'
     | '/app/indicacoes'
     | '/app/nova'
@@ -117,6 +128,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/cadastro'
     | '/app/analytics'
+    | '/app/configuracoes'
     | '/app/contatos'
     | '/app/indicacoes'
     | '/app/nova'
@@ -180,6 +192,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppContatosRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/configuracoes': {
+      id: '/app/configuracoes'
+      path: '/configuracoes'
+      fullPath: '/app/configuracoes'
+      preLoaderRoute: typeof AppConfiguracoesRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/analytics': {
       id: '/app/analytics'
       path: '/analytics'
@@ -192,6 +211,7 @@ declare module '@tanstack/react-router' {
 
 interface AppRouteChildren {
   AppAnalyticsRoute: typeof AppAnalyticsRoute
+  AppConfiguracoesRoute: typeof AppConfiguracoesRoute
   AppContatosRoute: typeof AppContatosRoute
   AppIndicacoesRoute: typeof AppIndicacoesRoute
   AppNovaRoute: typeof AppNovaRoute
@@ -200,6 +220,7 @@ interface AppRouteChildren {
 
 const AppRouteChildren: AppRouteChildren = {
   AppAnalyticsRoute: AppAnalyticsRoute,
+  AppConfiguracoesRoute: AppConfiguracoesRoute,
   AppContatosRoute: AppContatosRoute,
   AppIndicacoesRoute: AppIndicacoesRoute,
   AppNovaRoute: AppNovaRoute,
@@ -216,3 +237,12 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}
