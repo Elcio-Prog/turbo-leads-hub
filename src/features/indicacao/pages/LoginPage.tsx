@@ -5,6 +5,8 @@ import { useApp } from "../AppContext";
 import { PrimaryButton } from "../components/PrimaryButton";
 import { Avatar } from "../components/Avatar";
 import { BackgroundGradientAnimation } from "@/components/ui/background-gradient-animation";
+import { supabase } from "@/integrations/supabase/client";
+import { resolveLoginIdentifier } from "../authActions";
 
 const ROLE_LABEL: Record<string, string> = {
   admin: "Administrador",
@@ -18,21 +20,41 @@ export function LoginPage() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
+  const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleQuickLogin = (id: number) => {
     login(id);
     navigate({ to: "/app/nova" });
   };
 
-  const handleEmailLogin = (e: React.FormEvent) => {
+  const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    const found = users.find((u) => u.email.toLowerCase() === email.toLowerCase().trim());
+    setError("");
+    setIsSubmitting(true);
+
+    const resolved = await resolveLoginIdentifier({ data: { identifier: email } });
+    if (resolved.ok && resolved.email) {
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: resolved.email,
+        password: senha,
+      });
+      if (!signInError) {
+        const found = users.find((u) => u.email.toLowerCase() === resolved.email.toLowerCase() || u.loginId?.toLowerCase() === email.toLowerCase().trim());
+        if (found) login(found.id);
+        navigate({ to: "/app/nova" });
+        return;
+      }
+    }
+
+    const found = users.find((u) => u.email.toLowerCase() === email.toLowerCase().trim() || u.loginId?.toLowerCase() === email.toLowerCase().trim());
     if (found) {
       login(found.id);
       navigate({ to: "/app/nova" });
     } else {
-      alert("Usuário não encontrado. Use um dos acessos rápidos.");
+      setError("Cadastro não encontrado ou senha inválida.");
     }
+    setIsSubmitting(false);
   };
 
   return (
@@ -101,11 +123,14 @@ export function LoginPage() {
 
             <form onSubmit={handleEmailLogin} className="space-y-6">
               <Field
-                label="Seu E-mail"
-                type="email"
+                label="Seu E-mail, RA ou CPF"
+                type="text"
                 value={email}
-                onChange={(v) => setEmail(v)}
-                placeholder="nome@empresa.com.br"
+                onChange={(v) => {
+                  setEmail(v);
+                  setError("");
+                }}
+                placeholder="nome@empresa.com.br, RA ou CPF"
               />
               <Field
                 label="Sua Senha"
@@ -115,9 +140,11 @@ export function LoginPage() {
                 placeholder="••••••••"
                 showForgot
               />
+              {error && <p className="text-xs font-bold text-destructive">{error}</p>}
+
               <div className="pt-2">
-                <PrimaryButton type="submit" className="w-full py-5 text-[10px] tracking-[0.2em] uppercase shadow-[0_15px_30px_rgba(202,253,0,0.1)]">
-                  ENTRAR NO DASHBOARD
+                <PrimaryButton disabled={isSubmitting} type="submit" className="w-full py-5 text-[10px] tracking-[0.2em] uppercase shadow-[0_15px_30px_rgba(202,253,0,0.1)]">
+                  {isSubmitting ? "ENTRANDO..." : "ENTRAR NO DASHBOARD"}
                   <ArrowRight className="h-3 w-3" />
                 </PrimaryButton>
               </div>
