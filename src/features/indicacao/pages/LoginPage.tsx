@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { ArrowRight } from "lucide-react";
 import { useApp } from "../AppContext";
 import { PrimaryButton } from "../components/PrimaryButton";
@@ -122,6 +122,16 @@ export function LoginPage() {
                 </PrimaryButton>
               </div>
             </form>
+
+            <div className="mt-5 rounded-xl border border-outline-variant/10 bg-surface-high/20 p-4 text-center">
+              <p className="text-[10px] uppercase tracking-[0.18em] text-on-surface-variant font-black">Ainda não tem acesso?</p>
+              <Link
+                to="/cadastro"
+                className="mt-2 inline-flex text-[11px] font-bold uppercase tracking-[0.18em] text-primary-container transition-colors hover:text-on-surface"
+              >
+                Cadastrar nova conta
+              </Link>
+            </div>
 
             <div className="my-6 flex items-center gap-3">
               <div className="h-px flex-1 bg-outline-variant/10" />

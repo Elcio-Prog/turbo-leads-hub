@@ -261,13 +261,20 @@ const SEED_CONTATOS: Contato[] = [
 ];
 
 const STORAGE_AUTH = "ni:auth";
+const STORAGE_USERS = "ni:users";
 const STORAGE_DATA = "ni:indicacoes";
 const STORAGE_CONTATOS = "ni:contatos";
+
+interface RegisterUserInput {
+  identifier: string;
+  password: string;
+}
 
 interface AppContextValue {
   user: User | null;
   users: User[];
   login: (userId: number) => void;
+  registerUser: (data: RegisterUserInput) => { ok: boolean; error?: string };
   logout: () => void;
   indicacoes: Indicacao[];
   visibleIndicacoes: Indicacao[];
@@ -312,14 +319,18 @@ function saveJSON(key: string, value: unknown) {
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const [users, setUsers] = useState<User[]>(MOCK_USERS);
   const [indicacoes, setIndicacoes] = useState<Indicacao[]>(SEED_INDICACOES);
   const [contatos, setContatos] = useState<Contato[]>(SEED_CONTATOS);
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
+    const savedUsers = loadJSON<User[] | null>(STORAGE_USERS, null);
+    const activeUsers = savedUsers && Array.isArray(savedUsers) && savedUsers.length > 0 ? savedUsers : MOCK_USERS;
+    setUsers(activeUsers);
     const savedUserId = loadJSON<number | null>(STORAGE_AUTH, null);
     if (savedUserId) {
-      const found = MOCK_USERS.find((u) => u.id === savedUserId) || null;
+      const found = activeUsers.find((u) => u.id === savedUserId) || null;
       setUser(found);
     }
     const savedData = loadJSON<Indicacao[] | null>(STORAGE_DATA, null);
@@ -341,12 +352,41 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (hydrated) saveJSON(STORAGE_CONTATOS, contatos);
   }, [contatos, hydrated]);
 
+  useEffect(() => {
+    if (hydrated) saveJSON(STORAGE_USERS, users);
+  }, [users, hydrated]);
+
   const login = useCallback((userId: number) => {
-    const found = MOCK_USERS.find((u) => u.id === userId);
+    const found = users.find((u) => u.id === userId);
     if (!found) return;
     setUser(found);
     saveJSON(STORAGE_AUTH, userId);
-  }, []);
+  }, [users]);
+
+  const registerUser: AppContextValue["registerUser"] = useCallback((data) => {
+    const identifier = data.identifier.trim();
+    const normalized = identifier.toLowerCase();
+    if (!identifier) return { ok: false, error: "Informe e-mail, RA ou CPF." };
+    if (data.password.trim().length < 6) return { ok: false, error: "A senha deve ter pelo menos 6 caracteres." };
+    if (users.some((u) => u.email.toLowerCase() === normalized || u.loginId?.toLowerCase() === normalized)) {
+      return { ok: false, error: "Este cadastro já existe." };
+    }
+
+    const nextUser: User = {
+      id: Date.now(),
+      name: identifier.includes("@") ? identifier.split("@")[0] : `Usuário ${identifier}`,
+      email: identifier.includes("@") ? identifier : `${identifier.replace(/\D/g, "") || identifier}@cadastro.local`,
+      loginId: identifier,
+      role: "usuario",
+      contrato: "CLT",
+      setor: "COMERCIAL",
+    };
+
+    setUsers((prev) => [nextUser, ...prev]);
+    setUser(nextUser);
+    saveJSON(STORAGE_AUTH, nextUser.id);
+    return { ok: true };
+  }, [users]);
 
   const logout = useCallback(() => {
     setUser(null);
@@ -477,8 +517,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const value: AppContextValue = {
     user,
-    users: MOCK_USERS,
+    users,
     login,
+    registerUser,
     logout,
     indicacoes,
     visibleIndicacoes,
