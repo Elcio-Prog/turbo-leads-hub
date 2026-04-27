@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as CadastroRouteImport } from './routes/cadastro'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppNovoContatoRouteImport } from './routes/app.novo-contato'
@@ -17,6 +18,11 @@ import { Route as AppIndicacoesRouteImport } from './routes/app.indicacoes'
 import { Route as AppContatosRouteImport } from './routes/app.contatos'
 import { Route as AppAnalyticsRouteImport } from './routes/app.analytics'
 
+const CadastroRoute = CadastroRouteImport.update({
+  id: '/cadastro',
+  path: '/cadastro',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AppRoute = AppRouteImport.update({
   id: '/app',
   path: '/app',
@@ -56,6 +62,7 @@ const AppAnalyticsRoute = AppAnalyticsRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
+  '/cadastro': typeof CadastroRoute
   '/app/analytics': typeof AppAnalyticsRoute
   '/app/contatos': typeof AppContatosRoute
   '/app/indicacoes': typeof AppIndicacoesRoute
@@ -65,6 +72,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
+  '/cadastro': typeof CadastroRoute
   '/app/analytics': typeof AppAnalyticsRoute
   '/app/contatos': typeof AppContatosRoute
   '/app/indicacoes': typeof AppIndicacoesRoute
@@ -75,6 +83,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
+  '/cadastro': typeof CadastroRoute
   '/app/analytics': typeof AppAnalyticsRoute
   '/app/contatos': typeof AppContatosRoute
   '/app/indicacoes': typeof AppIndicacoesRoute
@@ -86,6 +95,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/app'
+    | '/cadastro'
     | '/app/analytics'
     | '/app/contatos'
     | '/app/indicacoes'
@@ -95,6 +105,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/app'
+    | '/cadastro'
     | '/app/analytics'
     | '/app/contatos'
     | '/app/indicacoes'
@@ -104,6 +115,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/app'
+    | '/cadastro'
     | '/app/analytics'
     | '/app/contatos'
     | '/app/indicacoes'
@@ -114,10 +126,18 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRoute: typeof AppRouteWithChildren
+  CadastroRoute: typeof CadastroRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/cadastro': {
+      id: '/cadastro'
+      path: '/cadastro'
+      fullPath: '/cadastro'
+      preLoaderRoute: typeof CadastroRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/app': {
       id: '/app'
       path: '/app'
@@ -191,6 +211,7 @@ const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRoute: AppRouteWithChildren,
+  CadastroRoute: CadastroRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
