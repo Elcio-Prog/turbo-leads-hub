@@ -135,6 +135,7 @@ export type Database = {
           id: string
           login_identifier: string | null
           name: string
+          onboarding_completed: boolean
           ra: string | null
           setor: Database["public"]["Enums"]["setor_tipo"]
           updated_at: string
@@ -149,6 +150,7 @@ export type Database = {
           id?: string
           login_identifier?: string | null
           name: string
+          onboarding_completed?: boolean
           ra?: string | null
           setor?: Database["public"]["Enums"]["setor_tipo"]
           updated_at?: string
@@ -163,6 +165,7 @@ export type Database = {
           id?: string
           login_identifier?: string | null
           name?: string
+          onboarding_completed?: boolean
           ra?: string | null
           setor?: Database["public"]["Enums"]["setor_tipo"]
           updated_at?: string
