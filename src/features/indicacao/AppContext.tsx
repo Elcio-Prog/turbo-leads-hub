@@ -363,6 +363,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
           role: (roles?.find(r => r.user_id === p.user_id)?.role as Role) || "usuario",
           contrato: p.contrato as Contrato,
           setor: p.setor as Setor,
+          onboardingCompleted: p.onboarding_completed ?? false,
         }));
       }
       setUsers(activeUsers);
@@ -422,25 +423,96 @@ export function AppProvider({ children }: { children: ReactNode }) {
         }
       }
 
-      // 4. Hydrate Auth
-      const savedUserId = loadJSON<string | null>(STORAGE_AUTH, null);
-      if (savedUserId) {
-        const found = activeUsers.find((u) => u.id === savedUserId) || null;
-        setUser(found);
-      } else {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session) {
-          const found = activeUsers.find(u => u.id === session.user.id);
-          if (found) {
-            setUser(found);
-            saveJSON(STORAGE_AUTH, found.id);
+      // 4. Hydrate Auth using Supabase Session as source of truth
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      let currentUser = null;
+      if (session) {
+        // Find in already loaded profiles
+        currentUser = activeUsers.find(u => u.id === session.user.id) || null;
+        
+        // If not found (maybe RLS issue or delay), try to fetch specifically
+        if (!currentUser) {
+          const { data: specificProfile } = await supabase
+            .from("profiles")
+            .select("*")
+            .eq("user_id", session.user.id)
+            .single();
+            
+          if (specificProfile) {
+            currentUser = {
+              id: specificProfile.user_id,
+              authUserId: specificProfile.user_id,
+              name: specificProfile.name,
+              email: specificProfile.email,
+              loginId: specificProfile.login_identifier || specificProfile.email,
+              cpf: specificProfile.cpf || undefined,
+              funcao: specificProfile.funcao || "",
+              role: "usuario", // Fallback role if we couldn't load it
+              contrato: specificProfile.contrato as Contrato,
+              setor: specificProfile.setor as Setor,
+              onboardingCompleted: specificProfile.onboarding_completed ?? false,
+            };
+            setUsers(prev => [...prev, currentUser!]);
           }
         }
+      } else {
+        // Fallback to localStorage if no session (offline mode or delayed token)
+        const savedUserId = loadJSON<string | null>(STORAGE_AUTH, null);
+        if (savedUserId) {
+          currentUser = activeUsers.find((u) => u.id === savedUserId) || null;
+        }
       }
+
+      if (currentUser) {
+        setUser(currentUser);
+        saveJSON(STORAGE_AUTH, currentUser.id);
+      } else {
+        setUser(null);
+        window.localStorage.removeItem(STORAGE_AUTH);
+      }
+      
       setHydrated(true);
     };
 
     init();
+
+    // Listen for auth changes (login/logout from other tabs or token expiration)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_OUT') {
+        setUser(null);
+        window.localStorage.removeItem(STORAGE_AUTH);
+      } else if (session && event === 'SIGNED_IN') {
+        // If they just signed in, we might need to reload their profile
+        const { data: p } = await supabase.from("profiles").select("*").eq("user_id", session.user.id).single();
+        if (p) {
+          const newUser: User = {
+            id: p.user_id,
+            authUserId: p.user_id,
+            name: p.name,
+            email: p.email,
+            loginId: p.login_identifier || p.email,
+            cpf: p.cpf || undefined,
+            funcao: p.funcao || "",
+            role: "usuario",
+            contrato: p.contrato as Contrato,
+            setor: p.setor as Setor,
+            onboardingCompleted: p.onboarding_completed ?? false,
+          };
+          setUser(newUser);
+          saveJSON(STORAGE_AUTH, newUser.id);
+          setUsers(prev => {
+            const exists = prev.find(u => u.id === newUser.id);
+            if (exists) return prev.map(u => u.id === newUser.id ? newUser : u);
+            return [...prev, newUser];
+          });
+        }
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   useEffect(() => {
@@ -490,45 +562,35 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return { ok: true };
   }, [users]);
 
-  const updateProfile: AppContextValue["updateProfile"] = useCallback(async (data) => {
-    if (!user) return { ok: false, error: "Não autenticado" };
-    const name = data.name.trim();
-    const loginId = data.loginId.trim();
-    if (!name || !loginId) return { ok: false, error: "Nome completo e Email/RA são obrigatórios." };
+  const updateProfile = useCallback(async (updates: Partial<User>) => {
+    if (!user) return { ok: false, error: "Usuário não autenticado." };
 
-    const { data: authData } = await supabase.auth.getUser();
-    const authUserId = user.authUserId || authData.user?.id;
-
-    const nextUser: User = {
-      ...user,
-      authUserId,
-      name,
-      loginId,
-      cpf: data.cpf.trim(),
-      funcao: data.funcao.trim(),
-      setor: data.setor,
-      contrato: data.contrato,
+    const updatedUser: User = { 
+      ...user, 
+      ...updates, 
+      onboardingCompleted: true 
     };
 
-    if (authUserId) {
+    if (supabase) {
       const payload = {
-        user_id: authUserId,
-        name: nextUser.name,
-        email: nextUser.email,
-        login_identifier: loginId.toLowerCase(),
-        cpf: nextUser.cpf || null,
-        funcao: nextUser.funcao || "",
-        setor: nextUser.setor,
-        contrato: nextUser.contrato,
+        user_id: user.id,
+        name: updatedUser.name,
+        email: updatedUser.email,
+        login_identifier: updatedUser.loginId || updatedUser.email,
+        cpf: updatedUser.cpf || null,
+        funcao: updatedUser.funcao || "",
+        setor: updatedUser.setor,
+        contrato: updatedUser.contrato,
+        onboarding_completed: true,
       };
       
       const { error } = await supabase.from("profiles").upsert(payload, { onConflict: 'user_id' });
-      if (error) return { ok: false, error: "Não foi possível salvar no banco de dados." };
+      if (error) return { ok: false, error: `Erro no banco de dados: ${error.message}` };
     }
 
-    setUsers((prev) => prev.map((u) => (u.id === user.id ? nextUser : u)));
-    setUser(nextUser);
-    saveJSON(STORAGE_AUTH, nextUser.id);
+    setUsers((prev) => prev.map((u) => (u.id === user.id ? updatedUser : u)));
+    setUser(updatedUser);
+    saveJSON(STORAGE_AUTH, updatedUser.id);
     return { ok: true };
   }, [user]);
 

@@ -2,6 +2,7 @@ import { createFileRoute, Outlet, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useApp } from "../features/indicacao/AppContext";
 import { Sidebar } from "../features/indicacao/components/Sidebar";
+import { OnboardingPage } from "../features/indicacao/pages/OnboardingPage";
 
 export const Route = createFileRoute("/app")({
   component: AppLayout,
@@ -17,6 +18,10 @@ function AppLayout() {
   }, [user, navigate]);
 
   if (!user) return null;
+
+  if (!user.onboardingCompleted) {
+    return <OnboardingPage />;
+  }
 
   return (
     <div className="flex min-h-screen w-full bg-[#0a0a0a]">

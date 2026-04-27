@@ -47,6 +47,7 @@ export interface User {
   role: Role;
   contrato: Contrato;
   setor: Setor;
+  onboardingCompleted?: boolean;
 }
 
 export interface Indicacao {
@@ -87,6 +88,8 @@ export const SETORES: Setor[] = [
   "PROJETOS",
   "TI",
 ];
+
+export const CONTRATOS: Contrato[] = ["CLT", "PJ"];
 
 export const PRODUTOS: Produto[] = [
   "Conectividade",
