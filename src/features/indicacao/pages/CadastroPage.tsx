@@ -5,7 +5,7 @@ import { useApp } from "../AppContext";
 import { PrimaryButton } from "../components/PrimaryButton";
 import { BackgroundGradientAnimation } from "@/components/ui/background-gradient-animation";
 import { supabase } from "@/integrations/supabase/client";
-import { registerAuthUser } from "../authActions";
+import { authEmailForIdentifier, normalizeIdentifier } from "../authIdentifiers";
 
 export function CadastroPage() {
   const navigate = useNavigate();
@@ -20,15 +20,32 @@ export function CadastroPage() {
     setError("");
     setIsSubmitting(true);
 
-    const registered = await registerAuthUser({ data: { identifier, password: senha } });
-    if (!registered.ok || !registered.email) {
-      setError(registered.error || "Não foi possível concluir o cadastro.");
+    const normalized = normalizeIdentifier(identifier);
+    const authEmail = authEmailForIdentifier(identifier);
+
+    const { error: signUpError } = await supabase.auth.signUp({
+      email: authEmail,
+      password: senha,
+      options: {
+        data: {
+          login_identifier: normalized.value,
+          name: normalized.type === "email" ? normalized.value.split("@")[0] : `Usuário ${identifier.trim()}`,
+          ra: normalized.type === "ra" ? normalized.value : undefined,
+          cpf: normalized.type === "cpf" ? normalized.digits : undefined,
+          contrato: "CLT",
+          setor: "COMERCIAL",
+        },
+      },
+    });
+
+    if (signUpError) {
+      setError(signUpError.message || "Não foi possível concluir o cadastro.");
       setIsSubmitting(false);
       return;
     }
 
     const { error: signInError } = await supabase.auth.signInWithPassword({
-      email: registered.email,
+      email: authEmail,
       password: senha,
     });
 
