@@ -432,7 +432,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         .from("profiles")
         .update({
           name: nextUser.name,
-          login_identifier: nextUser.loginId.toLowerCase(),
+          login_identifier: loginId.toLowerCase(),
           cpf: nextUser.cpf || null,
           funcao: nextUser.funcao || "",
           setor: nextUser.setor,
@@ -581,6 +581,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     users,
     login,
     registerUser,
+    updateProfile,
     logout,
     indicacoes,
     visibleIndicacoes,
