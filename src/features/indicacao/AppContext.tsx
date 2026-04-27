@@ -417,8 +417,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const loginId = data.loginId.trim();
     if (!name || !loginId) return { ok: false, error: "Nome completo e Email/RA são obrigatórios." };
 
+    const { data: authData } = await supabase.auth.getUser();
+    const authUserId = user.authUserId || authData.user?.id;
+
     const nextUser: User = {
       ...user,
+      authUserId,
       name,
       loginId,
       cpf: data.cpf.trim(),
@@ -427,18 +431,28 @@ export function AppProvider({ children }: { children: ReactNode }) {
       contrato: data.contrato,
     };
 
-    if (user.authUserId) {
-      const { error } = await supabase
+    if (authUserId) {
+      const payload = {
+        user_id: authUserId,
+        name: nextUser.name,
+        email: nextUser.email,
+        login_identifier: loginId.toLowerCase(),
+        cpf: nextUser.cpf || null,
+        funcao: nextUser.funcao || "",
+        setor: nextUser.setor,
+        contrato: nextUser.contrato,
+      };
+      const { data: existingProfile, error: selectError } = await supabase
         .from("profiles")
-        .update({
-          name: nextUser.name,
-          login_identifier: loginId.toLowerCase(),
-          cpf: nextUser.cpf || null,
-          funcao: nextUser.funcao || "",
-          setor: nextUser.setor,
-          contrato: nextUser.contrato,
-        })
-        .eq("user_id", user.authUserId);
+        .select("id")
+        .eq("user_id", authUserId)
+        .maybeSingle();
+
+      if (selectError) return { ok: false, error: "Não foi possível localizar seu perfil." };
+
+      const { error } = existingProfile
+        ? await supabase.from("profiles").update(payload).eq("id", existingProfile.id)
+        : await supabase.from("profiles").insert(payload);
 
       if (error) return { ok: false, error: "Não foi possível salvar no banco de dados." };
     }
