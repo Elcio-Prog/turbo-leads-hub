@@ -128,30 +128,39 @@ export type Database = {
       profiles: {
         Row: {
           contrato: Database["public"]["Enums"]["contrato_tipo"]
+          cpf: string | null
           created_at: string
           email: string
           id: string
+          login_identifier: string | null
           name: string
+          ra: string | null
           setor: Database["public"]["Enums"]["setor_tipo"]
           updated_at: string
           user_id: string
         }
         Insert: {
           contrato?: Database["public"]["Enums"]["contrato_tipo"]
+          cpf?: string | null
           created_at?: string
           email: string
           id?: string
+          login_identifier?: string | null
           name: string
+          ra?: string | null
           setor?: Database["public"]["Enums"]["setor_tipo"]
           updated_at?: string
           user_id: string
         }
         Update: {
           contrato?: Database["public"]["Enums"]["contrato_tipo"]
+          cpf?: string | null
           created_at?: string
           email?: string
           id?: string
+          login_identifier?: string | null
           name?: string
+          ra?: string | null
           setor?: Database["public"]["Enums"]["setor_tipo"]
           updated_at?: string
           user_id?: string
