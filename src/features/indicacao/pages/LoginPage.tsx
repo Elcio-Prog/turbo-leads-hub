@@ -6,7 +6,7 @@ import { PrimaryButton } from "../components/PrimaryButton";
 import { Avatar } from "../components/Avatar";
 import { BackgroundGradientAnimation } from "@/components/ui/background-gradient-animation";
 import { supabase } from "@/integrations/supabase/client";
-import { resolveLoginIdentifier } from "../authActions";
+import { authEmailForIdentifier } from "../authIdentifiers";
 
 const ROLE_LABEL: Record<string, string> = {
   admin: "Administrador",
@@ -33,14 +33,15 @@ export function LoginPage() {
     setError("");
     setIsSubmitting(true);
 
-    const resolved = await resolveLoginIdentifier({ data: { identifier: email } });
-    if (resolved.ok && resolved.email) {
+    const authEmail = authEmailForIdentifier(email);
+
+    if (authEmail) {
       const { error: signInError } = await supabase.auth.signInWithPassword({
-        email: resolved.email,
+        email: authEmail,
         password: senha,
       });
       if (!signInError) {
-        const found = users.find((u) => u.email.toLowerCase() === resolved.email.toLowerCase() || u.loginId?.toLowerCase() === email.toLowerCase().trim());
+        const found = users.find((u) => u.email.toLowerCase() === authEmail.toLowerCase() || u.loginId?.toLowerCase() === email.toLowerCase().trim());
         if (found) login(found.id);
         navigate({ to: "/app/nova" });
         return;
