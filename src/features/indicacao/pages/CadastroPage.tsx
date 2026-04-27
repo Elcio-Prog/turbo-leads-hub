@@ -62,7 +62,7 @@ export function CadastroPage() {
       return;
     }
 
-    registerUser({
+    await registerUser({
       identifier,
       password: senha,
       authUserId: signUpData.user?.id,

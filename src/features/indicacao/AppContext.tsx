@@ -20,10 +20,10 @@ import { authEmailForIdentifier } from "./authIdentifiers";
 import { supabase } from "@/integrations/supabase/client";
 
 export const MOCK_USERS: User[] = [
-  { id: 1, name: "Ana Lima", email: "ana.lima@netturbo.com.br", role: "admin", contrato: "CLT", setor: "TI" },
-  { id: 2, name: "Bruno Costa", email: "bruno.costa@netturbo.com.br", role: "aprovador", contrato: "PJ", setor: "COMERCIAL" },
-  { id: 3, name: "Carla Souza", email: "carla.souza@netturbo.com.br", role: "usuario", contrato: "CLT", setor: "FINANCEIRO" },
-  { id: 4, name: "Diego Ramos", email: "diego.ramos@netturbo.com.br", role: "usuario_ra", contrato: "CLT", setor: "COMERCIAL" },
+  { id: "1", name: "Ana Lima", email: "ana.lima@netturbo.com.br", role: "admin", contrato: "CLT", setor: "TI" },
+  { id: "2", name: "Bruno Costa", email: "bruno.costa@netturbo.com.br", role: "aprovador", contrato: "PJ", setor: "COMERCIAL" },
+  { id: "3", name: "Carla Souza", email: "carla.souza@netturbo.com.br", role: "usuario", contrato: "CLT", setor: "FINANCEIRO" },
+  { id: "4", name: "Diego Ramos", email: "diego.ramos@netturbo.com.br", role: "usuario_ra", contrato: "CLT", setor: "COMERCIAL" },
 ];
 
 const now = () => new Date().toISOString();
@@ -292,25 +292,25 @@ interface UpdateProfileInput {
 interface AppContextValue {
   user: User | null;
   users: User[];
-  login: (userId: number) => void;
-  registerUser: (data: RegisterUserInput) => { ok: boolean; error?: string };
+  login: (userId: string) => void;
+  registerUser: (data: RegisterUserInput) => Promise<{ ok: boolean; error?: string }>;
   updateProfile: (data: UpdateProfileInput) => Promise<{ ok: boolean; error?: string }>;
   logout: () => void;
   indicacoes: Indicacao[];
   visibleIndicacoes: Indicacao[];
   createIndicacao: (
     data: Omit<Indicacao, "id" | "status" | "criadoEm" | "modificadoEm" | "criadoPorId" | "criadoPorNome" | "modificadoPorNome">,
-  ) => { ok: boolean; error?: string };
+  ) => Promise<{ ok: boolean; error?: string }>;
   updateIndicacao: (id: string, patch: Partial<Indicacao>) => void;
   updateStatus: (id: string, status: StatusIndicacao) => void;
   deleteIndicacao: (id: string) => void;
-  countCltThisMonth: (userId: number) => number;
-  creditoAtual: (userId: number) => number;
+  countCltThisMonth: (userId: string) => number;
+  creditoAtual: (userId: string) => number;
   contatos: Contato[];
   visibleContatos: Contato[];
   createContato: (
     data: Omit<Contato, "id" | "criadoEm" | "modificadoEm" | "criadoPorId" | "criadoPorNome" | "modificadoPorNome">,
-  ) => { ok: boolean; error?: string };
+  ) => Promise<{ ok: boolean; error?: string }>;
   updateContato: (id: string, patch: Partial<Contato>) => void;
   deleteContato: (id: string) => void;
 }
@@ -345,23 +345,102 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
-    const savedUsers = loadJSON<User[] | null>(STORAGE_USERS, null);
-    const activeUsers = savedUsers && Array.isArray(savedUsers) && savedUsers.length > 0 ? savedUsers : MOCK_USERS;
-    setUsers(activeUsers);
-    const savedUserId = loadJSON<number | null>(STORAGE_AUTH, null);
-    if (savedUserId) {
-      const found = activeUsers.find((u) => u.id === savedUserId) || null;
-      setUser(found);
-    }
-    const savedData = loadJSON<Indicacao[] | null>(STORAGE_DATA, null);
-    if (savedData && Array.isArray(savedData) && savedData.length > 0) {
-      setIndicacoes(savedData);
-    }
-    const savedContatos = loadJSON<Contato[] | null>(STORAGE_CONTATOS, null);
-    if (savedContatos && Array.isArray(savedContatos) && savedContatos.length > 0) {
-      setContatos(savedContatos);
-    }
-    setHydrated(true);
+    const init = async () => {
+      // 1. Load users (profiles)
+      const { data: profiles } = await supabase.from("profiles").select("*");
+      const { data: roles } = await supabase.from("user_roles").select("*");
+      
+      let activeUsers = MOCK_USERS;
+      if (profiles && profiles.length > 0) {
+        activeUsers = profiles.map(p => ({
+          id: p.user_id,
+          authUserId: p.user_id,
+          name: p.name,
+          email: p.email,
+          loginId: p.login_identifier || p.email,
+          cpf: p.cpf || undefined,
+          funcao: p.funcao || "",
+          role: (roles?.find(r => r.user_id === p.user_id)?.role as Role) || "usuario",
+          contrato: p.contrato as Contrato,
+          setor: p.setor as Setor,
+        }));
+      }
+      setUsers(activeUsers);
+
+      // 2. Load indicacoes
+      const { data: dbIndicacoes } = await supabase.from("indicacoes").select("*");
+      if (dbIndicacoes && dbIndicacoes.length > 0) {
+        setIndicacoes(dbIndicacoes.map(i => ({
+          id: i.id,
+          status: i.status as StatusIndicacao,
+          leadNome: i.lead_nome,
+          empresa: i.empresa,
+          telefone: i.telefone,
+          emailLead: i.email_lead,
+          produto: i.produto as Produto,
+          emailIndicador: i.email_indicador,
+          setor: i.setor as Setor,
+          funcao: i.funcao,
+          contrato: i.contrato as Contrato,
+          observacao: i.observacao,
+          criadoPorId: i.criado_por_id,
+          criadoPorNome: i.criado_por_nome,
+          criadoEm: i.created_at,
+          modificadoEm: i.updated_at,
+          modificadoPorNome: i.modificado_por_nome,
+          recompensaPaga: i.recompensa_paga,
+        })));
+      } else {
+        const savedData = loadJSON<Indicacao[] | null>(STORAGE_DATA, null);
+        if (savedData && Array.isArray(savedData) && savedData.length > 0) {
+          setIndicacoes(savedData);
+        }
+      }
+
+      // 3. Load contatos
+      const { data: dbContatos } = await supabase.from("contatos").select("*");
+      if (dbContatos && dbContatos.length > 0) {
+        setContatos(dbContatos.map(c => ({
+          id: c.id,
+          nome: c.nome,
+          email: c.email,
+          cnpj: c.cnpj,
+          razaoSocial: c.razao_social,
+          nomeFantasia: c.nome_fantasia,
+          telefoneFixo: c.telefone_fixo,
+          celular: c.celular,
+          criadoPorId: c.criado_por_id,
+          criadoPorNome: c.criado_por_nome,
+          criadoEm: c.created_at,
+          modificadoEm: c.updated_at,
+          modificadoPorNome: c.modificado_por_nome,
+        })));
+      } else {
+        const savedContatos = loadJSON<Contato[] | null>(STORAGE_CONTATOS, null);
+        if (savedContatos && Array.isArray(savedContatos) && savedContatos.length > 0) {
+          setContatos(savedContatos);
+        }
+      }
+
+      // 4. Hydrate Auth
+      const savedUserId = loadJSON<string | null>(STORAGE_AUTH, null);
+      if (savedUserId) {
+        const found = activeUsers.find((u) => u.id === savedUserId) || null;
+        setUser(found);
+      } else {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          const found = activeUsers.find(u => u.id === session.user.id);
+          if (found) {
+            setUser(found);
+            saveJSON(STORAGE_AUTH, found.id);
+          }
+        }
+      }
+      setHydrated(true);
+    };
+
+    init();
   }, []);
 
   useEffect(() => {
@@ -376,14 +455,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (hydrated) saveJSON(STORAGE_USERS, users);
   }, [users, hydrated]);
 
-  const login = useCallback((userId: number) => {
+  const login = useCallback((userId: string) => {
     const found = users.find((u) => u.id === userId);
     if (!found) return;
     setUser(found);
     saveJSON(STORAGE_AUTH, userId);
   }, [users]);
 
-  const registerUser: AppContextValue["registerUser"] = useCallback((data) => {
+  const registerUser: AppContextValue["registerUser"] = useCallback(async (data) => {
     const identifier = data.identifier.trim();
     const normalized = identifier.toLowerCase();
     if (!identifier) return { ok: false, error: "Informe e-mail, RA ou CPF." };
@@ -393,7 +472,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
 
     const nextUser: User = {
-      id: Date.now(),
+      id: data.authUserId || `local-${Date.now()}`,
       authUserId: data.authUserId,
       name: data.name?.trim() || (identifier.includes("@") ? identifier.split("@")[0] : `Usuário ${identifier}`),
       email: authEmailForIdentifier(identifier),
@@ -442,18 +521,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setor: nextUser.setor,
         contrato: nextUser.contrato,
       };
-      const { data: existingProfile, error: selectError } = await supabase
-        .from("profiles")
-        .select("id")
-        .eq("user_id", authUserId)
-        .maybeSingle();
-
-      if (selectError) return { ok: false, error: "Não foi possível localizar seu perfil." };
-
-      const { error } = existingProfile
-        ? await supabase.from("profiles").update(payload).eq("id", existingProfile.id)
-        : await supabase.from("profiles").insert(payload);
-
+      
+      const { error } = await supabase.from("profiles").upsert(payload, { onConflict: 'user_id' });
       if (error) return { ok: false, error: "Não foi possível salvar no banco de dados." };
     }
 
@@ -465,11 +534,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const logout = useCallback(() => {
     setUser(null);
-    if (typeof window !== "undefined") window.localStorage.removeItem(STORAGE_AUTH);
+    if (typeof window !== "undefined") {
+      window.localStorage.removeItem(STORAGE_AUTH);
+      supabase.auth.signOut();
+    }
   }, []);
 
   const countCltThisMonth = useCallback(
-    (userId: number) => {
+    (userId: string) => {
       const now = new Date();
       const m = now.getMonth();
       const y = now.getFullYear();
@@ -483,14 +555,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
   );
 
   const creditoAtual = useCallback(
-    (userId: number) =>
+    (userId: string) =>
       indicacoes.filter((i) => i.criadoPorId === userId && i.status === "Contrato assinado").length *
       VALOR_RECOMPENSA,
     [indicacoes],
   );
 
   const createIndicacao: AppContextValue["createIndicacao"] = useCallback(
-    (data) => {
+    async (data) => {
       if (!user) return { ok: false, error: "Não autenticado" };
       if (user.contrato === "CLT" && user.role === "usuario") {
         const count = countCltThisMonth(user.id);
@@ -502,9 +574,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
         }
       }
       const stamp = now();
+      const novaId = crypto.randomUUID();
+      
       const nova: Indicacao = {
         ...data,
-        id: `ind-${Date.now()}`,
+        id: novaId,
         status: "Indicado",
         criadoPorId: user.id,
         criadoPorNome: user.name,
@@ -512,6 +586,29 @@ export function AppProvider({ children }: { children: ReactNode }) {
         modificadoEm: stamp,
         modificadoPorNome: user.name,
       };
+
+      if (user.authUserId) {
+        const { error } = await supabase.from("indicacoes").insert({
+          id: novaId,
+          lead_nome: data.leadNome,
+          empresa: data.empresa,
+          telefone: data.telefone,
+          email_lead: data.emailLead,
+          produto: data.produto,
+          email_indicador: data.emailIndicador,
+          setor: data.setor,
+          funcao: data.funcao,
+          contrato: data.contrato,
+          observacao: data.observacao,
+          criado_por_id: user.authUserId,
+          criado_por_nome: user.name,
+          modificado_por_nome: user.name,
+          status: "Indicado",
+        });
+
+        if (error) return { ok: false, error: "Erro ao salvar no banco de dados Supabase." };
+      }
+
       setIndicacoes((prev) => [nova, ...prev]);
       return { ok: true };
     },
@@ -519,8 +616,29 @@ export function AppProvider({ children }: { children: ReactNode }) {
   );
 
   const updateIndicacao: AppContextValue["updateIndicacao"] = useCallback(
-    (id, patch) => {
+    async (id, patch) => {
       if (!user) return;
+      
+      if (user.authUserId) {
+        const payload: any = {};
+        if (patch.status) payload.status = patch.status;
+        if (patch.leadNome) payload.lead_nome = patch.leadNome;
+        if (patch.empresa) payload.empresa = patch.empresa;
+        if (patch.telefone) payload.telefone = patch.telefone;
+        if (patch.emailLead) payload.email_lead = patch.emailLead;
+        if (patch.produto) payload.produto = patch.produto;
+        if (patch.observacao) payload.observacao = patch.observacao;
+        
+        payload.modificado_por_nome = user.name;
+        payload.updated_at = now();
+
+        const { error } = await supabase.from("indicacoes").update(payload).eq("id", id);
+        if (error) {
+          toast.error("Erro ao atualizar no banco de dados.");
+          return;
+        }
+      }
+
       setIndicacoes((prev) =>
         prev.map((i) =>
           i.id === id
@@ -537,7 +655,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
     [updateIndicacao],
   );
 
-  const deleteIndicacao = useCallback((id: string) => {
+  const deleteIndicacao = useCallback(async (id: string) => {
+    const { error } = await supabase.from("indicacoes").delete().eq("id", id);
+    if (error) {
+      toast.error("Erro ao excluir do banco de dados.");
+      return;
+    }
     setIndicacoes((prev) => prev.filter((i) => i.id !== id));
   }, []);
 
@@ -548,18 +671,39 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [indicacoes, user]);
 
   const createContato: AppContextValue["createContato"] = useCallback(
-    (data) => {
+    async (data) => {
       if (!user) return { ok: false, error: "Não autenticado" };
       const stamp = now();
+      const novoId = crypto.randomUUID();
+      
       const novo: Contato = {
         ...data,
-        id: `cont-${Date.now()}`,
+        id: novoId,
         criadoPorId: user.id,
         criadoPorNome: user.name,
         criadoEm: stamp,
         modificadoEm: stamp,
         modificadoPorNome: user.name,
       };
+
+      if (user.authUserId) {
+        const { error } = await supabase.from("contatos").insert({
+          id: novoId,
+          nome: data.nome,
+          email: data.email,
+          cnpj: data.cnpj,
+          razao_social: data.razaoSocial,
+          nome_fantasia: data.nomeFantasia,
+          telefone_fixo: data.telefoneFixo,
+          celular: data.celular,
+          criado_por_id: user.authUserId,
+          criado_por_nome: user.name,
+          modificado_por_nome: user.name,
+        });
+
+        if (error) return { ok: false, error: "Erro ao salvar contato no Supabase." };
+      }
+
       setContatos((prev) => [novo, ...prev]);
       return { ok: true };
     },
@@ -567,8 +711,29 @@ export function AppProvider({ children }: { children: ReactNode }) {
   );
 
   const updateContato: AppContextValue["updateContato"] = useCallback(
-    (id, patch) => {
+    async (id, patch) => {
       if (!user) return;
+      
+      if (user.authUserId) {
+        const payload: any = {};
+        if (patch.nome) payload.nome = patch.nome;
+        if (patch.email) payload.email = patch.email;
+        if (patch.cnpj) payload.cnpj = patch.cnpj;
+        if (patch.razaoSocial) payload.razao_social = patch.razaoSocial;
+        if (patch.nomeFantasia) payload.nome_fantasia = patch.nomeFantasia;
+        if (patch.telefoneFixo) payload.telefone_fixo = patch.telefoneFixo;
+        if (patch.celular) payload.celular = patch.celular;
+
+        payload.modificado_por_nome = user.name;
+        payload.updated_at = now();
+
+        const { error } = await supabase.from("contatos").update(payload).eq("id", id);
+        if (error) {
+          toast.error("Erro ao atualizar contato no banco de dados.");
+          return;
+        }
+      }
+
       setContatos((prev) =>
         prev.map((c) =>
           c.id === id
@@ -580,7 +745,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
     [user],
   );
 
-  const deleteContato = useCallback((id: string) => {
+  const deleteContato = useCallback(async (id: string) => {
+    const { error } = await supabase.from("contatos").delete().eq("id", id);
+    if (error) {
+      toast.error("Erro ao excluir contato do banco de dados.");
+      return;
+    }
     setContatos((prev) => prev.filter((c) => c.id !== id));
   }, []);
 

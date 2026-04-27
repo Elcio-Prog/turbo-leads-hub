@@ -82,13 +82,13 @@ export function NovoContatoPage() {
 
   if (!user) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.nome.trim() || !form.email.trim() || !form.cnpj.trim()) {
       toast.error("Preencha Nome, Email e CNPJ.");
       return;
     }
-    const result = createContato(form);
+    const result = await createContato(form);
     if (!result.ok) {
       toast.error(result.error || "Erro ao criar contato.");
       return;

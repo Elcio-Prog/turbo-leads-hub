@@ -116,13 +116,13 @@ export function NovaIndicacaoPage() {
   })();
   const progresso = Math.min(100, Math.round((trimAtual / META_TRIMESTRAL) * 100));
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.leadNome.trim() || !form.empresa.trim() || !form.emailLead.trim()) {
       toast.error("Preencha os campos obrigatórios.");
       return;
     }
-    const result = createIndicacao(form);
+    const result = await createIndicacao(form);
     if (!result.ok) {
       toast.error(result.error || "Erro ao criar indicação.");
       return;

@@ -37,7 +37,7 @@ export type StatusIndicacao =
   | "Venda perdida";
 
 export interface User {
-  id: number;
+  id: string;
   authUserId?: string;
   name: string;
   email: string;
@@ -62,7 +62,7 @@ export interface Indicacao {
   funcao: string;
   contrato: Contrato;
   observacao: string;
-  criadoPorId: number;
+  criadoPorId: string;
   criadoPorNome: string;
   criadoEm: string;
   modificadoEm: string;
@@ -132,7 +132,7 @@ export interface Contato {
   nomeFantasia: string;
   telefoneFixo: string;
   celular: string;
-  criadoPorId: number;
+  criadoPorId: string;
   criadoPorNome: string;
   criadoEm: string;
   modificadoEm: string;
