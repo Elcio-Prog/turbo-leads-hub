@@ -14,10 +14,13 @@ import type {
   Contato,
   Contrato,
   Setor,
+  Role,
+  Produto,
 } from "./types";
 import { LIMITE_CLT_MES, VALOR_RECOMPENSA } from "./types";
 import { authEmailForIdentifier } from "./authIdentifiers";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 export const MOCK_USERS: User[] = [
   { id: "1", name: "Ana Lima", email: "ana.lima@netturbo.com.br", role: "admin", contrato: "CLT", setor: "TI" },
@@ -47,7 +50,7 @@ const SEED_INDICACOES: Indicacao[] = [
     funcao: "Analista Financeiro",
     contrato: "CLT",
     observacao: "Cliente já era contato antigo.",
-    criadoPorId: 3,
+    criadoPorId: "3",
     criadoPorNome: "Carla Souza",
     criadoEm: daysAgo(40),
     modificadoEm: daysAgo(5),
@@ -67,7 +70,7 @@ const SEED_INDICACOES: Indicacao[] = [
     funcao: "Analista Financeiro",
     contrato: "CLT",
     observacao: "Pediu retorno em 7 dias.",
-    criadoPorId: 3,
+    criadoPorId: "3",
     criadoPorNome: "Carla Souza",
     criadoEm: daysAgo(12),
     modificadoEm: daysAgo(3),
@@ -86,7 +89,7 @@ const SEED_INDICACOES: Indicacao[] = [
     funcao: "Gerente de TI",
     contrato: "CLT",
     observacao: "Reunião remota dia 22.",
-    criadoPorId: 1,
+    criadoPorId: "1",
     criadoPorNome: "Ana Lima",
     criadoEm: daysAgo(8),
     modificadoEm: daysAgo(2),
@@ -105,7 +108,7 @@ const SEED_INDICACOES: Indicacao[] = [
     funcao: "Gerente de TI",
     contrato: "CLT",
     observacao: "Enviada proposta inicial.",
-    criadoPorId: 1,
+    criadoPorId: "1",
     criadoPorNome: "Ana Lima",
     criadoEm: daysAgo(20),
     modificadoEm: daysAgo(1),
@@ -124,7 +127,7 @@ const SEED_INDICACOES: Indicacao[] = [
     funcao: "Analista Financeiro",
     contrato: "CLT",
     observacao: "Optou por concorrente.",
-    criadoPorId: 3,
+    criadoPorId: "3",
     criadoPorNome: "Carla Souza",
     criadoEm: daysAgo(60),
     modificadoEm: daysAgo(30),
@@ -143,7 +146,7 @@ const SEED_INDICACOES: Indicacao[] = [
     funcao: "Gerente de TI",
     contrato: "CLT",
     observacao: "",
-    criadoPorId: 1,
+    criadoPorId: "1",
     criadoPorNome: "Ana Lima",
     criadoEm: daysAgo(2),
     modificadoEm: daysAgo(2),
@@ -162,7 +165,7 @@ const SEED_INDICACOES: Indicacao[] = [
     funcao: "Gerente de TI",
     contrato: "CLT",
     observacao: "Contrato fechado em 12 meses.",
-    criadoPorId: 1,
+    criadoPorId: "1",
     criadoPorNome: "Ana Lima",
     criadoEm: daysAgo(75),
     modificadoEm: daysAgo(20),
@@ -170,6 +173,13 @@ const SEED_INDICACOES: Indicacao[] = [
     recompensaPaga: true,
   },
 ];
+
+const MOCK_USER_IDS = {
+  ana: MOCK_USERS[0].id,
+  bruno: MOCK_USERS[1].id,
+  carla: MOCK_USERS[2].id,
+  diego: MOCK_USERS[3].id,
+} as const;
 
 const SEED_CONTATOS: Contato[] = [
   {
@@ -181,7 +191,7 @@ const SEED_CONTATOS: Contato[] = [
     nomeFantasia: "Alfa Logística",
     telefoneFixo: "+55 (11) 3344-5566",
     celular: "+55 (11) 99887-7766",
-    criadoPorId: 4,
+    criadoPorId: "4",
     criadoPorNome: "Diego Ramos",
     criadoEm: daysAgo(15),
     modificadoEm: daysAgo(4),
@@ -196,7 +206,7 @@ const SEED_CONTATOS: Contato[] = [
     nomeFantasia: "Verde Campo",
     telefoneFixo: "+55 (62) 3211-4400",
     celular: "+55 (62) 98123-4567",
-    criadoPorId: 4,
+    criadoPorId: "4",
     criadoPorNome: "Diego Ramos",
     criadoEm: daysAgo(10),
     modificadoEm: daysAgo(2),
@@ -211,7 +221,7 @@ const SEED_CONTATOS: Contato[] = [
     nomeFantasia: "Pacheco & Associados",
     telefoneFixo: "+55 (21) 2233-9988",
     celular: "+55 (21) 99765-4321",
-    criadoPorId: 4,
+    criadoPorId: "4",
     criadoPorNome: "Diego Ramos",
     criadoEm: daysAgo(7),
     modificadoEm: daysAgo(7),
@@ -226,7 +236,7 @@ const SEED_CONTATOS: Contato[] = [
     nomeFantasia: "Saúde Plena",
     telefoneFixo: "+55 (41) 3055-2200",
     celular: "+55 (41) 98444-1122",
-    criadoPorId: 4,
+    criadoPorId: "4",
     criadoPorNome: "Diego Ramos",
     criadoEm: daysAgo(5),
     modificadoEm: daysAgo(1),
@@ -241,7 +251,7 @@ const SEED_CONTATOS: Contato[] = [
     nomeFantasia: "MetalSul",
     telefoneFixo: "+55 (51) 3666-7788",
     celular: "+55 (51) 99222-3344",
-    criadoPorId: 4,
+    criadoPorId: "4",
     criadoPorNome: "Diego Ramos",
     criadoEm: daysAgo(3),
     modificadoEm: daysAgo(3),
@@ -256,7 +266,7 @@ const SEED_CONTATOS: Contato[] = [
     nomeFantasia: "Boutique Encanto",
     telefoneFixo: "+55 (11) 4002-8922",
     celular: "+55 (11) 97654-3210",
-    criadoPorId: 4,
+    criadoPorId: "4",
     criadoPorNome: "Diego Ramos",
     criadoEm: daysAgo(1),
     modificadoEm: daysAgo(1),
@@ -426,7 +436,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       // 4. Hydrate Auth using Supabase Session as source of truth
       const { data: { session } } = await supabase.auth.getSession();
       
-      let currentUser = null;
+      let currentUser: User | null = null;
       if (session) {
         // Find in already loaded profiles
         currentUser = activeUsers.find(u => u.id === session.user.id) || null;

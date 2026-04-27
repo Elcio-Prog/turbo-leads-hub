@@ -23,7 +23,7 @@ export function LoginPage() {
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleQuickLogin = (id: number) => {
+  const handleQuickLogin = (id: string) => {
     login(id);
     navigate({ to: "/app/nova" });
   };
