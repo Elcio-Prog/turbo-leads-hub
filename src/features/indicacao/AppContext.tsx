@@ -14,10 +14,13 @@ import type {
   Contato,
   Contrato,
   Setor,
+  Role,
+  Produto,
 } from "./types";
 import { LIMITE_CLT_MES, VALOR_RECOMPENSA } from "./types";
 import { authEmailForIdentifier } from "./authIdentifiers";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 export const MOCK_USERS: User[] = [
   { id: "1", name: "Ana Lima", email: "ana.lima@netturbo.com.br", role: "admin", contrato: "CLT", setor: "TI" },
@@ -170,6 +173,13 @@ const SEED_INDICACOES: Indicacao[] = [
     recompensaPaga: true,
   },
 ];
+
+const MOCK_USER_IDS = {
+  ana: MOCK_USERS[0].id,
+  bruno: MOCK_USERS[1].id,
+  carla: MOCK_USERS[2].id,
+  diego: MOCK_USERS[3].id,
+} as const;
 
 const SEED_CONTATOS: Contato[] = [
   {
