@@ -51,6 +51,7 @@ export function Sidebar({ collapsed, onToggle }: { collapsed?: boolean; onToggle
       : user.role === "admin"
         ? ([
             { to: "/app/nova", label: "Nova Indicação", Icon: PlusCircle },
+            { to: "/app/novo-contato", label: "Novo Contato Quente", Icon: UserPlus },
             { to: "/app/indicacoes", label: "Registros", Icon: ListChecks },
             { to: "/app/analytics", label: "Analytics", Icon: BarChart3 },
           ] as const)
