@@ -577,6 +577,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const value: AppContextValue = {
     user,
+    authLoading,
     users,
     login,
     registerUser,
