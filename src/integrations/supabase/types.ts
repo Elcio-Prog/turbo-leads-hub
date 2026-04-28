@@ -26,6 +26,7 @@ export type Database = {
           modificado_por_nome: string
           nome: string
           nome_fantasia: string
+          observacao: string
           razao_social: string
           telefone_fixo: string
           updated_at: string
@@ -41,6 +42,7 @@ export type Database = {
           modificado_por_nome: string
           nome: string
           nome_fantasia?: string
+          observacao?: string
           razao_social?: string
           telefone_fixo?: string
           updated_at?: string
@@ -56,6 +58,7 @@ export type Database = {
           modificado_por_nome?: string
           nome?: string
           nome_fantasia?: string
+          observacao?: string
           razao_social?: string
           telefone_fixo?: string
           updated_at?: string
