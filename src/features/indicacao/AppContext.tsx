@@ -209,6 +209,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
             if (exists) return prev.map((u) => (u.id === newUser.id ? newUser : u));
             return [...prev, newUser];
           });
+
+          const isBroadAccess = newUser.role === "admin" || newUser.role === "aprovador";
+          const indicacoesQuery = supabase.from("indicacoes").select("*").order("created_at", { ascending: false });
+          const contatosQuery = supabase.from("contatos").select("*").order("created_at", { ascending: false });
+          const [indicacoesResult, contatosResult] = await Promise.all([
+            isBroadAccess ? indicacoesQuery : indicacoesQuery.eq("criado_por_id", newUser.authUserId || newUser.id),
+            newUser.role === "usuario_ra" ? contatosQuery.eq("criado_por_id", newUser.authUserId || newUser.id) : contatosQuery,
+          ]);
+          setIndicacoes(indicacoesResult.data?.map(mapIndicacao) ?? []);
+          setContatos(contatosResult.data?.map(mapContato) ?? []);
         }
         setAuthLoading(false);
       }
