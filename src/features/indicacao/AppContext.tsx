@@ -171,9 +171,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       ]);
 
       const role = (roleResult.data?.role as Role) || "usuario";
-      const currentUser = profileResult.data
-        ? mapProfileToUser(profileResult.data, role)
-        : null;
+      const currentUser = profileResult.data ? mapProfileToUser(profileResult.data, role) : null;
 
       setUser(currentUser);
       setUsers(currentUser ? [currentUser] : []);
@@ -494,7 +492,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
           status: "Indicado",
         });
 
-        if (error) return { ok: false, error: `Erro ao salvar no banco de dados: ${error.message}` };
+        if (error)
+          return { ok: false, error: `Erro ao salvar no banco de dados: ${error.message}` };
       }
 
       setIndicacoes((prev) => [nova, ...prev]);
