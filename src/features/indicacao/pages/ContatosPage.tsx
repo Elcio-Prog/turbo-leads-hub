@@ -22,7 +22,7 @@ export function ContatosPage() {
     const q = fSearch.trim().toLowerCase();
     if (!q) return visibleContatos;
     return visibleContatos.filter((c) =>
-      [c.nome, c.email, c.cnpj, c.razaoSocial, c.nomeFantasia].some((v) =>
+      [c.nome, c.email, c.cnpj, c.razaoSocial, c.nomeFantasia, c.observacao].some((v) =>
         v.toLowerCase().includes(q),
       ),
     );
@@ -57,6 +57,7 @@ export function ContatosPage() {
         "Nome Fantasia",
         "Telefone Fixo",
         "Celular",
+        "Observações",
         "Criado por",
         "Criado em",
       ].join(","),
@@ -69,6 +70,7 @@ export function ContatosPage() {
           c.nomeFantasia,
           c.telefoneFixo,
           c.celular,
+          c.observacao,
           c.criadoPorNome,
           new Date(c.criadoEm).toLocaleDateString("pt-BR"),
         ]
@@ -202,6 +204,11 @@ export function ContatosPage() {
                         <div className="text-[10px] font-medium text-outline-variant">
                           {c.email}
                         </div>
+                        {c.observacao && (
+                          <div className="max-w-sm text-[10px] font-medium text-on-surface-variant line-clamp-2">
+                            {c.observacao}
+                          </div>
+                        )}
                       </div>
                     </td>
                     <td className="px-6 py-6 hidden md:table-cell">
@@ -318,6 +325,7 @@ function EditContatoModal({
     nomeFantasia: contato.nomeFantasia,
     telefoneFixo: contato.telefoneFixo,
     celular: contato.celular,
+    observacao: contato.observacao,
   });
   return (
     <div className="fixed inset-0 z-50 grid place-items-center bg-black/70 p-4" onClick={onClose}>
@@ -370,6 +378,11 @@ function EditContatoModal({
             label="Nome Fantasia"
             value={form.nomeFantasia}
             onChange={(v) => setForm({ ...form, nomeFantasia: v })}
+          />
+          <ModalTextarea
+            label="Observações"
+            value={form.observacao}
+            onChange={(v) => setForm({ ...form, observacao: v.slice(0, 1000) })}
           />
         </div>
         <div className="mt-6 flex justify-end gap-2">
