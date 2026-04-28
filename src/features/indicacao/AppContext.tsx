@@ -182,6 +182,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       if (!currentUser) return;
 
       const isBroadAccess = currentUser.role === "admin" || currentUser.role === "aprovador";
+      const canAccessContatos = isBroadAccess || currentUser.role === "usuario_ra";
       const ownerId = currentUser.authUserId || currentUser.id;
       const indicacoesQuery = supabase
         .from("indicacoes")
@@ -196,7 +197,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
       const [indicacoesResult, contatosResult] = await Promise.all([
         isBroadAccess ? indicacoesQuery : indicacoesQuery.eq("criado_por_id", ownerId),
-        isBroadAccess ? contatosQuery : contatosQuery.eq("criado_por_id", ownerId),
+        canAccessContatos
+          ? isBroadAccess
+            ? contatosQuery
+            : contatosQuery.eq("criado_por_id", ownerId)
+          : Promise.resolve({ data: [] }),
       ]);
 
       setIndicacoes(indicacoesResult.data?.map(mapIndicacao) ?? []);
@@ -232,6 +237,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
           });
 
           const isBroadAccess = newUser.role === "admin" || newUser.role === "aprovador";
+          const canAccessContatos = isBroadAccess || newUser.role === "usuario_ra";
           const ownerId = newUser.authUserId || newUser.id;
           const indicacoesQuery = supabase
             .from("indicacoes")
@@ -245,7 +251,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
             .limit(100);
           const [indicacoesResult, contatosResult] = await Promise.all([
             isBroadAccess ? indicacoesQuery : indicacoesQuery.eq("criado_por_id", ownerId),
-            isBroadAccess ? contatosQuery : contatosQuery.eq("criado_por_id", ownerId),
+            canAccessContatos
+              ? isBroadAccess
+                ? contatosQuery
+                : contatosQuery.eq("criado_por_id", ownerId)
+              : Promise.resolve({ data: [] }),
           ]);
           setIndicacoes(indicacoesResult.data?.map(mapIndicacao) ?? []);
           setContatos(contatosResult.data?.map(mapContato) ?? []);
