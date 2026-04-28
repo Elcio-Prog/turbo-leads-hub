@@ -107,7 +107,11 @@ function mapProfileToUser(profile: any, role: Role = "usuario"): User {
 }
 
 async function getUserRole(userId: string): Promise<Role> {
-  const { data } = await supabase.from("user_roles").select("role").eq("user_id", userId).maybeSingle();
+  const { data } = await supabase
+    .from("user_roles")
+    .select("role")
+    .eq("user_id", userId)
+    .maybeSingle();
   return (data?.role as Role) || "usuario";
 }
 
