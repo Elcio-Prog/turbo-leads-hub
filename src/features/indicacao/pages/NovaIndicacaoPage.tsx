@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { CheckCircle2, Loader2 } from "lucide-react";
 import { useApp } from "../AppContext";
@@ -42,6 +43,7 @@ function maskCnpj(value: string) {
 
 export function NovaIndicacaoPage() {
   const { user, createIndicacao, countCltThisMonth, creditoAtual, indicacoes } = useApp();
+  const navigate = useNavigate();
   const [form, setForm] = useState({
     leadNome: "",
     cnpj: "",
@@ -57,6 +59,7 @@ export function NovaIndicacaoPage() {
   });
   const [loadingCnpj, setLoadingCnpj] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitMessage, setSubmitMessage] = useState("");
   const lastFetchedRef = useRef<string>("");
 
   useEffect(() => {
@@ -120,8 +123,17 @@ export function NovaIndicacaoPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isSubmitting) return;
+    setSubmitMessage("");
+    if (cltBlocked) {
+      const message = `Você atingiu o limite de ${LIMITE_CLT_MES} indicações para este mês.`;
+      setSubmitMessage(message);
+      toast.error(message);
+      return;
+    }
     if (!form.leadNome.trim() || !form.empresa.trim() || !form.emailLead.trim()) {
-      toast.error("Preencha os campos obrigatórios.");
+      const message = "Preencha Nome do Lead, Empresa e Email antes de confirmar.";
+      setSubmitMessage(message);
+      toast.error(message);
       return;
     }
     setIsSubmitting(true);
@@ -143,9 +155,12 @@ export function NovaIndicacaoPage() {
         emailLead: "",
         observacao: "",
       });
+      navigate({ to: "/app/indicacoes" });
     } catch (error) {
       console.error("Erro ao criar indicação", error);
-      toast.error("Não foi possível confirmar o registro. Tente novamente.");
+      const message = "Não foi possível confirmar o registro. Tente novamente.";
+      setSubmitMessage(message);
+      toast.error(message);
     } finally {
       setIsSubmitting(false);
     }
@@ -297,6 +312,11 @@ export function NovaIndicacaoPage() {
                 {isSubmitting ? "Registrando..." : "Confirmar Registro"}
               </PrimaryButton>
             </div>
+            {submitMessage && (
+              <p className="w-full text-right text-[11px] font-bold uppercase tracking-widest text-destructive" role="alert">
+                {submitMessage}
+              </p>
+            )}
           </footer>
         </form>
 

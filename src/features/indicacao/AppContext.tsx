@@ -484,7 +484,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
           status: "Indicado",
         });
 
-        if (error) return { ok: false, error: "Erro ao salvar no banco de dados Supabase." };
+        if (error) return { ok: false, error: `Erro ao salvar no banco de dados: ${error.message}` };
       }
 
       setIndicacoes((prev) => [nova, ...prev]);
