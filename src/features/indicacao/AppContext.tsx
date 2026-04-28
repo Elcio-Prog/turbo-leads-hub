@@ -542,7 +542,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const visibleIndicacoes = useMemo(() => {
     if (!user) return [];
-    if (user.role === "usuario") return indicacoes.filter((i) => i.criadoPorId === user.id);
+    if (user.role === "usuario" || user.role === "usuario_ra") {
+      return indicacoes.filter((i) => i.criadoPorId === user.id);
+    }
     return indicacoes;
   }, [indicacoes, user]);
 
@@ -630,7 +632,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const visibleContatos = useMemo(() => {
     if (!user) return [];
-    if (user.role === "usuario_ra") return contatos.filter((c) => c.criadoPorId === user.id);
+    if (user.role === "usuario" || user.role === "usuario_ra") {
+      return contatos.filter((c) => c.criadoPorId === user.id);
+    }
     return contatos;
   }, [contatos, user]);
 
