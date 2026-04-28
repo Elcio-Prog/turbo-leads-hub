@@ -18,6 +18,14 @@ function normalizeIdentifier(identifier: string) {
   return { value, digits, type };
 }
 
+function cpfMask(digits: string) {
+  return digits
+    .slice(0, 11)
+    .replace(/^(\d{3})(\d)/, "$1.$2")
+    .replace(/^(\d{3})\.(\d{3})(\d)/, "$1.$2.$3")
+    .replace(/\.(\d{3})(\d)/, ".$1-$2");
+}
+
 function authEmailForIdentifier(identifier: string) {
   const normalized = normalizeIdentifier(identifier);
   if (normalized.type === "email") return normalized.value;
@@ -37,7 +45,10 @@ export const registerAuthUser = createServerFn({ method: "POST" })
       email_confirm: true,
       user_metadata: {
         login_identifier: normalized.value,
-        name: normalized.type === "email" ? normalized.value.split("@")[0] : `Usuário ${data.identifier.trim()}`,
+        name:
+          normalized.type === "email"
+            ? normalized.value.split("@")[0]
+            : `Usuário ${data.identifier.trim()}`,
         ra: normalized.type === "ra" ? normalized.value : undefined,
         cpf: normalized.type === "cpf" ? normalized.digits : undefined,
         contrato: "CLT",
@@ -62,18 +73,25 @@ export const resolveLoginIdentifier = createServerFn({ method: "POST" })
   .inputValidator((input) => identifierSchema.parse(input))
   .handler(async ({ data }) => {
     const normalized = normalizeIdentifier(data.identifier);
-    if (normalized.type === "email") return { ok: true, email: normalized.value };
-
-    const filters = [
-      `login_identifier.eq.${normalized.value}`,
-      normalized.type === "cpf" ? `cpf.eq.${normalized.digits}` : `ra.eq.${normalized.value}`,
-    ];
+    const filters =
+      normalized.type === "email"
+        ? [`email.eq.${normalized.value}`, `login_identifier.eq.${normalized.value}`]
+        : [
+            `login_identifier.eq.${normalized.value}`,
+            normalized.type === "cpf"
+              ? `cpf.in.("${normalized.digits}","${cpfMask(normalized.digits)}")`
+              : `ra.eq.${normalized.value}`,
+          ];
 
     const { data: profile, error } = await supabaseAdmin
       .from("profiles")
       .select("email")
       .or(filters.join(","))
       .maybeSingle();
+
+    if (normalized.type === "email" && !profile?.email && !error) {
+      return { ok: true, email: normalized.value };
+    }
 
     if (error || !profile?.email) {
       return { ok: false, error: "Cadastro não encontrado." };

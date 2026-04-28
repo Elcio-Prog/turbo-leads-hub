@@ -5,7 +5,7 @@ import { useApp } from "../AppContext";
 import { PrimaryButton } from "../components/PrimaryButton";
 import { BackgroundGradientAnimation } from "@/components/ui/background-gradient-animation";
 import { supabase } from "@/integrations/supabase/client";
-import { authEmailForIdentifier } from "../authIdentifiers";
+import { resolveLoginIdentifier } from "../authActions";
 
 export function LoginPage() {
   const { registerUser } = useApp();
@@ -20,10 +20,15 @@ export function LoginPage() {
     setError("");
     setIsSubmitting(true);
 
-    const authEmail = authEmailForIdentifier(email);
+    const resolved = await resolveLoginIdentifier({ data: { identifier: email } });
+    if (!resolved.ok) {
+      setError(resolved.error || "Cadastro não encontrado ou senha inválida.");
+      setIsSubmitting(false);
+      return;
+    }
 
     const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-      email: authEmail,
+      email: resolved.email,
       password: senha,
     });
 
