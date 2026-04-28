@@ -46,6 +46,7 @@ interface UpdateProfileInput {
 
 interface AppContextValue {
   user: User | null;
+  authLoading: boolean;
   users: User[];
   login: (userId: string) => void;
   registerUser: (data: RegisterUserInput) => Promise<{ ok: boolean; error?: string }>;
@@ -72,8 +73,66 @@ interface AppContextValue {
 
 const AppContext = createContext<AppContextValue | null>(null);
 
+function mapProfileToUser(profile: any, role: Role = "usuario"): User {
+  return {
+    id: profile.user_id,
+    authUserId: profile.user_id,
+    name: profile.name,
+    email: profile.email,
+    loginId: profile.login_identifier || profile.email,
+    cpf: profile.cpf || undefined,
+    funcao: profile.funcao || "",
+    role,
+    contrato: profile.contrato as Contrato,
+    setor: profile.setor as Setor,
+    onboardingCompleted: profile.onboarding_completed ?? false,
+  };
+}
+
+function mapIndicacao(i: any): Indicacao {
+  return {
+    id: i.id,
+    status: i.status as StatusIndicacao,
+    leadNome: i.lead_nome,
+    empresa: i.empresa,
+    telefone: i.telefone,
+    emailLead: i.email_lead,
+    produto: i.produto as Produto,
+    emailIndicador: i.email_indicador,
+    setor: i.setor as Setor,
+    funcao: i.funcao,
+    contrato: i.contrato as Contrato,
+    observacao: i.observacao,
+    criadoPorId: i.criado_por_id,
+    criadoPorNome: i.criado_por_nome,
+    criadoEm: i.created_at,
+    modificadoEm: i.updated_at,
+    modificadoPorNome: i.modificado_por_nome,
+    recompensaPaga: i.recompensa_paga,
+  };
+}
+
+function mapContato(c: any): Contato {
+  return {
+    id: c.id,
+    nome: c.nome,
+    email: c.email,
+    cnpj: c.cnpj,
+    razaoSocial: c.razao_social,
+    nomeFantasia: c.nome_fantasia,
+    telefoneFixo: c.telefone_fixo,
+    celular: c.celular,
+    criadoPorId: c.criado_por_id,
+    criadoPorNome: c.criado_por_nome,
+    criadoEm: c.created_at,
+    modificadoEm: c.updated_at,
+    modificadoPorNome: c.modificado_por_nome,
+  };
+}
+
 export function AppProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
   const [users, setUsers] = useState<User[]>([]);
   const [indicacoes, setIndicacoes] = useState<Indicacao[]>([]);
   const [contatos, setContatos] = useState<Contato[]>([]);
