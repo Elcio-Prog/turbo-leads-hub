@@ -239,7 +239,20 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const normalized = identifier.toLowerCase();
     if (!identifier) return { ok: false, error: "Informe e-mail, RA ou CPF." };
     if (data.password.trim().length < 6) return { ok: false, error: "A senha deve ter pelo menos 6 caracteres." };
-    if (users.some((u) => u.email.toLowerCase() === normalized || u.loginId?.toLowerCase() === normalized)) {
+    const existingUser = users.find(
+      (u) =>
+        u.id === data.authUserId ||
+        u.authUserId === data.authUserId ||
+        u.email.toLowerCase() === normalized ||
+        u.loginId?.toLowerCase() === normalized,
+    );
+
+    if (existingUser) {
+      if (data.authUserId && (existingUser.id === data.authUserId || existingUser.authUserId === data.authUserId)) {
+        setUser(existingUser);
+        return { ok: true };
+      }
+
       return { ok: false, error: "Este cadastro já existe." };
     }
 
@@ -313,10 +326,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const logout = useCallback(() => {
     setUser(null);
-    if (typeof window !== "undefined") {
-      window.localStorage.removeItem(STORAGE_AUTH);
-      supabase.auth.signOut();
-    }
+    supabase.auth.signOut();
   }, []);
 
   const countCltThisMonth = useCallback(

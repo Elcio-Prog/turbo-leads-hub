@@ -8,7 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { authEmailForIdentifier } from "../authIdentifiers";
 
 export function LoginPage() {
-  const { users, login, registerUser } = useApp();
+  const { registerUser } = useApp();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
@@ -28,13 +28,15 @@ export function LoginPage() {
     });
 
     if (!signInError) {
-      const found = users.find((u) => u.email.toLowerCase() === authEmail.toLowerCase() || u.loginId?.toLowerCase() === email.toLowerCase().trim());
-      if (!found) {
-        const { data: sessionData } = await supabase.auth.getSession();
-        await registerUser({ identifier: email, password: senha, authUserId: sessionData.session?.user.id });
-      } else {
-        login(found.id);
+      const { data: sessionData } = await supabase.auth.getSession();
+      const result = await registerUser({ identifier: email, password: senha, authUserId: sessionData.session?.user.id });
+
+      if (!result.ok) {
+        setError(result.error || "Não foi possível carregar o perfil.");
+        setIsSubmitting(false);
+        return;
       }
+
       navigate({ to: "/app/nova" });
     } else {
       setError("Cadastro não encontrado ou senha inválida.");
