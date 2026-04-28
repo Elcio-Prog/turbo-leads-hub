@@ -60,50 +60,50 @@ export function LoginPage() {
     >
       <div className="fixed inset-0 z-10 flex items-center justify-center p-4 selection:bg-primary-container selection:text-on-primary-container font-body overflow-y-auto">
         {/* Main Editorial Card */}
-        <main className="relative my-auto grid w-full max-w-5xl min-h-[520px] overflow-hidden rounded-2xl border border-outline-variant/10 bg-surface/20 shadow-[0_24px_64px_rgba(0,0,0,0.8)] backdrop-blur-3xl lg:grid-cols-12">
+        <main className="relative my-auto grid w-full max-w-[58rem] min-h-[480px] overflow-hidden rounded-2xl border border-outline-variant/10 bg-surface/20 shadow-[0_24px_64px_rgba(0,0,0,0.8)] backdrop-blur-3xl lg:grid-cols-12">
           {/* Mancha Verde / Green Glow at the division */}
           <div className="absolute top-0 right-[41.666%] w-px h-full bg-gradient-to-b from-transparent via-primary-container/40 to-transparent z-20 hidden lg:block shadow-[0_0_40px_rgba(202,253,0,0.3)]" />
 
           {/* Left Side: Marketing Content */}
-          <div className="relative hidden flex-col justify-between overflow-hidden p-10 lg:col-span-7 lg:flex xl:p-12">
-            <div className="z-10 flex items-center gap-4">
+          <div className="relative hidden flex-col justify-between overflow-hidden p-9 lg:col-span-7 lg:flex xl:p-10">
+            <div className="z-10 flex items-center gap-3">
               <img
                 src="/logo.png"
                 alt="Logo"
-                className="h-12 w-12 object-contain shadow-[0_0_30px_rgba(202,253,0,0.2)] rounded-xl mix-blend-screen brightness-125"
+                className="h-10 w-10 object-contain shadow-[0_0_30px_rgba(202,253,0,0.2)] rounded-xl mix-blend-screen brightness-125"
               />
               <div className="flex flex-col">
-                <span className="text-primary-container font-display text-2xl font-bold italic uppercase leading-none">
+                <span className="text-primary-container font-display text-xl font-bold italic uppercase leading-none">
                   Net Turbo
                 </span>
-                <span className="text-[10px] uppercase tracking-[0.4em] text-white/50 font-black mt-1">
+                <span className="mt-1 text-[9px] font-black uppercase tracking-[0.35em] text-white/50">
                   Programa de Indicações
                 </span>
               </div>
             </div>
 
-            <div className="z-10 max-w-[29rem] space-y-7">
-              <h1 className="font-display text-4xl font-bold uppercase leading-[0.95] tracking-tight text-white animate-in slide-in-from-left duration-700 xl:text-[3.35rem]">
+            <div className="z-10 max-w-[25rem] space-y-6">
+              <h1 className="font-display text-[2.45rem] font-bold uppercase leading-[0.95] tracking-tight text-white animate-in slide-in-from-left duration-700 xl:text-[2.85rem]">
                 Indique. Ganhe. <br />
                 <span className="text-primary-container italic font-light lowercase">
                   Faça o time crescer.
                 </span>
               </h1>
 
-              <div className="max-w-md space-y-4">
+              <div className="max-w-sm space-y-3">
                 <div className="space-y-1">
-                  <h2 className="font-display text-base font-bold uppercase tracking-tight text-white">
+                  <h2 className="font-display text-sm font-bold uppercase tracking-tight text-white">
                     Como Funciona?
                   </h2>
                   <div className="h-[2px] w-10 bg-primary-container" />
                 </div>
-                <p className="text-on-surface-variant text-sm leading-6 font-light">
+                <p className="text-xs leading-5 text-on-surface-variant">
                   Para realizar uma indicação, o colaborador deverá registrar o potencial cliente
                   através do canal oficial. E após venda e confirmação da implantação do contrato os
                   créditos do programa serão liberados.
                 </p>
                 <div className="pt-1">
-                  <span className="text-primary-container font-display text-base font-bold uppercase tracking-tight">
+                  <span className="text-primary-container font-display text-sm font-bold uppercase tracking-tight">
                     R$ 200 em créditos por venda realizada
                   </span>
                 </div>
@@ -126,9 +126,9 @@ export function LoginPage() {
           </div>
 
           {/* Right Side: Login Form */}
-          <div className="relative flex flex-col justify-center border-l border-outline-variant/10 bg-surface-low p-6 sm:p-8 lg:col-span-5 lg:p-10 xl:p-12">
-            <header className="mb-8">
-              <h2 className="mb-2 font-display text-2xl font-bold uppercase leading-none tracking-tight text-white lg:text-[2rem]">
+          <div className="relative flex flex-col justify-center border-l border-outline-variant/10 bg-surface-low p-6 sm:p-8 lg:col-span-5 lg:p-9 xl:p-10">
+            <header className="mb-7">
+              <h2 className="mb-2 font-display text-xl font-bold uppercase leading-none tracking-tight text-white lg:text-2xl">
                 Indique um cliente!
               </h2>
               <p className="mt-3 text-[10px] font-black uppercase tracking-[0.2em] text-on-surface-variant">
