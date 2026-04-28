@@ -164,6 +164,7 @@ export function ContatosPage() {
                       </div>
                     </td>
                     <td className="px-6 py-6 text-right">
+                      {canEdit(c) || canDelete(c) ? (
                       <div className="relative inline-block">
                         <button
                           type="button"
@@ -207,6 +208,9 @@ export function ContatosPage() {
                           </div>
                         )}
                       </div>
+                      ) : (
+                        <span className="text-xs font-bold text-outline">—</span>
+                      )}
                     </td>
                   </tr>
                 ))
