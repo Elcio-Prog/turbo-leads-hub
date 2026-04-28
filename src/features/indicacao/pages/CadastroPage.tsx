@@ -62,16 +62,25 @@ export function CadastroPage() {
       return;
     }
 
-    await registerUser({
+    const { data: currentSession } = await supabase.auth.getSession();
+
+    const result = await registerUser({
       identifier,
       password: senha,
-      authUserId: signUpData.user?.id,
+      authUserId: currentSession.session?.user.id || signUpData.user?.id,
       name: displayName,
       cpf,
       funcao: "",
       contrato: "CLT",
       setor: "COMERCIAL",
     });
+
+    if (!result.ok) {
+      setError(result.error || "Não foi possível salvar o perfil no banco de dados.");
+      setIsSubmitting(false);
+      return;
+    }
+
     navigate({ to: "/app/nova" });
   };
 
