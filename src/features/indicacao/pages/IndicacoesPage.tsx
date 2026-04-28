@@ -166,8 +166,10 @@ export function IndicacoesPage() {
       <header className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-8 border-b border-outline-variant/10">
         <div className="space-y-2">
           <h1 className="font-display text-5xl md:text-7xl font-bold tracking-tighter uppercase leading-none">
-            {hasBroadAccess ? "Todas" : "Minhas"} <br />
-            <span className="italic font-light text-on-surface-variant">Indicações</span>
+            {isAdmin ? "Todos" : hasBroadAccess ? "Todas" : "Minhas"} <br />
+            <span className="italic font-light text-on-surface-variant">
+              {isAdmin ? "Registros" : "Indicações"}
+            </span>
           </h1>
           <p className="text-[10px] text-outline uppercase tracking-widest font-bold">
             {filtered.length} indicações{isAdmin ? ` · ${contatos.length} contatos quentes` : ""} no banco
@@ -204,7 +206,7 @@ export function IndicacoesPage() {
                 : "ring-outline-variant/20 bg-surface-low text-outline hover:text-white"
             }`}
           >
-            Indicações · {filtered.length}
+            Registros · {filtered.length}
           </button>
           <button
             type="button"
