@@ -185,35 +185,32 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
     init();
 
-    // Listen for auth changes (login/logout from other tabs or token expiration)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'SIGNED_OUT') {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === "SIGNED_OUT") {
         setUser(null);
-
-      } else if (session && event === 'SIGNED_IN') {
-        // If they just signed in, we might need to reload their profile
-        const { data: p } = await supabase.from("profiles").select("*").eq("user_id", session.user.id).single();
+        setUsers([]);
+        setIndicacoes([]);
+        setContatos([]);
+        setAuthLoading(false);
+      } else if (session && event === "SIGNED_IN") {
+        setAuthLoading(true);
+        const [profileResult, roleResult] = await Promise.all([
+          supabase.from("profiles").select("*").eq("user_id", session.user.id).maybeSingle(),
+          supabase.from("user_roles").select("role").eq("user_id", session.user.id).maybeSingle(),
+        ]);
+        const p = profileResult.data;
         if (p) {
-          const newUser: User = {
-            id: p.user_id,
-            authUserId: p.user_id,
-            name: p.name,
-            email: p.email,
-            loginId: p.login_identifier || p.email,
-            cpf: p.cpf || undefined,
-            funcao: p.funcao || "",
-            role: "usuario",
-            contrato: p.contrato as Contrato,
-            setor: p.setor as Setor,
-            onboardingCompleted: p.onboarding_completed ?? false,
-          };
+          const newUser = mapProfileToUser(p, (roleResult.data?.role as Role) || "usuario");
           setUser(newUser);
-          setUsers(prev => {
-            const exists = prev.find(u => u.id === newUser.id);
-            if (exists) return prev.map(u => u.id === newUser.id ? newUser : u);
+          setUsers((prev) => {
+            const exists = prev.find((u) => u.id === newUser.id);
+            if (exists) return prev.map((u) => (u.id === newUser.id ? newUser : u));
             return [...prev, newUser];
           });
         }
+        setAuthLoading(false);
       }
     });
 
