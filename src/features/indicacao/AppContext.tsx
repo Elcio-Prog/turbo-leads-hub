@@ -149,6 +149,7 @@ function mapContato(c: any): Contato {
     nomeFantasia: c.nome_fantasia,
     telefoneFixo: c.telefone_fixo,
     celular: c.celular,
+    observacao: c.observacao ?? "",
     criadoPorId: c.criado_por_id,
     criadoPorNome: c.criado_por_nome,
     criadoEm: c.created_at,
@@ -606,10 +607,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
           nome_fantasia: data.nomeFantasia,
           telefone_fixo: data.telefoneFixo,
           celular: data.celular,
+          observacao: data.observacao,
           criado_por_id: user.authUserId,
           criado_por_nome: user.name,
           modificado_por_nome: user.name,
-        });
+        } as any);
 
         if (error) return { ok: false, error: "Erro ao salvar contato no Supabase." };
       }
@@ -633,6 +635,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         if (patch.nomeFantasia) payload.nome_fantasia = patch.nomeFantasia;
         if (patch.telefoneFixo) payload.telefone_fixo = patch.telefoneFixo;
         if (patch.celular) payload.celular = patch.celular;
+        if (patch.observacao !== undefined) payload.observacao = patch.observacao;
 
         payload.modificado_por_nome = user.name;
         payload.updated_at = now();

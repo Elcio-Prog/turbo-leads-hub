@@ -1,8 +1,20 @@
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
+import { z } from "zod";
 import { useApp } from "../AppContext";
 import { PrimaryButton } from "../components/PrimaryButton";
+
+const contatoSchema = z.object({
+  nome: z.string().trim().min(1).max(100),
+  email: z.string().trim().email().max(255),
+  cnpj: z.string().trim().min(1).max(18),
+  razaoSocial: z.string().trim().max(200),
+  nomeFantasia: z.string().trim().max(200),
+  telefoneFixo: z.string().trim().max(20),
+  celular: z.string().trim().max(20),
+  observacao: z.string().trim().max(1000),
+});
 
 function maskCnpj(value: string) {
   const d = value.replace(/\D/g, "").slice(0, 14);
@@ -33,6 +45,7 @@ export function NovoContatoPage() {
     nomeFantasia: "",
     telefoneFixo: "",
     celular: "",
+    observacao: "",
   });
 
   const lookupCnpj = async (digits: string) => {
@@ -92,11 +105,12 @@ export function NovoContatoPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.nome.trim() || !form.email.trim() || !form.cnpj.trim()) {
+    const parsed = contatoSchema.safeParse(form);
+    if (!parsed.success) {
       toast.error("Preencha Nome, Email e CNPJ.");
       return;
     }
-    const result = await createContato(form);
+    const result = await createContato(parsed.data);
     if (!result.ok) {
       toast.error(result.error || "Erro ao criar contato.");
       return;
@@ -112,6 +126,7 @@ export function NovoContatoPage() {
       nomeFantasia: "",
       telefoneFixo: "",
       celular: "",
+      observacao: "",
     });
   };
 
@@ -217,6 +232,12 @@ export function NovoContatoPage() {
               onChange={(v) => setForm({ ...form, celular: maskPhone(v) })}
               placeholder="(XX) XXXXX-XXXX"
             />
+            <EditorialTextarea
+              label="Observações"
+              value={form.observacao}
+              onChange={(v) => setForm({ ...form, observacao: v.slice(0, 1000) })}
+              placeholder="Informações relevantes sobre o lead"
+            />
           </div>
         </section>
 
@@ -258,6 +279,34 @@ function EditorialField({
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         className="w-full bg-transparent border-0 border-b border-outline-variant/30 py-2 px-0 text-on-surface placeholder:text-outline-variant/50 outline-none focus:outline-none focus:ring-0 focus:border-primary-container caret-primary-container transition-all text-sm font-medium"
+      />
+    </div>
+  );
+}
+
+function EditorialTextarea({
+  label,
+  value,
+  onChange,
+  placeholder,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+}) {
+  return (
+    <div className="group space-y-2 md:col-span-2">
+      <label className="block text-[10px] uppercase tracking-[0.2em] text-outline font-black group-focus-within:text-primary-container transition-colors">
+        {label}
+      </label>
+      <textarea
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        rows={4}
+        maxLength={1000}
+        className="w-full resize-none bg-transparent border-0 border-b border-outline-variant/30 py-2 px-0 text-on-surface placeholder:text-outline-variant/50 outline-none focus:outline-none focus:ring-0 focus:border-primary-container caret-primary-container transition-all text-sm font-medium"
       />
     </div>
   );
