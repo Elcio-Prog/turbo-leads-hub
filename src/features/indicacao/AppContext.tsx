@@ -22,6 +22,8 @@ import { authEmailForIdentifier } from "./authIdentifiers";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
+const now = () => new Date().toISOString();
+
 interface RegisterUserInput {
   identifier: string;
   password: string;
