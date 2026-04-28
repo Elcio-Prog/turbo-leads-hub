@@ -517,7 +517,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
         ),
       );
 
-      if (user.authUserId) {
+      const authUserId = user.authUserId || user.id;
+
+      if (authUserId) {
         const payload: IndicacaoUpdate = {};
         if (patch.status !== undefined) payload.status = patch.status;
         if (patch.leadNome !== undefined) payload.lead_nome = patch.leadNome;
@@ -530,12 +532,21 @@ export function AppProvider({ children }: { children: ReactNode }) {
         payload.modificado_por_nome = user.name;
         payload.updated_at = stamp;
 
-        const { error } = await supabase.from("indicacoes").update(payload).eq("id", id);
-        if (error) {
+        const { data: updatedRow, error } = await supabase
+          .from("indicacoes")
+          .update(payload)
+          .eq("id", id)
+          .select("*")
+          .maybeSingle();
+
+        if (error || !updatedRow) {
           setIndicacoes(previousIndicacoes);
-          toast.error(`Erro ao atualizar no banco de dados: ${error.message}`);
-          return { ok: false, error: error.message };
+          const message = error?.message || "Nenhuma indicação foi atualizada no banco de dados.";
+          toast.error(`Erro ao atualizar no banco de dados: ${message}`);
+          return { ok: false, error: message };
         }
+
+        setIndicacoes((prev) => prev.map((i) => (i.id === id ? mapIndicacao(updatedRow) : i)));
       }
 
       return { ok: true };
