@@ -42,7 +42,7 @@ export function Sidebar({ collapsed, onToggle }: { collapsed?: boolean; onToggle
   };
 
   const NAV =
-    user.role === "usuario_ra"
+    user.role === "usuario_ra" || user.role === "admin" || user.role === "aprovador"
       ? ([
           { to: "/app/nova", label: "Nova Indicação", Icon: PlusCircle },
           { to: "/app/indicacoes", label: "Indicações", Icon: ListChecks },
