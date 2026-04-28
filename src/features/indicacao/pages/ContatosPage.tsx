@@ -92,7 +92,7 @@ export function ContatosPage() {
         <div className="space-y-2">
           <h1 className="font-display text-5xl md:text-7xl font-bold tracking-tighter uppercase leading-none">
             {user.role === "admin" || user.role === "aprovador" ? "Todos" : "Meus"} <br />
-            <span className="italic font-light text-on-surface-variant">Contatos</span>
+             <span className="italic font-light text-on-surface-variant">Contatos Quentes</span>
           </h1>
           <p className="text-[10px] text-outline uppercase tracking-widest font-bold">
             {filtered.length} itens encontrados no banco de dados
