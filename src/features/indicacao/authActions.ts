@@ -49,6 +49,12 @@ export const registerAuthUser = createServerFn({ method: "POST" })
       return { ok: false, error: error?.message || "Não foi possível criar o usuário." };
     }
 
+    // Garante que o usuário tenha uma role inicial
+    await supabaseAdmin.from("user_roles").insert({
+      user_id: created.user.id,
+      role: "usuario",
+    });
+
     return { ok: true, email };
   });
 

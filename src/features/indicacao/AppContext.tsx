@@ -170,8 +170,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
         supabase.from("user_roles").select("role").eq("user_id", session.user.id).maybeSingle(),
       ]);
 
+      const role = (roleResult.data?.role as Role) || "usuario";
       const currentUser = profileResult.data
-        ? mapProfileToUser(profileResult.data, (roleResult.data?.role as Role) || "usuario")
+        ? mapProfileToUser(profileResult.data, role)
         : null;
 
       setUser(currentUser);
@@ -184,11 +185,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const indicacoesQuery = supabase
         .from("indicacoes")
         .select("*")
-        .order("created_at", { ascending: false });
+        .order("created_at", { ascending: false })
+        .limit(100);
       const contatosQuery = supabase
         .from("contatos")
         .select("*")
-        .order("created_at", { ascending: false });
+        .order("created_at", { ascending: false })
+        .limit(100);
 
       const [indicacoesResult, contatosResult] = await Promise.all([
         isBroadAccess
@@ -222,7 +225,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         ]);
         const p = profileResult.data;
         if (p) {
-          const newUser = mapProfileToUser(p, (roleResult.data?.role as Role) || "usuario");
+          const role = (roleResult.data?.role as Role) || "usuario";
+          const newUser = mapProfileToUser(p, role);
           setUser(newUser);
           setUsers((prev) => {
             const exists = prev.find((u) => u.id === newUser.id);
@@ -234,11 +238,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
           const indicacoesQuery = supabase
             .from("indicacoes")
             .select("*")
-            .order("created_at", { ascending: false });
+            .order("created_at", { ascending: false })
+            .limit(100);
           const contatosQuery = supabase
             .from("contatos")
             .select("*")
-            .order("created_at", { ascending: false });
+            .order("created_at", { ascending: false })
+            .limit(100);
           const [indicacoesResult, contatosResult] = await Promise.all([
             isBroadAccess
               ? indicacoesQuery
