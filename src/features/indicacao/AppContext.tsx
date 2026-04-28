@@ -40,7 +40,8 @@ interface RegisterUserInput {
 
 interface UpdateProfileInput {
   name: string;
-  loginId: string;
+  loginId?: string;
+  ra?: string;
   cpf: string;
   funcao: string;
   setor: Setor;
@@ -98,6 +99,7 @@ function mapProfileToUser(profile: any, role: Role = "usuario"): User {
     name: profile.name,
     email: profile.email,
     loginId: profile.login_identifier || profile.email,
+    ra: profile.ra || undefined,
     cpf: profile.cpf || undefined,
     funcao: profile.funcao || "",
     role,
@@ -369,6 +371,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
             name: nextUser.name,
             email: nextUser.email,
             login_identifier: nextUser.loginId,
+            ra: nextUser.ra || null,
             cpf: nextUser.cpf || null,
             funcao: nextUser.funcao || "",
             contrato: nextUser.contrato,
@@ -405,6 +408,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
           name: updatedUser.name,
           email: updatedUser.email,
           login_identifier: updatedUser.loginId || updatedUser.email,
+          ra: updatedUser.ra || null,
           cpf: updatedUser.cpf || null,
           funcao: updatedUser.funcao || "",
           setor: updatedUser.setor,
