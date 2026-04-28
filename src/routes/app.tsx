@@ -17,7 +17,7 @@ function AppLayout() {
     if (!authLoading && !user) navigate({ to: "/" });
   }, [authLoading, user, navigate]);
 
-  if (authLoading) {
+  if (authLoading && !user) {
     return <div className="min-h-screen bg-[#0a0a0a]" />;
   }
 
