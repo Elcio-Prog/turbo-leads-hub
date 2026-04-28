@@ -171,9 +171,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       ]);
 
       const role = (roleResult.data?.role as Role) || "usuario";
-      const currentUser = profileResult.data
-        ? mapProfileToUser(profileResult.data, role)
-        : null;
+      const currentUser = profileResult.data ? mapProfileToUser(profileResult.data, role) : null;
 
       setUser(currentUser);
       setUsers(currentUser ? [currentUser] : []);
@@ -182,6 +180,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       if (!currentUser) return;
 
       const isBroadAccess = currentUser.role === "admin" || currentUser.role === "aprovador";
+      const canAccessContatos = isBroadAccess || currentUser.role === "usuario_ra";
       const ownerId = currentUser.authUserId || currentUser.id;
       const indicacoesQuery = supabase
         .from("indicacoes")
@@ -196,7 +195,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
       const [indicacoesResult, contatosResult] = await Promise.all([
         isBroadAccess ? indicacoesQuery : indicacoesQuery.eq("criado_por_id", ownerId),
-        isBroadAccess ? contatosQuery : contatosQuery.eq("criado_por_id", ownerId),
+        canAccessContatos
+          ? isBroadAccess
+            ? contatosQuery
+            : contatosQuery.eq("criado_por_id", ownerId)
+          : Promise.resolve({ data: [] }),
       ]);
 
       setIndicacoes(indicacoesResult.data?.map(mapIndicacao) ?? []);
@@ -232,6 +235,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
           });
 
           const isBroadAccess = newUser.role === "admin" || newUser.role === "aprovador";
+          const canAccessContatos = isBroadAccess || newUser.role === "usuario_ra";
           const ownerId = newUser.authUserId || newUser.id;
           const indicacoesQuery = supabase
             .from("indicacoes")
@@ -245,7 +249,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
             .limit(100);
           const [indicacoesResult, contatosResult] = await Promise.all([
             isBroadAccess ? indicacoesQuery : indicacoesQuery.eq("criado_por_id", ownerId),
-            isBroadAccess ? contatosQuery : contatosQuery.eq("criado_por_id", ownerId),
+            canAccessContatos
+              ? isBroadAccess
+                ? contatosQuery
+                : contatosQuery.eq("criado_por_id", ownerId)
+              : Promise.resolve({ data: [] }),
           ]);
           setIndicacoes(indicacoesResult.data?.map(mapIndicacao) ?? []);
           setContatos(contatosResult.data?.map(mapContato) ?? []);
@@ -484,7 +492,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
           status: "Indicado",
         });
 
-        if (error) return { ok: false, error: `Erro ao salvar no banco de dados: ${error.message}` };
+        if (error)
+          return { ok: false, error: `Erro ao salvar no banco de dados: ${error.message}` };
       }
 
       setIndicacoes((prev) => [nova, ...prev]);
@@ -551,6 +560,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const createContato: AppContextValue["createContato"] = useCallback(
     async (data) => {
       if (!user) return { ok: false, error: "Não autenticado" };
+      if (user.role === "usuario") {
+        return { ok: false, error: "Contatos são permitidos somente para Usuário RA." };
+      }
       const stamp = now();
       const novoId = crypto.randomUUID();
 
@@ -632,7 +644,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const visibleContatos = useMemo(() => {
     if (!user) return [];
-    if (user.role === "usuario" || user.role === "usuario_ra") {
+    if (user.role === "usuario") return [];
+    if (user.role === "usuario_ra") {
       return contatos.filter((c) => c.criadoPorId === user.id);
     }
     return contatos;

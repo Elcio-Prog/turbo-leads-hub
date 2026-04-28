@@ -16,13 +16,9 @@ function maskCnpj(value: string) {
 function maskPhone(value: string) {
   const d = value.replace(/\D/g, "").slice(0, 11);
   if (d.length <= 10) {
-    return d
-      .replace(/^(\d{2})(\d)/, "($1) $2")
-      .replace(/(\d{4})(\d)/, "$1-$2");
+    return d.replace(/^(\d{2})(\d)/, "($1) $2").replace(/(\d{4})(\d)/, "$1-$2");
   }
-  return d
-    .replace(/^(\d{2})(\d)/, "($1) $2")
-    .replace(/(\d{5})(\d)/, "$1-$2");
+  return d.replace(/^(\d{2})(\d)/, "($1) $2").replace(/(\d{5})(\d)/, "$1-$2");
 }
 
 export function NovoContatoPage() {
@@ -81,6 +77,18 @@ export function NovoContatoPage() {
   }, [form.cnpj]);
 
   if (!user) return null;
+  if (user.role === "usuario") {
+    return (
+      <div className="max-w-3xl mx-auto py-20 font-body">
+        <h1 className="font-display text-4xl font-bold uppercase tracking-tight">
+          Acesso restrito
+        </h1>
+        <p className="mt-3 text-sm text-on-surface-variant">
+          Contatos são permitidos somente para Usuário RA.
+        </p>
+      </div>
+    );
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -119,7 +127,8 @@ export function NovoContatoPage() {
           </div>
           <div className="max-w-xs text-right hidden md:block">
             <p className="text-xs text-on-surface-variant font-medium leading-relaxed">
-              Registre um novo contato corporativo. Use o CNPJ para preencher os dados automaticamente via BrasilAPI.
+              Registre um novo contato corporativo. Use o CNPJ para preencher os dados
+              automaticamente via BrasilAPI.
             </p>
           </div>
         </div>
@@ -129,8 +138,12 @@ export function NovoContatoPage() {
         {/* Section 01: CNPJ Lookup */}
         <section className="space-y-5">
           <div className="flex items-center gap-3">
-            <span className="font-display text-2xl font-bold text-outline-variant/30 italic">01</span>
-            <h2 className="font-display text-sm font-bold uppercase tracking-widest">Identificação Empresarial</h2>
+            <span className="font-display text-2xl font-bold text-outline-variant/30 italic">
+              01
+            </span>
+            <h2 className="font-display text-sm font-bold uppercase tracking-widest">
+              Identificação Empresarial
+            </h2>
             <div className="h-px flex-1 bg-outline-variant/10" />
           </div>
 
@@ -169,8 +182,12 @@ export function NovoContatoPage() {
         {/* Section 02: Contato */}
         <section className="space-y-5">
           <div className="flex items-center gap-3">
-            <span className="font-display text-2xl font-bold text-outline-variant/30 italic">02</span>
-            <h2 className="font-display text-sm font-bold uppercase tracking-widest">Dados de Contato</h2>
+            <span className="font-display text-2xl font-bold text-outline-variant/30 italic">
+              02
+            </span>
+            <h2 className="font-display text-sm font-bold uppercase tracking-widest">
+              Dados de Contato
+            </h2>
             <div className="h-px flex-1 bg-outline-variant/10" />
           </div>
 
