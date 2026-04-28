@@ -91,8 +91,12 @@ export function ConfiguracoesPage() {
       <form onSubmit={handleSubmit} className="space-y-8">
         <section className="space-y-5">
           <div className="flex items-center gap-3">
-            <span className="font-display text-2xl font-bold italic text-outline-variant/30">01</span>
-            <h2 className="font-display text-sm font-bold uppercase tracking-widest">Dados do usuário</h2>
+            <span className="font-display text-2xl font-bold italic text-outline-variant/30">
+              01
+            </span>
+            <h2 className="font-display text-sm font-bold uppercase tracking-widest">
+              Dados do usuário
+            </h2>
             <div className="h-px flex-1 bg-outline-variant/10" />
           </div>
 
@@ -141,7 +145,11 @@ export function ConfiguracoesPage() {
             <div className="h-2 w-2 rounded-full bg-primary-container" />
             Perfil persistente para os próximos formulários
           </div>
-          <PrimaryButton disabled={saving} type="submit" className="px-8 py-4 text-xs uppercase tracking-[0.2em]">
+          <PrimaryButton
+            disabled={saving}
+            type="submit"
+            className="px-8 py-4 text-xs uppercase tracking-[0.2em]"
+          >
             {saving ? "Salvando..." : "Salvar Configurações"}
             <Save className="h-3 w-3" />
           </PrimaryButton>
