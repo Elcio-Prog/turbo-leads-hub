@@ -9,6 +9,7 @@ import {
   X,
   UserPlus,
   Contact,
+  UsersRound,
 } from "lucide-react";
 import { useApp } from "../AppContext";
 import { Logo } from "./Logo";
@@ -55,6 +56,11 @@ export function Sidebar({ collapsed, onToggle }: { collapsed?: boolean; onToggle
           { to: "/app/analytics", label: "Analytics", Icon: BarChart3 },
         ] as const);
 
+  const adminNav =
+    user.role === "admin"
+      ? ([{ to: "/app/gestao-usuarios", label: "Gestão de Usuários", Icon: UsersRound }] as const)
+      : [];
+
   return (
     <>
       {/* Mobile trigger */}
@@ -83,7 +89,9 @@ export function Sidebar({ collapsed, onToggle }: { collapsed?: boolean; onToggle
           font-body shadow-[1px_0_0_0_rgba(255,255,255,0.05)]
         `}
       >
-        <div className={`flex items-center ${collapsed ? "justify-center px-2 py-8" : "justify-between px-8 py-8"}`}>
+        <div
+          className={`flex items-center ${collapsed ? "justify-center px-2 py-8" : "justify-between px-8 py-8"}`}
+        >
           {!collapsed && <Logo />}
           <button
             type="button"
@@ -100,12 +108,22 @@ export function Sidebar({ collapsed, onToggle }: { collapsed?: boolean; onToggle
           </button>
         </div>
 
-        <div className={`flex items-center gap-4 py-6 mb-4 ${collapsed ? "justify-center px-2" : "px-8"}`}>
-          <Avatar name={user.name} size={collapsed ? "sm" : "md"} className="ring-2 ring-primary-container/20" />
+        <div
+          className={`flex items-center gap-4 py-6 mb-4 ${collapsed ? "justify-center px-2" : "px-8"}`}
+        >
+          <Avatar
+            name={user.name}
+            size={collapsed ? "sm" : "md"}
+            className="ring-2 ring-primary-container/20"
+          />
           {!collapsed && (
             <div className="min-w-0">
-              <div className="truncate text-sm font-bold text-white uppercase tracking-tight">{user.name}</div>
-              <div className="truncate text-[10px] font-black uppercase tracking-widest text-primary-container/70">{ROLE_LABEL[user.role]}</div>
+              <div className="truncate text-sm font-bold text-white uppercase tracking-tight">
+                {user.name}
+              </div>
+              <div className="truncate text-[10px] font-black uppercase tracking-widest text-primary-container/70">
+                {ROLE_LABEL[user.role]}
+              </div>
             </div>
           )}
         </div>
@@ -126,7 +144,31 @@ export function Sidebar({ collapsed, onToggle }: { collapsed?: boolean; onToggle
                     : "text-outline hover:bg-surface-high hover:text-white"
                 }`}
               >
-                <Icon className={`h-4 w-4 shrink-0 transition-transform ${active ? "scale-110" : ""}`} />
+                <Icon
+                  className={`h-4 w-4 shrink-0 transition-transform ${active ? "scale-110" : ""}`}
+                />
+                {!collapsed && <span className="font-display">{label}</span>}
+              </Link>
+            );
+          })}
+          {adminNav.map(({ to, label, Icon }) => {
+            const active = location.pathname.startsWith(to);
+            return (
+              <Link
+                key={to}
+                to={to}
+                title={collapsed ? label : undefined}
+                className={`flex items-center gap-4 rounded-xl px-4 py-3 text-[11px] font-black uppercase tracking-[0.15em] transition-all duration-200 ${
+                  collapsed ? "justify-center" : ""
+                } ${
+                  active
+                    ? "bg-primary-container text-on-primary-container shadow-[0_10px_20px_rgba(202,253,0,0.2)]"
+                    : "text-outline hover:bg-surface-high hover:text-white"
+                }`}
+              >
+                <Icon
+                  className={`h-4 w-4 shrink-0 transition-transform ${active ? "scale-110" : ""}`}
+                />
                 {!collapsed && <span className="font-display">{label}</span>}
               </Link>
             );
@@ -145,7 +187,9 @@ export function Sidebar({ collapsed, onToggle }: { collapsed?: boolean; onToggle
                     : "text-outline hover:bg-surface-high hover:text-white"
                 }`}
               >
-                <Settings className={`h-4 w-4 shrink-0 transition-transform ${active ? "scale-110" : ""}`} />
+                <Settings
+                  className={`h-4 w-4 shrink-0 transition-transform ${active ? "scale-110" : ""}`}
+                />
                 {!collapsed && <span className="font-display">Configurações</span>}
               </Link>
             );
