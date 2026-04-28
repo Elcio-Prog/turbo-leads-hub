@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useApp } from "../AppContext";
-import type { Role } from "../types";
+import type { Role, User } from "../types";
 
 type ManagedUser = {
   userId: string;
@@ -33,9 +33,23 @@ const ROLE_LABEL = Object.fromEntries(
   ROLE_OPTIONS.map((role) => [role.value, role.label]),
 ) as Record<Role, string>;
 
+function mapCurrentUserToManagedUser(currentUser: User): ManagedUser {
+  return {
+    userId: currentUser.authUserId || currentUser.id,
+    name: currentUser.name,
+    email: currentUser.email,
+    loginId: currentUser.loginId || currentUser.email,
+    setor: currentUser.setor,
+    contrato: currentUser.contrato,
+    role: currentUser.role,
+  };
+}
+
 export function GestaoUsuariosPage() {
   const { user, authLoading } = useApp();
-  const [users, setUsers] = useState<ManagedUser[]>([]);
+  const [users, setUsers] = useState<ManagedUser[]>(() =>
+    user ? [mapCurrentUserToManagedUser(user)] : [],
+  );
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
   const [savingUserId, setSavingUserId] = useState<string | null>(null);
@@ -43,14 +57,23 @@ export function GestaoUsuariosPage() {
   const isAdmin = user?.role === "admin";
 
   const loadUsers = useCallback(async () => {
-    if (authLoading) return;
+    const currentUserRow = user ? mapCurrentUserToManagedUser(user) : null;
+
+    if (currentUserRow && users.length === 0) {
+      setUsers([currentUserRow]);
+    }
+
+    if (authLoading) {
+      setLoading(false);
+      return;
+    }
 
     if (!isAdmin) {
       setLoading(false);
       return;
     }
 
-    setLoading(true);
+    setLoading(users.length === 0);
     setLoadError("");
 
     try {
@@ -63,7 +86,8 @@ export function GestaoUsuariosPage() {
       ]);
 
       if (profilesResult.error || rolesResult.error) {
-        const message = profilesResult.error?.message || rolesResult.error?.message || "Erro desconhecido.";
+        const message =
+          profilesResult.error?.message || rolesResult.error?.message || "Erro desconhecido.";
         setLoadError(message);
         toast.error("Não foi possível carregar os usuários.");
         return;
@@ -86,13 +110,14 @@ export function GestaoUsuariosPage() {
         })),
       );
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Erro inesperado ao carregar usuários.";
+      const message =
+        error instanceof Error ? error.message : "Erro inesperado ao carregar usuários.";
       setLoadError(message);
       toast.error("Não foi possível carregar os usuários.");
     } finally {
       setLoading(false);
     }
-  }, [authLoading, isAdmin]);
+  }, [authLoading, isAdmin, user, users.length]);
 
   useEffect(() => {
     loadUsers();
@@ -196,11 +221,11 @@ export function GestaoUsuariosPage() {
           <span>Role</span>
         </div>
 
-        {loading ? (
+        {loading && users.length === 0 ? (
           <div className="px-5 py-10 text-sm font-medium text-on-surface-variant">
             Carregando usuários...
           </div>
-        ) : loadError ? (
+        ) : loadError && users.length === 0 ? (
           <div className="space-y-4 px-5 py-10 text-sm font-medium text-on-surface-variant">
             <p>Não foi possível carregar os usuários.</p>
             <button
