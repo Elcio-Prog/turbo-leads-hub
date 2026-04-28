@@ -139,115 +139,48 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const init = async () => {
-      // 1. Load users (profiles)
-      const { data: profiles } = await supabase.from("profiles").select("*");
-      const { data: roles } = await supabase.from("user_roles").select("*");
-      
-      let activeUsers: User[] = [];
-      if (profiles && profiles.length > 0) {
-        activeUsers = profiles.map(p => ({
-          id: p.user_id,
-          authUserId: p.user_id,
-          name: p.name,
-          email: p.email,
-          loginId: p.login_identifier || p.email,
-          cpf: p.cpf || undefined,
-          funcao: p.funcao || "",
-          role: (roles?.find(r => r.user_id === p.user_id)?.role as Role) || "usuario",
-          contrato: p.contrato as Contrato,
-          setor: p.setor as Setor,
-          onboardingCompleted: p.onboarding_completed ?? false,
-        }));
-      }
-      setUsers(activeUsers);
+      setAuthLoading(true);
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
 
-      // 2. Load indicacoes
-      const { data: dbIndicacoes } = await supabase.from("indicacoes").select("*");
-      if (dbIndicacoes && dbIndicacoes.length > 0) {
-        setIndicacoes(dbIndicacoes.map(i => ({
-          id: i.id,
-          status: i.status as StatusIndicacao,
-          leadNome: i.lead_nome,
-          empresa: i.empresa,
-          telefone: i.telefone,
-          emailLead: i.email_lead,
-          produto: i.produto as Produto,
-          emailIndicador: i.email_indicador,
-          setor: i.setor as Setor,
-          funcao: i.funcao,
-          contrato: i.contrato as Contrato,
-          observacao: i.observacao,
-          criadoPorId: i.criado_por_id,
-          criadoPorNome: i.criado_por_nome,
-          criadoEm: i.created_at,
-          modificadoEm: i.updated_at,
-          modificadoPorNome: i.modificado_por_nome,
-          recompensaPaga: i.recompensa_paga,
-        })));
-      }
-
-      // 3. Load contatos
-      const { data: dbContatos } = await supabase.from("contatos").select("*");
-      if (dbContatos && dbContatos.length > 0) {
-        setContatos(dbContatos.map(c => ({
-          id: c.id,
-          nome: c.nome,
-          email: c.email,
-          cnpj: c.cnpj,
-          razaoSocial: c.razao_social,
-          nomeFantasia: c.nome_fantasia,
-          telefoneFixo: c.telefone_fixo,
-          celular: c.celular,
-          criadoPorId: c.criado_por_id,
-          criadoPorNome: c.criado_por_nome,
-          criadoEm: c.created_at,
-          modificadoEm: c.updated_at,
-          modificadoPorNome: c.modificado_por_nome,
-        })));
-      }
-
-      // 4. Hydrate Auth using Supabase Session as source of truth
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      let currentUser: User | null = null;
-      if (session) {
-        // Find in already loaded profiles
-        currentUser = activeUsers.find(u => u.id === session.user.id) || null;
-        
-        // If not found (maybe RLS issue or delay), try to fetch specifically
-        if (!currentUser) {
-          const { data: specificProfile } = await supabase
-            .from("profiles")
-            .select("*")
-            .eq("user_id", session.user.id)
-            .single();
-            
-          if (specificProfile) {
-            currentUser = {
-              id: specificProfile.user_id,
-              authUserId: specificProfile.user_id,
-              name: specificProfile.name,
-              email: specificProfile.email,
-              loginId: specificProfile.login_identifier || specificProfile.email,
-              cpf: specificProfile.cpf || undefined,
-              funcao: specificProfile.funcao || "",
-              role: "usuario", // Fallback role if we couldn't load it
-              contrato: specificProfile.contrato as Contrato,
-              setor: specificProfile.setor as Setor,
-              onboardingCompleted: specificProfile.onboarding_completed ?? false,
-            };
-            setUsers(prev => [...prev, currentUser!]);
-          }
-        }
-      }
-
-      if (currentUser) {
-        setUser(currentUser);
-      } else {
+      if (!session) {
         setUser(null);
-
+        setUsers([]);
+        setIndicacoes([]);
+        setContatos([]);
+        setAuthLoading(false);
+        return;
       }
-      
+
+      const [profileResult, roleResult] = await Promise.all([
+        supabase.from("profiles").select("*").eq("user_id", session.user.id).maybeSingle(),
+        supabase.from("user_roles").select("role").eq("user_id", session.user.id).maybeSingle(),
+      ]);
+
+      const currentUser = profileResult.data
+        ? mapProfileToUser(profileResult.data, (roleResult.data?.role as Role) || "usuario")
+        : null;
+
+      setUser(currentUser);
+      setUsers(currentUser ? [currentUser] : []);
+      setAuthLoading(false);
+
+      if (!currentUser) return;
+
+      const isBroadAccess = currentUser.role === "admin" || currentUser.role === "aprovador";
+      const indicacoesQuery = supabase.from("indicacoes").select("*").order("created_at", { ascending: false });
+      const contatosQuery = supabase.from("contatos").select("*").order("created_at", { ascending: false });
+
+      const [indicacoesResult, contatosResult] = await Promise.all([
+        isBroadAccess ? indicacoesQuery : indicacoesQuery.eq("criado_por_id", currentUser.authUserId || currentUser.id),
+        currentUser.role === "usuario_ra"
+          ? contatosQuery.eq("criado_por_id", currentUser.authUserId || currentUser.id)
+          : contatosQuery,
+      ]);
+
+      setIndicacoes(indicacoesResult.data?.map(mapIndicacao) ?? []);
+      setContatos(contatosResult.data?.map(mapContato) ?? []);
     };
 
     init();
