@@ -29,10 +29,9 @@ const ROLE_OPTIONS: { value: Role; label: string }[] = [
   { value: "usuario_ra", label: "Usuário RA" },
 ];
 
-const ROLE_LABEL = Object.fromEntries(ROLE_OPTIONS.map((role) => [role.value, role.label])) as Record<
-  Role,
-  string
->;
+const ROLE_LABEL = Object.fromEntries(
+  ROLE_OPTIONS.map((role) => [role.value, role.label]),
+) as Record<Role, string>;
 
 export function GestaoUsuariosPage() {
   const { user } = useApp();
