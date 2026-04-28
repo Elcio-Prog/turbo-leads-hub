@@ -427,6 +427,7 @@ export function IndicacoesPage() {
                           </div>
                         </td>
                         <td className="px-6 py-6 text-right">
+                          {isAdmin ? (
                           <div className="relative inline-block">
                             <button
                               type="button"
@@ -466,6 +467,9 @@ export function IndicacoesPage() {
                               </div>
                             )}
                           </div>
+                          ) : (
+                            <span className="text-xs font-bold text-outline">—</span>
+                          )}
                         </td>
                       </tr>
                     ))
