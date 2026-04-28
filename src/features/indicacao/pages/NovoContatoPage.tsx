@@ -120,10 +120,10 @@ export function NovoContatoPage() {
       <header className="relative py-6 border-b border-outline-variant/10">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div className="space-y-2">
-            <h1 className="font-display text-3xl md:text-5xl font-bold tracking-tighter uppercase leading-none">
-              Novo <br />
-              <span className="italic font-light text-on-surface-variant">Contato</span>
-            </h1>
+             <h1 className="font-display text-3xl md:text-5xl font-bold tracking-tighter uppercase leading-none">
+               Novo Contato <br />
+               <span className="italic font-light text-on-surface-variant">Quente</span>
+             </h1>
           </div>
           <div className="max-w-xs text-right hidden md:block">
             <p className="text-xs text-on-surface-variant font-medium leading-relaxed">
