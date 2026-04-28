@@ -170,7 +170,7 @@ export function IndicacoesPage() {
             <span className="italic font-light text-on-surface-variant">Indicações</span>
           </h1>
           <p className="text-[10px] text-outline uppercase tracking-widest font-bold">
-            {filtered.length} indicações{isAdmin ? ` · ${contatos.length} contatos` : ""} no banco
+            {filtered.length} indicações{isAdmin ? ` · ${contatos.length} contatos quentes` : ""} no banco
             de dados
           </p>
         </div>
@@ -215,7 +215,7 @@ export function IndicacoesPage() {
                 : "ring-outline-variant/20 bg-surface-low text-outline hover:text-white"
             }`}
           >
-            Contatos · {contatos.length}
+            Contatos Quentes · {contatos.length}
           </button>
         </div>
       )}
