@@ -198,13 +198,13 @@ export function NovoContatoPage() {
               onChange={(v) => setForm({ ...form, nome: v })}
               placeholder="Ex: Carlos Oliveira"
             />
-            <EditorialField
-              label="Email *"
-              type="email"
-              value={form.email}
-              onChange={(v) => setForm({ ...form, email: v })}
-              placeholder="contato@empresa.com"
-            />
+             <EditorialField
+               label="Email do Lead *"
+               type="email"
+               value={form.email}
+               onChange={(v) => setForm({ ...form, email: v })}
+               placeholder="contato@empresa.com"
+             />
             <EditorialField
               label="Telefone Fixo"
               value={form.telefoneFixo}
