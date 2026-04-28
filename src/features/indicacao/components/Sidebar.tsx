@@ -9,6 +9,7 @@ import {
   X,
   UserPlus,
   Contact,
+  UsersRound,
 } from "lucide-react";
 import { useApp } from "../AppContext";
 import { Logo } from "./Logo";
@@ -54,6 +55,11 @@ export function Sidebar({ collapsed, onToggle }: { collapsed?: boolean; onToggle
           { to: "/app/indicacoes", label: "Indicações", Icon: ListChecks },
           { to: "/app/analytics", label: "Analytics", Icon: BarChart3 },
         ] as const);
+
+  const adminNav =
+    user.role === "admin"
+      ? ([{ to: "/app/gestao-usuarios", label: "Gestão de Usuários", Icon: UsersRound }] as const)
+      : [];
 
   return (
     <>
@@ -112,6 +118,26 @@ export function Sidebar({ collapsed, onToggle }: { collapsed?: boolean; onToggle
 
         <nav className="flex-1 px-4 space-y-2">
           {NAV.map(({ to, label, Icon }) => {
+            const active = location.pathname.startsWith(to);
+            return (
+              <Link
+                key={to}
+                to={to}
+                title={collapsed ? label : undefined}
+                className={`flex items-center gap-4 rounded-xl px-4 py-3 text-[11px] font-black uppercase tracking-[0.15em] transition-all duration-200 ${
+                  collapsed ? "justify-center" : ""
+                } ${
+                  active
+                    ? "bg-primary-container text-on-primary-container shadow-[0_10px_20px_rgba(202,253,0,0.2)]"
+                    : "text-outline hover:bg-surface-high hover:text-white"
+                }`}
+              >
+                <Icon className={`h-4 w-4 shrink-0 transition-transform ${active ? "scale-110" : ""}`} />
+                {!collapsed && <span className="font-display">{label}</span>}
+              </Link>
+            );
+          })}
+          {adminNav.map(({ to, label, Icon }) => {
             const active = location.pathname.startsWith(to);
             return (
               <Link
