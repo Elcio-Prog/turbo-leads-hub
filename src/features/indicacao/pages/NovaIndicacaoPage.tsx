@@ -82,7 +82,7 @@ export function NovaIndicacaoPage() {
         try {
           const res = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${digits}`);
           if (!res.ok) {
-            toast.error("CNPJ não encontrado na BrasilAPI.");
+            toast.error("CNPJ não encontrado.");
             return;
           }
           const data = await res.json();
@@ -90,9 +90,9 @@ export function NovaIndicacaoPage() {
             ...f,
             empresa: data.nome_fantasia || data.razao_social || f.empresa,
           }));
-          toast.success("Empresa preenchida via BrasilAPI.");
+          toast.success("Empresa preenchida automaticamente.");
         } catch {
-          toast.error("Erro ao consultar BrasilAPI.");
+          toast.error("Erro ao consultar CNPJ.");
         } finally {
           setLoadingCnpj(false);
         }
