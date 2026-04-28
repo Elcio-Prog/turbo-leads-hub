@@ -52,6 +52,7 @@ export function IndicacoesPage() {
   const [tab, setTab] = useState<"indicacoes" | "contatos">("indicacoes");
 
   const isAdmin = user?.role === "admin";
+  const hasBroadAccess = user?.role === "admin" || user?.role === "aprovador";
 
   const filtered = useMemo(() => {
     return visibleIndicacoes.filter((i) => {
@@ -64,13 +65,14 @@ export function IndicacoesPage() {
 
   if (!user) return null;
 
-  const canEditAny = user.role === "admin";
   const canChangeStatus = user.role === "admin" || user.role === "aprovador";
 
   const canEditItem = (i: Indicacao) =>
-    user.role === "admin" || (user.role === "usuario" && i.criadoPorId === user.id);
+    user.role === "admin" ||
+    ((user.role === "usuario" || user.role === "usuario_ra") && i.criadoPorId === user.id);
   const canDeleteItem = (i: Indicacao) =>
-    user.role === "admin" || (user.role === "usuario" && i.criadoPorId === user.id);
+    user.role === "admin" ||
+    ((user.role === "usuario" || user.role === "usuario_ra") && i.criadoPorId === user.id);
 
   const handleExport = () => {
     const rows = [
@@ -143,7 +145,7 @@ export function IndicacoesPage() {
       <header className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-8 border-b border-outline-variant/10">
         <div className="space-y-2">
           <h1 className="font-display text-5xl md:text-7xl font-bold tracking-tighter uppercase leading-none">
-            {user.role === "usuario" ? "Minhas" : "Todas"} <br />
+            {hasBroadAccess ? "Todas" : "Minhas"} <br />
             <span className="italic font-light text-on-surface-variant">Indicações</span>
           </h1>
           <p className="text-[10px] text-outline uppercase tracking-widest font-bold">
@@ -291,6 +293,7 @@ export function IndicacoesPage() {
                         </div>
                       </td>
                       <td className="px-6 py-6 text-right">
+                        {canEditItem(i) || canDeleteItem(i) ? (
                         <div className="relative inline-block">
                           <button
                             type="button"
@@ -334,6 +337,9 @@ export function IndicacoesPage() {
                             </div>
                           )}
                         </div>
+                        ) : (
+                          <span className="text-xs font-bold text-outline">—</span>
+                        )}
                       </td>
                     </tr>
                   ))
@@ -421,6 +427,7 @@ export function IndicacoesPage() {
                           </div>
                         </td>
                         <td className="px-6 py-6 text-right">
+                          {isAdmin ? (
                           <div className="relative inline-block">
                             <button
                               type="button"
@@ -460,6 +467,9 @@ export function IndicacoesPage() {
                               </div>
                             )}
                           </div>
+                          ) : (
+                            <span className="text-xs font-bold text-outline">—</span>
+                          )}
                         </td>
                       </tr>
                     ))
@@ -471,22 +481,9 @@ export function IndicacoesPage() {
         </section>
       )}
 
-      {editing && canEditAny && (
+      {editing && canEditItem(editing) && (
         <EditModal
           indicacao={editing}
-          onClose={() => setEditing(null)}
-          onSave={(patch) => {
-            updateIndicacao(editing.id, patch);
-            setEditing(null);
-            toast.success("Indicação atualizada.");
-          }}
-        />
-      )}
-
-      {editing && !canEditAny && (
-        <EditModal
-          indicacao={editing}
-          restricted
           onClose={() => setEditing(null)}
           onSave={(patch) => {
             updateIndicacao(editing.id, patch);

@@ -30,8 +30,12 @@ export function ContatosPage() {
 
   if (!user) return null;
 
-  const canEdit = (c: Contato) => user.role === "admin" || c.criadoPorId === user.id;
-  const canDelete = (c: Contato) => user.role === "admin" || c.criadoPorId === user.id;
+  const canEdit = (c: Contato) =>
+    user.role === "admin" ||
+    ((user.role === "usuario" || user.role === "usuario_ra") && c.criadoPorId === user.id);
+  const canDelete = (c: Contato) =>
+    user.role === "admin" ||
+    ((user.role === "usuario" || user.role === "usuario_ra") && c.criadoPorId === user.id);
 
   const handleExport = () => {
     const rows = [
@@ -67,7 +71,7 @@ export function ContatosPage() {
       <header className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-8 border-b border-outline-variant/10">
         <div className="space-y-2">
           <h1 className="font-display text-5xl md:text-7xl font-bold tracking-tighter uppercase leading-none">
-            {user.role === "usuario_ra" ? "Meus" : "Todos"} <br />
+            {user.role === "admin" || user.role === "aprovador" ? "Todos" : "Meus"} <br />
             <span className="italic font-light text-on-surface-variant">Contatos</span>
           </h1>
           <p className="text-[10px] text-outline uppercase tracking-widest font-bold">
@@ -160,6 +164,7 @@ export function ContatosPage() {
                       </div>
                     </td>
                     <td className="px-6 py-6 text-right">
+                      {canEdit(c) || canDelete(c) ? (
                       <div className="relative inline-block">
                         <button
                           type="button"
@@ -203,6 +208,9 @@ export function ContatosPage() {
                           </div>
                         )}
                       </div>
+                      ) : (
+                        <span className="text-xs font-bold text-outline">—</span>
+                      )}
                     </td>
                   </tr>
                 ))

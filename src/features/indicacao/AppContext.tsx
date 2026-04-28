@@ -182,6 +182,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       if (!currentUser) return;
 
       const isBroadAccess = currentUser.role === "admin" || currentUser.role === "aprovador";
+      const ownerId = currentUser.authUserId || currentUser.id;
       const indicacoesQuery = supabase
         .from("indicacoes")
         .select("*")
@@ -194,12 +195,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         .limit(100);
 
       const [indicacoesResult, contatosResult] = await Promise.all([
-        isBroadAccess
-          ? indicacoesQuery
-          : indicacoesQuery.eq("criado_por_id", currentUser.authUserId || currentUser.id),
-        currentUser.role === "usuario_ra"
-          ? contatosQuery.eq("criado_por_id", currentUser.authUserId || currentUser.id)
-          : contatosQuery,
+        isBroadAccess ? indicacoesQuery : indicacoesQuery.eq("criado_por_id", ownerId),
+        isBroadAccess ? contatosQuery : contatosQuery.eq("criado_por_id", ownerId),
       ]);
 
       setIndicacoes(indicacoesResult.data?.map(mapIndicacao) ?? []);
@@ -235,6 +232,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
           });
 
           const isBroadAccess = newUser.role === "admin" || newUser.role === "aprovador";
+          const ownerId = newUser.authUserId || newUser.id;
           const indicacoesQuery = supabase
             .from("indicacoes")
             .select("*")
@@ -246,12 +244,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
             .order("created_at", { ascending: false })
             .limit(100);
           const [indicacoesResult, contatosResult] = await Promise.all([
-            isBroadAccess
-              ? indicacoesQuery
-              : indicacoesQuery.eq("criado_por_id", newUser.authUserId || newUser.id),
-            newUser.role === "usuario_ra"
-              ? contatosQuery.eq("criado_por_id", newUser.authUserId || newUser.id)
-              : contatosQuery,
+            isBroadAccess ? indicacoesQuery : indicacoesQuery.eq("criado_por_id", ownerId),
+            isBroadAccess ? contatosQuery : contatosQuery.eq("criado_por_id", ownerId),
           ]);
           setIndicacoes(indicacoesResult.data?.map(mapIndicacao) ?? []);
           setContatos(contatosResult.data?.map(mapContato) ?? []);
@@ -548,7 +542,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const visibleIndicacoes = useMemo(() => {
     if (!user) return [];
-    if (user.role === "usuario") return indicacoes.filter((i) => i.criadoPorId === user.id);
+    if (user.role === "usuario" || user.role === "usuario_ra") {
+      return indicacoes.filter((i) => i.criadoPorId === user.id);
+    }
     return indicacoes;
   }, [indicacoes, user]);
 
@@ -636,7 +632,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const visibleContatos = useMemo(() => {
     if (!user) return [];
-    if (user.role === "usuario_ra") return contatos.filter((c) => c.criadoPorId === user.id);
+    if (user.role === "usuario" || user.role === "usuario_ra") {
+      return contatos.filter((c) => c.criadoPorId === user.id);
+    }
     return contatos;
   }, [contatos, user]);
 
