@@ -56,7 +56,7 @@ export function NovoContatoPage() {
     try {
       const res = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${digits}`);
       if (!res.ok) {
-        toast.error("CNPJ não encontrado na BrasilAPI.");
+        toast.error("CNPJ não encontrado.");
         return;
       }
       const data = await res.json();
@@ -68,9 +68,9 @@ export function NovoContatoPage() {
         telefoneFixo: ddd ? maskPhone(ddd) : f.telefoneFixo,
         email: data.email ?? f.email,
       }));
-      toast.success("Dados preenchidos via BrasilAPI.");
+      toast.success("Dados preenchidos automaticamente.");
     } catch {
-      toast.error("Erro ao consultar BrasilAPI.");
+      toast.error("Erro ao consultar CNPJ.");
     } finally {
       setLoadingCnpj(false);
     }
@@ -143,7 +143,7 @@ export function NovoContatoPage() {
           <div className="max-w-xs text-right hidden md:block">
             <p className="text-xs text-on-surface-variant font-medium leading-relaxed">
               Registre um novo contato corporativo. Use o CNPJ para preencher os dados
-              automaticamente via BrasilAPI.
+              automaticamente.
             </p>
           </div>
         </div>
@@ -183,13 +183,13 @@ export function NovoContatoPage() {
               label="Razão Social"
               value={form.razaoSocial}
               onChange={(v) => setForm({ ...form, razaoSocial: v })}
-              placeholder="Preenchido via BrasilAPI"
+              placeholder="Preenchido automaticamente"
             />
             <EditorialField
               label="Nome Fantasia"
               value={form.nomeFantasia}
               onChange={(v) => setForm({ ...form, nomeFantasia: v })}
-              placeholder="Preenchido via BrasilAPI"
+              placeholder="Preenchido automaticamente"
             />
           </div>
         </section>
@@ -244,7 +244,7 @@ export function NovoContatoPage() {
         <footer className="pt-6 border-t border-outline-variant/10 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3 text-xs font-medium text-on-surface-variant">
             <div className="h-2 w-2 rounded-full bg-primary-container animate-pulse" />
-            Dados enriquecidos via BrasilAPI
+            Dados enriquecidos automaticamente
           </div>
           <PrimaryButton type="submit" className="px-8 py-4 text-xs tracking-[0.2em] uppercase">
             Registrar Contato
