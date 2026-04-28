@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/select";
 import { useApp } from "../AppContext";
 import { PrimaryButton } from "../components/PrimaryButton";
-import { SETORES, type Contrato, type Setor } from "../types";
+import { CONTRATOS, SETORES, type Contrato, type Setor } from "../types";
 
 function maskCpf(value: string) {
   const d = value.replace(/\D/g, "").slice(0, 11);
@@ -18,6 +18,16 @@ function maskCpf(value: string) {
     .replace(/^(\d{3})(\d)/, "$1.$2")
     .replace(/^(\d{3})\.(\d{3})(\d)/, "$1.$2.$3")
     .replace(/\.(\d{3})(\d)/, ".$1-$2");
+}
+
+function normalizeSetor(value: string | undefined): Setor {
+  const normalized = value?.trim().toUpperCase();
+  return SETORES.find((setor) => setor.toUpperCase() === normalized) ?? "COMERCIAL";
+}
+
+function normalizeContrato(value: string | undefined): Contrato {
+  const normalized = value?.trim().toUpperCase();
+  return CONTRATOS.find((contrato) => contrato === normalized) ?? "CLT";
 }
 
 export function ConfiguracoesPage() {
@@ -39,8 +49,8 @@ export function ConfiguracoesPage() {
       loginId: user.loginId || user.email,
       cpf: user.cpf || "",
       funcao: user.funcao || "",
-      setor: user.setor,
-      contrato: user.contrato,
+      setor: normalizeSetor(user.setor),
+      contrato: normalizeContrato(user.contrato),
     });
   }, [user]);
 
@@ -81,8 +91,12 @@ export function ConfiguracoesPage() {
       <form onSubmit={handleSubmit} className="space-y-8">
         <section className="space-y-5">
           <div className="flex items-center gap-3">
-            <span className="font-display text-2xl font-bold italic text-outline-variant/30">01</span>
-            <h2 className="font-display text-sm font-bold uppercase tracking-widest">Dados do usuário</h2>
+            <span className="font-display text-2xl font-bold italic text-outline-variant/30">
+              01
+            </span>
+            <h2 className="font-display text-sm font-bold uppercase tracking-widest">
+              Dados do usuário
+            </h2>
             <div className="h-px flex-1 bg-outline-variant/10" />
           </div>
 
@@ -131,7 +145,11 @@ export function ConfiguracoesPage() {
             <div className="h-2 w-2 rounded-full bg-primary-container" />
             Perfil persistente para os próximos formulários
           </div>
-          <PrimaryButton disabled={saving} type="submit" className="px-8 py-4 text-xs uppercase tracking-[0.2em]">
+          <PrimaryButton
+            disabled={saving}
+            type="submit"
+            className="px-8 py-4 text-xs uppercase tracking-[0.2em]"
+          >
             {saving ? "Salvando..." : "Salvar Configurações"}
             <Save className="h-3 w-3" />
           </PrimaryButton>
