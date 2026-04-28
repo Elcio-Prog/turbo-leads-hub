@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export const BackgroundGradientAnimation = ({
   gradientBackgroundStart = "rgb(10, 10, 10)",
@@ -34,11 +34,12 @@ export const BackgroundGradientAnimation = ({
 }) => {
   const interactiveRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const frameRef = useRef<number | null>(null);
 
   const curX = useRef(0);
   const curY = useRef(0);
-  const [tgX, setTgX] = useState(0);
-  const [tgY, setTgY] = useState(0);
+  const tgX = useRef(0);
+  const tgY = useRef(0);
 
   useEffect(() => {
     const el = containerRef.current;
@@ -55,21 +56,27 @@ export const BackgroundGradientAnimation = ({
     el.style.setProperty("--blending-value", blendingValue);
   }, []);
 
-  useEffect(() => {
+  const animatePointer = useCallback(() => {
     const el = interactiveRef.current;
     if (!el) return;
-    curX.current += (tgX - curX.current) / 20;
-    curY.current += (tgY - curY.current) / 20;
+    curX.current += (tgX.current - curX.current) / 20;
+    curY.current += (tgY.current - curY.current) / 20;
     el.style.transform = `translate(${Math.round(curX.current)}px, ${Math.round(curY.current)}px)`;
-  }, [tgX, tgY]);
+    frameRef.current = null;
+  }, []);
 
   const handleMouseMove = (event: React.MouseEvent) => {
     if (interactiveRef.current) {
       const rect = interactiveRef.current.getBoundingClientRect();
-      setTgX(event.clientX - rect.left);
-      setTgY(event.clientY - rect.top);
+      tgX.current = event.clientX - rect.left;
+      tgY.current = event.clientY - rect.top;
+      if (frameRef.current === null) frameRef.current = requestAnimationFrame(animatePointer);
     }
   };
+
+  useEffect(() => () => {
+    if (frameRef.current !== null) cancelAnimationFrame(frameRef.current);
+  }, []);
 
   const [isSafari, setIsSafari] = useState(false);
   useEffect(() => {
