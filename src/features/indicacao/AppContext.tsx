@@ -269,8 +269,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setor: data.setor ?? "COMERCIAL",
     };
 
-    setUsers((prev) => [nextUser, ...prev]);
-    setUser(nextUser);
     if (data.authUserId) {
       const { error } = await supabase.from("profiles").upsert(
         {
@@ -290,6 +288,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       if (error) return { ok: false, error: `Erro ao salvar perfil no banco de dados: ${error.message}` };
     }
 
+    setUsers((prev) => [nextUser, ...prev]);
+    setUser(nextUser);
     return { ok: true };
   }, [users]);
 

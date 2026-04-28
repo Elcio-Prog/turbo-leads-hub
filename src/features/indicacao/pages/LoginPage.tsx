@@ -101,7 +101,7 @@ export function LoginPage() {
             </div>
           </div>
 
-          {/* Right Side: Login Form & Quick Access */}
+          {/* Right Side: Login Form */}
           <div className="lg:col-span-5 bg-surface-low p-6 lg:p-10 flex flex-col justify-center border-l border-outline-variant/10 relative">
             <header className="mb-8">
               <h2 className="font-display text-2xl lg:text-3xl font-bold tracking-tight mb-2 uppercase text-white leading-none">Indique um cliente!</h2>
