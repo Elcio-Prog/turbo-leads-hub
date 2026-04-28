@@ -22,17 +22,16 @@ export function LoginPage() {
 
     const authEmail = authEmailForIdentifier(email);
 
-    const { error: signInError } = await supabase.auth.signInWithPassword({
+    const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
       email: authEmail,
       password: senha,
     });
 
     if (!signInError) {
-      const { data: sessionData } = await supabase.auth.getSession();
       const result = await registerUser({
         identifier: email,
         password: senha,
-        authUserId: sessionData.session?.user.id,
+        authUserId: signInData.user?.id,
       });
 
       if (!result.ok) {
