@@ -239,6 +239,41 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const normalized = identifier.toLowerCase();
     if (!identifier) return { ok: false, error: "Informe e-mail, RA ou CPF." };
     if (data.password.trim().length < 6) return { ok: false, error: "A senha deve ter pelo menos 6 caracteres." };
+
+    if (data.authUserId) {
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("user_id", data.authUserId)
+        .maybeSingle();
+
+      if (profileError) return { ok: false, error: `Erro ao carregar perfil no banco de dados: ${profileError.message}` };
+
+      if (profile) {
+        const existingProfileUser: User = {
+          id: profile.user_id,
+          authUserId: profile.user_id,
+          name: profile.name,
+          email: profile.email,
+          loginId: profile.login_identifier || profile.email,
+          cpf: profile.cpf || undefined,
+          funcao: profile.funcao || "",
+          role: "usuario",
+          contrato: profile.contrato as Contrato,
+          setor: profile.setor as Setor,
+          onboardingCompleted: profile.onboarding_completed ?? false,
+        };
+
+        setUsers((prev) => {
+          const exists = prev.some((u) => u.id === existingProfileUser.id);
+          if (exists) return prev.map((u) => (u.id === existingProfileUser.id ? existingProfileUser : u));
+          return [existingProfileUser, ...prev];
+        });
+        setUser(existingProfileUser);
+        return { ok: true };
+      }
+    }
+
     const existingUser = users.find(
       (u) =>
         u.id === data.authUserId ||
