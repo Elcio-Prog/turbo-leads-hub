@@ -66,7 +66,10 @@ interface AppContextValue {
       | "modificadoPorNome"
     >,
   ) => Promise<{ ok: boolean; error?: string }>;
-  updateIndicacao: (id: string, patch: Partial<Indicacao>) => Promise<{ ok: boolean; error?: string }>;
+  updateIndicacao: (
+    id: string,
+    patch: Partial<Indicacao>,
+  ) => Promise<{ ok: boolean; error?: string }>;
   updateStatus: (id: string, status: StatusIndicacao) => Promise<{ ok: boolean; error?: string }>;
   deleteIndicacao: (id: string) => void;
   countCltThisMonth: (userId: string) => number;
@@ -509,7 +512,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       );
 
       if (user.authUserId) {
-        const payload: any = {};
+        const payload: Record<string, unknown> = {};
         if (patch.status !== undefined) payload.status = patch.status;
         if (patch.leadNome !== undefined) payload.lead_nome = patch.leadNome;
         if (patch.empresa !== undefined) payload.empresa = patch.empresa;
