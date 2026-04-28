@@ -135,6 +135,7 @@ export interface Contato {
   nomeFantasia: string;
   telefoneFixo: string;
   celular: string;
+  observacao: string;
   criadoPorId: string;
   criadoPorNome: string;
   criadoEm: string;
