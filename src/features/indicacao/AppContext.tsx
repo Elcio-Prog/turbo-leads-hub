@@ -20,9 +20,11 @@ import type {
 import { LIMITE_CLT_MES, VALOR_RECOMPENSA } from "./types";
 import { authEmailForIdentifier } from "./authIdentifiers";
 import { supabase } from "@/integrations/supabase/client";
+import type { Database } from "@/integrations/supabase/types";
 import { toast } from "sonner";
 
 const now = () => new Date().toISOString();
+type IndicacaoUpdate = Database["public"]["Tables"]["indicacoes"]["Update"];
 
 interface RegisterUserInput {
   identifier: string;
@@ -512,7 +514,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       );
 
       if (user.authUserId) {
-        const payload: Record<string, unknown> = {};
+        const payload: IndicacaoUpdate = {};
         if (patch.status !== undefined) payload.status = patch.status;
         if (patch.leadNome !== undefined) payload.lead_nome = patch.leadNome;
         if (patch.empresa !== undefined) payload.empresa = patch.empresa;
