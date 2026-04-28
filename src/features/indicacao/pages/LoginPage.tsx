@@ -3,17 +3,9 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { ArrowRight } from "lucide-react";
 import { useApp } from "../AppContext";
 import { PrimaryButton } from "../components/PrimaryButton";
-import { Avatar } from "../components/Avatar";
 import { BackgroundGradientAnimation } from "@/components/ui/background-gradient-animation";
 import { supabase } from "@/integrations/supabase/client";
 import { authEmailForIdentifier } from "../authIdentifiers";
-
-const ROLE_LABEL: Record<string, string> = {
-  admin: "Administrador",
-  aprovador: "Aprovador",
-  usuario: "Usuário",
-  usuario_ra: "Usuário RA",
-};
 
 export function LoginPage() {
   const { users, login, registerUser } = useApp();
@@ -22,11 +14,6 @@ export function LoginPage() {
   const [senha, setSenha] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const handleQuickLogin = (id: string) => {
-    login(id);
-    navigate({ to: "/app/nova" });
-  };
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -158,28 +145,6 @@ export function LoginPage() {
               </Link>
             </div>
 
-            <div className="my-6 flex items-center gap-3">
-              <div className="h-px flex-1 bg-outline-variant/10" />
-              <span className="text-[9px] uppercase tracking-[0.2em] text-outline font-black">Acesso Rápido</span>
-              <div className="h-px flex-1 bg-outline-variant/10" />
-            </div>
-
-            <div className="grid grid-cols-1 gap-2">
-              {users.map((u) => (
-                <button
-                  key={u.id}
-                  type="button"
-                  onClick={() => handleQuickLogin(u.id)}
-                  className="group flex w-full items-center gap-3 rounded-xl border border-outline-variant/5 bg-surface-high/30 px-3 py-2 text-left transition-all hover:border-primary-container/30 hover:bg-surface-high/60 hover:translate-x-1"
-                >
-                  <Avatar name={u.name} size="xs" className="ring-2 ring-primary-container/10 group-hover:ring-primary-container/40" />
-                  <div className="min-w-0 flex-1">
-                    <div className="truncate text-[10px] font-bold text-white group-hover:text-primary-container transition-colors uppercase tracking-tight">{u.name}</div>
-                    <div className="truncate text-[8px] text-outline font-black uppercase tracking-widest">{ROLE_LABEL[u.role]}</div>
-                  </div>
-                </button>
-              ))}
-            </div>
           </div>
         </main>
       </div>
