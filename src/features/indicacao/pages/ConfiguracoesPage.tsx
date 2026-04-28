@@ -130,16 +130,23 @@ export function ConfiguracoesPage() {
 
           <div className="grid gap-x-8 gap-y-5 md:grid-cols-2">
             <EditorialField
-              label="Nome Completo"
+              label="Nome Completo *"
               value={form.name}
               onChange={(v) => setForm({ ...form, name: v })}
               placeholder="Seu nome completo"
             />
             <EditorialField
-              label="Email/RA"
-              value={form.loginId}
-              onChange={(v) => setForm({ ...form, loginId: v })}
-              placeholder="email corporativo ou RA"
+              label="Email"
+              value={form.email}
+              onChange={() => undefined}
+              placeholder="email corporativo"
+              readOnly
+            />
+            <EditorialField
+              label="RA"
+              value={form.ra}
+              onChange={(v) => setForm({ ...form, ra: v })}
+              placeholder="Seu RA"
             />
             <EditorialField
               label="CPF"
@@ -154,13 +161,13 @@ export function ConfiguracoesPage() {
               placeholder="Cargo atual"
             />
             <EditorialSelect
-              label="Seu Setor"
+              label="Seu Setor *"
               value={form.setor}
               onChange={(v) => setForm({ ...form, setor: v as Setor })}
               options={SETORES}
             />
             <EditorialSelect
-              label="Tipo de Contrato"
+              label="Tipo de Contrato *"
               value={form.contrato}
               onChange={(v) => setForm({ ...form, contrato: v as Contrato })}
               options={["CLT", "PJ"]}
@@ -193,12 +200,14 @@ function EditorialField({
   onChange,
   placeholder,
   type = "text",
+  readOnly = false,
 }: {
   label: string;
   value: string;
   onChange: (v: string) => void;
   placeholder?: string;
   type?: string;
+  readOnly?: boolean;
 }) {
   return (
     <div className="group space-y-2">
@@ -210,7 +219,8 @@ function EditorialField({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full border-0 border-b border-outline-variant/30 bg-transparent px-0 py-2 text-sm font-medium text-on-surface caret-primary-container outline-none transition-all placeholder:text-outline-variant/50 focus:border-primary-container focus:outline-none focus:ring-0"
+        readOnly={readOnly}
+        className="w-full border-0 border-b border-outline-variant/30 bg-transparent px-0 py-2 text-sm font-medium text-on-surface caret-primary-container outline-none transition-all placeholder:text-outline-variant/50 read-only:cursor-not-allowed read-only:text-on-surface-variant read-only:focus:border-outline-variant/30 focus:border-primary-container focus:outline-none focus:ring-0"
       />
     </div>
   );
