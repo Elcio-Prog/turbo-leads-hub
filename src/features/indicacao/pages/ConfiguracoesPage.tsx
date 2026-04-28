@@ -11,6 +11,7 @@ import {
 import { useApp } from "../AppContext";
 import { PrimaryButton } from "../components/PrimaryButton";
 import { CONTRATOS, SETORES, type Contrato, type Setor } from "../types";
+import { supabase } from "@/integrations/supabase/client";
 
 function maskCpf(value: string) {
   const d = value.replace(/\D/g, "").slice(0, 11);
@@ -44,14 +45,33 @@ export function ConfiguracoesPage() {
 
   useEffect(() => {
     if (!user) return;
-    setForm({
+    const nextForm = {
       name: user.name,
       loginId: user.loginId || user.email,
       cpf: user.cpf || "",
       funcao: user.funcao || "",
       setor: normalizeSetor(user.setor),
       contrato: normalizeContrato(user.contrato),
-    });
+    };
+
+    setForm(nextForm);
+
+    supabase
+      .from("profiles")
+      .select("name, email, login_identifier, cpf, funcao, setor, contrato")
+      .eq("user_id", user.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (!data) return;
+        setForm({
+          name: data.name || nextForm.name,
+          loginId: data.login_identifier || data.email || nextForm.loginId,
+          cpf: data.cpf || "",
+          funcao: data.funcao || "",
+          setor: normalizeSetor(data.setor),
+          contrato: normalizeContrato(data.contrato),
+        });
+      });
   }, [user]);
 
   if (!user) return null;
