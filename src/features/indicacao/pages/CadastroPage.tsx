@@ -49,25 +49,23 @@ export function CadastroPage() {
       return;
     }
 
-    const signInError = signUpData.session
-      ? null
-      : (await supabase.auth.signInWithPassword({
+    const signInResult = signUpData.session
+      ? { data: signUpData, error: null }
+      : await supabase.auth.signInWithPassword({
           email: authEmail,
           password: senha,
-        })).error;
+        });
 
-    if (signInError) {
+    if (signInResult.error) {
       setError("Cadastro criado. Se o login não entrar agora, confirme o acesso pelo e-mail e tente novamente.");
       setIsSubmitting(false);
       return;
     }
 
-    const { data: currentSession } = await supabase.auth.getSession();
-
     const result = await registerUser({
       identifier,
       password: senha,
-      authUserId: currentSession.session?.user.id || signUpData.user?.id,
+      authUserId: signInResult.data.user?.id || signUpData.user?.id,
       name: displayName,
       cpf,
       funcao: "",
