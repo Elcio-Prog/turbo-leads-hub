@@ -20,9 +20,11 @@ import type {
 import { LIMITE_CLT_MES, VALOR_RECOMPENSA } from "./types";
 import { authEmailForIdentifier } from "./authIdentifiers";
 import { supabase } from "@/integrations/supabase/client";
+import type { Database } from "@/integrations/supabase/types";
 import { toast } from "sonner";
 
 const now = () => new Date().toISOString();
+type IndicacaoUpdate = Database["public"]["Tables"]["indicacoes"]["Update"];
 
 interface RegisterUserInput {
   identifier: string;
@@ -66,8 +68,11 @@ interface AppContextValue {
       | "modificadoPorNome"
     >,
   ) => Promise<{ ok: boolean; error?: string }>;
-  updateIndicacao: (id: string, patch: Partial<Indicacao>) => void;
-  updateStatus: (id: string, status: StatusIndicacao) => void;
+  updateIndicacao: (
+    id: string,
+    patch: Partial<Indicacao>,
+  ) => Promise<{ ok: boolean; error?: string }>;
+  updateStatus: (id: string, status: StatusIndicacao) => Promise<{ ok: boolean; error?: string }>;
   deleteIndicacao: (id: string) => void;
   countCltThisMonth: (userId: string) => number;
   creditoAtual: (userId: string) => number;
@@ -102,7 +107,11 @@ function mapProfileToUser(profile: any, role: Role = "usuario"): User {
 }
 
 async function getUserRole(userId: string): Promise<Role> {
-  const { data } = await supabase.from("user_roles").select("role").eq("user_id", userId).maybeSingle();
+  const { data } = await supabase
+    .from("user_roles")
+    .select("role")
+    .eq("user_id", userId)
+    .maybeSingle();
   return (data?.role as Role) || "usuario";
 }
 
@@ -497,35 +506,41 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const updateIndicacao: AppContextValue["updateIndicacao"] = useCallback(
     async (id, patch) => {
-      if (!user) return;
+      if (!user) return { ok: false, error: "Não autenticado" };
 
-      if (user.authUserId) {
-        const payload: any = {};
-        if (patch.status) payload.status = patch.status;
-        if (patch.leadNome) payload.lead_nome = patch.leadNome;
-        if (patch.empresa) payload.empresa = patch.empresa;
-        if (patch.telefone) payload.telefone = patch.telefone;
-        if (patch.emailLead) payload.email_lead = patch.emailLead;
-        if (patch.produto) payload.produto = patch.produto;
-        if (patch.observacao) payload.observacao = patch.observacao;
-
-        payload.modificado_por_nome = user.name;
-        payload.updated_at = now();
-
-        const { error } = await supabase.from("indicacoes").update(payload).eq("id", id);
-        if (error) {
-          toast.error("Erro ao atualizar no banco de dados.");
-          return;
-        }
-      }
+      const previousIndicacoes = indicacoes;
+      const stamp = now();
 
       setIndicacoes((prev) =>
         prev.map((i) =>
-          i.id === id ? { ...i, ...patch, modificadoEm: now(), modificadoPorNome: user.name } : i,
+          i.id === id ? { ...i, ...patch, modificadoEm: stamp, modificadoPorNome: user.name } : i,
         ),
       );
+
+      if (user.authUserId) {
+        const payload: IndicacaoUpdate = {};
+        if (patch.status !== undefined) payload.status = patch.status;
+        if (patch.leadNome !== undefined) payload.lead_nome = patch.leadNome;
+        if (patch.empresa !== undefined) payload.empresa = patch.empresa;
+        if (patch.telefone !== undefined) payload.telefone = patch.telefone;
+        if (patch.emailLead !== undefined) payload.email_lead = patch.emailLead;
+        if (patch.produto !== undefined) payload.produto = patch.produto;
+        if (patch.observacao !== undefined) payload.observacao = patch.observacao;
+
+        payload.modificado_por_nome = user.name;
+        payload.updated_at = stamp;
+
+        const { error } = await supabase.from("indicacoes").update(payload).eq("id", id);
+        if (error) {
+          setIndicacoes(previousIndicacoes);
+          toast.error(`Erro ao atualizar no banco de dados: ${error.message}`);
+          return { ok: false, error: error.message };
+        }
+      }
+
+      return { ok: true };
     },
-    [user],
+    [indicacoes, user],
   );
 
   const updateStatus = useCallback(
