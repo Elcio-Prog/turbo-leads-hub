@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/select";
 import { useApp } from "../AppContext";
 import { PrimaryButton } from "../components/PrimaryButton";
-import { SETORES, type Contrato, type Setor } from "../types";
+import { CONTRATOS, SETORES, type Contrato, type Setor } from "../types";
 
 function maskCpf(value: string) {
   const d = value.replace(/\D/g, "").slice(0, 11);
@@ -18,6 +18,16 @@ function maskCpf(value: string) {
     .replace(/^(\d{3})(\d)/, "$1.$2")
     .replace(/^(\d{3})\.(\d{3})(\d)/, "$1.$2.$3")
     .replace(/\.(\d{3})(\d)/, ".$1-$2");
+}
+
+function normalizeSetor(value: string | undefined): Setor {
+  const normalized = value?.trim().toUpperCase();
+  return SETORES.find((setor) => setor.toUpperCase() === normalized) ?? "COMERCIAL";
+}
+
+function normalizeContrato(value: string | undefined): Contrato {
+  const normalized = value?.trim().toUpperCase();
+  return CONTRATOS.find((contrato) => contrato === normalized) ?? "CLT";
 }
 
 export function ConfiguracoesPage() {
@@ -39,8 +49,8 @@ export function ConfiguracoesPage() {
       loginId: user.loginId || user.email,
       cpf: user.cpf || "",
       funcao: user.funcao || "",
-      setor: user.setor,
-      contrato: user.contrato,
+      setor: normalizeSetor(user.setor),
+      contrato: normalizeContrato(user.contrato),
     });
   }, [user]);
 
