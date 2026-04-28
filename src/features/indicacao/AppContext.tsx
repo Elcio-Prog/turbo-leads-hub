@@ -101,6 +101,11 @@ function mapProfileToUser(profile: any, role: Role = "usuario"): User {
   };
 }
 
+async function getUserRole(userId: string): Promise<Role> {
+  const { data } = await supabase.from("user_roles").select("role").eq("user_id", userId).maybeSingle();
+  return (data?.role as Role) || "usuario";
+}
+
 function mapIndicacao(i: any): Indicacao {
   return {
     id: i.id,
@@ -298,19 +303,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
           };
 
         if (profile) {
-          const existingProfileUser: User = {
-            id: profile.user_id,
-            authUserId: profile.user_id,
-            name: profile.name,
-            email: profile.email,
-            loginId: profile.login_identifier || profile.email,
-            cpf: profile.cpf || undefined,
-            funcao: profile.funcao || "",
-            role: "usuario",
-            contrato: profile.contrato as Contrato,
-            setor: profile.setor as Setor,
-            onboardingCompleted: profile.onboarding_completed ?? false,
-          };
+          const existingProfileUser = mapProfileToUser(profile, await getUserRole(profile.user_id));
 
           setUsers((prev) => {
             const exists = prev.some((u) => u.id === existingProfileUser.id);
@@ -353,7 +346,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         loginId: identifier,
         cpf: data.cpf?.trim(),
         funcao: data.funcao?.trim() || "",
-        role: "usuario",
+        role: data.authUserId ? await getUserRole(data.authUserId) : "usuario",
         contrato: data.contrato ?? "CLT",
         setor: data.setor ?? "COMERCIAL",
       };
