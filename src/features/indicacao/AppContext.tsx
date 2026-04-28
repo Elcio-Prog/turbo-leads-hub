@@ -21,6 +21,7 @@ import { LIMITE_CLT_MES, VALOR_RECOMPENSA } from "./types";
 import { authEmailForIdentifier } from "./authIdentifiers";
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
+import type { Session } from "@supabase/supabase-js";
 import { toast } from "sonner";
 
 const now = () => new Date().toISOString();
@@ -164,17 +165,31 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [contatos, setContatos] = useState<Contato[]>([]);
 
   useEffect(() => {
-    const init = async () => {
+    let cancelled = false;
+    let loadVersion = 0;
+
+    const resetState = () => {
+      if (cancelled) return;
+      setUser(null);
+      setUsers([]);
+      setIndicacoes([]);
+      setContatos([]);
+    };
+
+    const clearInvalidStoredSession = async () => {
+      await supabase.auth.signOut({ scope: "local" });
+      if (typeof window === "undefined") return;
+      Object.keys(window.localStorage)
+        .filter((key) => key.startsWith("sb-") && key.endsWith("-auth-token"))
+        .forEach((key) => window.localStorage.removeItem(key));
+    };
+
+    const loadSessionData = async (session: Session | null) => {
+      const requestVersion = ++loadVersion;
       setAuthLoading(true);
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
 
       if (!session) {
-        setUser(null);
-        setUsers([]);
-        setIndicacoes([]);
-        setContatos([]);
+        resetState();
         setAuthLoading(false);
         return;
       }
@@ -183,6 +198,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
         supabase.from("profiles").select("*").eq("user_id", session.user.id).maybeSingle(),
         supabase.from("user_roles").select("role").eq("user_id", session.user.id).maybeSingle(),
       ]);
+
+      if (cancelled || requestVersion !== loadVersion) return;
+
+      if (profileResult.error || roleResult.error) {
+        resetState();
+        setAuthLoading(false);
+        return;
+      }
 
       const role = (roleResult.data?.role as Role) || "usuario";
       const currentUser = profileResult.data ? mapProfileToUser(profileResult.data, role) : null;
@@ -216,67 +239,45 @@ export function AppProvider({ children }: { children: ReactNode }) {
           : Promise.resolve({ data: [] }),
       ]);
 
+      if (cancelled || requestVersion !== loadVersion) return;
+
       setIndicacoes(indicacoesResult.data?.map(mapIndicacao) ?? []);
       setContatos(contatosResult.data?.map(mapContato) ?? []);
     };
 
-    init();
-
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
+    } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "SIGNED_OUT") {
-        setUser(null);
-        setUsers([]);
-        setIndicacoes([]);
-        setContatos([]);
+        loadVersion += 1;
+        resetState();
         setAuthLoading(false);
-      } else if (session && event === "SIGNED_IN") {
-        setAuthLoading(true);
-        const [profileResult, roleResult] = await Promise.all([
-          supabase.from("profiles").select("*").eq("user_id", session.user.id).maybeSingle(),
-          supabase.from("user_roles").select("role").eq("user_id", session.user.id).maybeSingle(),
-        ]);
-        const p = profileResult.data;
-        if (p) {
-          const role = (roleResult.data?.role as Role) || "usuario";
-          const newUser = mapProfileToUser(p, role);
-          setUser(newUser);
-          setUsers((prev) => {
-            const exists = prev.find((u) => u.id === newUser.id);
-            if (exists) return prev.map((u) => (u.id === newUser.id ? newUser : u));
-            return [...prev, newUser];
-          });
+        return;
+      }
 
-          const isBroadAccess = newUser.role === "admin" || newUser.role === "aprovador";
-          const canAccessContatos = isBroadAccess || newUser.role === "usuario_ra";
-          const ownerId = newUser.authUserId || newUser.id;
-          const indicacoesQuery = supabase
-            .from("indicacoes")
-            .select("*")
-            .order("created_at", { ascending: false })
-            .limit(100);
-          const contatosQuery = supabase
-            .from("contatos")
-            .select("*")
-            .order("created_at", { ascending: false })
-            .limit(100);
-          const [indicacoesResult, contatosResult] = await Promise.all([
-            isBroadAccess ? indicacoesQuery : indicacoesQuery.eq("criado_por_id", ownerId),
-            canAccessContatos
-              ? isBroadAccess
-                ? contatosQuery
-                : contatosQuery.eq("criado_por_id", ownerId)
-              : Promise.resolve({ data: [] }),
-          ]);
-          setIndicacoes(indicacoesResult.data?.map(mapIndicacao) ?? []);
-          setContatos(contatosResult.data?.map(mapContato) ?? []);
-        }
-        setAuthLoading(false);
+      if (["INITIAL_SESSION", "SIGNED_IN", "TOKEN_REFRESHED", "USER_UPDATED"].includes(event)) {
+        void loadSessionData(session);
       }
     });
 
+    const init = async () => {
+      const { data, error } = await supabase.auth.getSession();
+      if (cancelled) return;
+
+      if (error) {
+        await clearInvalidStoredSession();
+        resetState();
+        setAuthLoading(false);
+        return;
+      }
+
+      await loadSessionData(data.session);
+    };
+
+    void init();
+
     return () => {
+      cancelled = true;
       subscription.unsubscribe();
     };
   }, []);
