@@ -55,7 +55,16 @@ interface AppContextValue {
   indicacoes: Indicacao[];
   visibleIndicacoes: Indicacao[];
   createIndicacao: (
-    data: Omit<Indicacao, "id" | "status" | "criadoEm" | "modificadoEm" | "criadoPorId" | "criadoPorNome" | "modificadoPorNome">,
+    data: Omit<
+      Indicacao,
+      | "id"
+      | "status"
+      | "criadoEm"
+      | "modificadoEm"
+      | "criadoPorId"
+      | "criadoPorNome"
+      | "modificadoPorNome"
+    >,
   ) => Promise<{ ok: boolean; error?: string }>;
   updateIndicacao: (id: string, patch: Partial<Indicacao>) => void;
   updateStatus: (id: string, status: StatusIndicacao) => void;
@@ -65,7 +74,10 @@ interface AppContextValue {
   contatos: Contato[];
   visibleContatos: Contato[];
   createContato: (
-    data: Omit<Contato, "id" | "criadoEm" | "modificadoEm" | "criadoPorId" | "criadoPorNome" | "modificadoPorNome">,
+    data: Omit<
+      Contato,
+      "id" | "criadoEm" | "modificadoEm" | "criadoPorId" | "criadoPorNome" | "modificadoPorNome"
+    >,
   ) => Promise<{ ok: boolean; error?: string }>;
   updateContato: (id: string, patch: Partial<Contato>) => void;
   deleteContato: (id: string) => void;
@@ -169,11 +181,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
       if (!currentUser) return;
 
       const isBroadAccess = currentUser.role === "admin" || currentUser.role === "aprovador";
-      const indicacoesQuery = supabase.from("indicacoes").select("*").order("created_at", { ascending: false });
-      const contatosQuery = supabase.from("contatos").select("*").order("created_at", { ascending: false });
+      const indicacoesQuery = supabase
+        .from("indicacoes")
+        .select("*")
+        .order("created_at", { ascending: false });
+      const contatosQuery = supabase
+        .from("contatos")
+        .select("*")
+        .order("created_at", { ascending: false });
 
       const [indicacoesResult, contatosResult] = await Promise.all([
-        isBroadAccess ? indicacoesQuery : indicacoesQuery.eq("criado_por_id", currentUser.authUserId || currentUser.id),
+        isBroadAccess
+          ? indicacoesQuery
+          : indicacoesQuery.eq("criado_por_id", currentUser.authUserId || currentUser.id),
         currentUser.role === "usuario_ra"
           ? contatosQuery.eq("criado_por_id", currentUser.authUserId || currentUser.id)
           : contatosQuery,
@@ -211,11 +231,21 @@ export function AppProvider({ children }: { children: ReactNode }) {
           });
 
           const isBroadAccess = newUser.role === "admin" || newUser.role === "aprovador";
-          const indicacoesQuery = supabase.from("indicacoes").select("*").order("created_at", { ascending: false });
-          const contatosQuery = supabase.from("contatos").select("*").order("created_at", { ascending: false });
+          const indicacoesQuery = supabase
+            .from("indicacoes")
+            .select("*")
+            .order("created_at", { ascending: false });
+          const contatosQuery = supabase
+            .from("contatos")
+            .select("*")
+            .order("created_at", { ascending: false });
           const [indicacoesResult, contatosResult] = await Promise.all([
-            isBroadAccess ? indicacoesQuery : indicacoesQuery.eq("criado_por_id", newUser.authUserId || newUser.id),
-            newUser.role === "usuario_ra" ? contatosQuery.eq("criado_por_id", newUser.authUserId || newUser.id) : contatosQuery,
+            isBroadAccess
+              ? indicacoesQuery
+              : indicacoesQuery.eq("criado_por_id", newUser.authUserId || newUser.id),
+            newUser.role === "usuario_ra"
+              ? contatosQuery.eq("criado_por_id", newUser.authUserId || newUser.id)
+              : contatosQuery,
           ]);
           setIndicacoes(indicacoesResult.data?.map(mapIndicacao) ?? []);
           setContatos(contatosResult.data?.map(mapContato) ?? []);
@@ -229,136 +259,159 @@ export function AppProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  const login = useCallback((userId: string) => {
-    const found = users.find((u) => u.id === userId);
-    if (!found) return;
-    setUser(found);
-  }, [users]);
+  const login = useCallback(
+    (userId: string) => {
+      const found = users.find((u) => u.id === userId);
+      if (!found) return;
+      setUser(found);
+    },
+    [users],
+  );
 
-  const registerUser: AppContextValue["registerUser"] = useCallback(async (data) => {
-    const identifier = data.identifier.trim();
-    const normalized = identifier.toLowerCase();
-    if (!identifier) return { ok: false, error: "Informe e-mail, RA ou CPF." };
-    if (data.password.trim().length < 6) return { ok: false, error: "A senha deve ter pelo menos 6 caracteres." };
+  const registerUser: AppContextValue["registerUser"] = useCallback(
+    async (data) => {
+      const identifier = data.identifier.trim();
+      const normalized = identifier.toLowerCase();
+      if (!identifier) return { ok: false, error: "Informe e-mail, RA ou CPF." };
+      if (data.password.trim().length < 6)
+        return { ok: false, error: "A senha deve ter pelo menos 6 caracteres." };
 
-    if (data.authUserId) {
-      const { data: profile, error: profileError } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("user_id", data.authUserId)
-        .maybeSingle();
+      if (data.authUserId) {
+        const { data: profile, error: profileError } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("user_id", data.authUserId)
+          .maybeSingle();
 
-      if (profileError) return { ok: false, error: `Erro ao carregar perfil no banco de dados: ${profileError.message}` };
+        if (profileError)
+          return {
+            ok: false,
+            error: `Erro ao carregar perfil no banco de dados: ${profileError.message}`,
+          };
 
-      if (profile) {
-        const existingProfileUser: User = {
-          id: profile.user_id,
-          authUserId: profile.user_id,
-          name: profile.name,
-          email: profile.email,
-          loginId: profile.login_identifier || profile.email,
-          cpf: profile.cpf || undefined,
-          funcao: profile.funcao || "",
-          role: "usuario",
-          contrato: profile.contrato as Contrato,
-          setor: profile.setor as Setor,
-          onboardingCompleted: profile.onboarding_completed ?? false,
-        };
+        if (profile) {
+          const existingProfileUser: User = {
+            id: profile.user_id,
+            authUserId: profile.user_id,
+            name: profile.name,
+            email: profile.email,
+            loginId: profile.login_identifier || profile.email,
+            cpf: profile.cpf || undefined,
+            funcao: profile.funcao || "",
+            role: "usuario",
+            contrato: profile.contrato as Contrato,
+            setor: profile.setor as Setor,
+            onboardingCompleted: profile.onboarding_completed ?? false,
+          };
 
-        setUsers((prev) => {
-          const exists = prev.some((u) => u.id === existingProfileUser.id);
-          if (exists) return prev.map((u) => (u.id === existingProfileUser.id ? existingProfileUser : u));
-          return [existingProfileUser, ...prev];
-        });
-        setUser(existingProfileUser);
-        return { ok: true };
-      }
-    }
-
-    const existingUser = users.find(
-      (u) =>
-        u.id === data.authUserId ||
-        u.authUserId === data.authUserId ||
-        u.email.toLowerCase() === normalized ||
-        u.loginId?.toLowerCase() === normalized,
-    );
-
-    if (existingUser) {
-      if (data.authUserId && (existingUser.id === data.authUserId || existingUser.authUserId === data.authUserId)) {
-        setUser(existingUser);
-        return { ok: true };
+          setUsers((prev) => {
+            const exists = prev.some((u) => u.id === existingProfileUser.id);
+            if (exists)
+              return prev.map((u) => (u.id === existingProfileUser.id ? existingProfileUser : u));
+            return [existingProfileUser, ...prev];
+          });
+          setUser(existingProfileUser);
+          return { ok: true };
+        }
       }
 
-      return { ok: false, error: "Este cadastro já existe." };
-    }
-
-    const nextUser: User = {
-      id: data.authUserId || `local-${Date.now()}`,
-      authUserId: data.authUserId,
-      name: data.name?.trim() || (identifier.includes("@") ? identifier.split("@")[0] : `Usuário ${identifier}`),
-      email: authEmailForIdentifier(identifier),
-      loginId: identifier,
-      cpf: data.cpf?.trim(),
-      funcao: data.funcao?.trim() || "",
-      role: "usuario",
-      contrato: data.contrato ?? "CLT",
-      setor: data.setor ?? "COMERCIAL",
-    };
-
-    if (data.authUserId) {
-      const { error } = await supabase.from("profiles").upsert(
-        {
-          user_id: data.authUserId,
-          name: nextUser.name,
-          email: nextUser.email,
-          login_identifier: nextUser.loginId,
-          cpf: nextUser.cpf || null,
-          funcao: nextUser.funcao || "",
-          contrato: nextUser.contrato,
-          setor: nextUser.setor,
-          onboarding_completed: false,
-        },
-        { onConflict: "user_id" },
+      const existingUser = users.find(
+        (u) =>
+          u.id === data.authUserId ||
+          u.authUserId === data.authUserId ||
+          u.email.toLowerCase() === normalized ||
+          u.loginId?.toLowerCase() === normalized,
       );
 
-      if (error) return { ok: false, error: `Erro ao salvar perfil no banco de dados: ${error.message}` };
-    }
+      if (existingUser) {
+        if (
+          data.authUserId &&
+          (existingUser.id === data.authUserId || existingUser.authUserId === data.authUserId)
+        ) {
+          setUser(existingUser);
+          return { ok: true };
+        }
 
-    setUsers((prev) => [nextUser, ...prev]);
-    setUser(nextUser);
-    return { ok: true };
-  }, [users]);
+        return { ok: false, error: "Este cadastro já existe." };
+      }
 
-  const updateProfile = useCallback(async (updates: Partial<User>) => {
-    if (!user) return { ok: false, error: "Usuário não autenticado." };
-
-    const updatedUser: User = { 
-      ...user, 
-      ...updates, 
-      onboardingCompleted: true 
-    };
-
-    if (supabase) {
-      const payload = {
-        user_id: user.id,
-        name: updatedUser.name,
-        email: updatedUser.email,
-        login_identifier: updatedUser.loginId || updatedUser.email,
-        cpf: updatedUser.cpf || null,
-        funcao: updatedUser.funcao || "",
-        setor: updatedUser.setor,
-        contrato: updatedUser.contrato,
-        onboarding_completed: true,
+      const nextUser: User = {
+        id: data.authUserId || `local-${Date.now()}`,
+        authUserId: data.authUserId,
+        name:
+          data.name?.trim() ||
+          (identifier.includes("@") ? identifier.split("@")[0] : `Usuário ${identifier}`),
+        email: authEmailForIdentifier(identifier),
+        loginId: identifier,
+        cpf: data.cpf?.trim(),
+        funcao: data.funcao?.trim() || "",
+        role: "usuario",
+        contrato: data.contrato ?? "CLT",
+        setor: data.setor ?? "COMERCIAL",
       };
-      
-      const { error } = await supabase.from("profiles").upsert(payload, { onConflict: 'user_id' });
-      if (error) return { ok: false, error: `Erro no banco de dados: ${error.message}` };
-    }
 
-    setUsers((prev) => prev.map((u) => (u.id === user.id ? updatedUser : u)));
-    setUser(updatedUser);
-    return { ok: true };
-  }, [user]);
+      if (data.authUserId) {
+        const { error } = await supabase.from("profiles").upsert(
+          {
+            user_id: data.authUserId,
+            name: nextUser.name,
+            email: nextUser.email,
+            login_identifier: nextUser.loginId,
+            cpf: nextUser.cpf || null,
+            funcao: nextUser.funcao || "",
+            contrato: nextUser.contrato,
+            setor: nextUser.setor,
+            onboarding_completed: false,
+          },
+          { onConflict: "user_id" },
+        );
+
+        if (error)
+          return { ok: false, error: `Erro ao salvar perfil no banco de dados: ${error.message}` };
+      }
+
+      setUsers((prev) => [nextUser, ...prev]);
+      setUser(nextUser);
+      return { ok: true };
+    },
+    [users],
+  );
+
+  const updateProfile = useCallback(
+    async (updates: Partial<User>) => {
+      if (!user) return { ok: false, error: "Usuário não autenticado." };
+
+      const updatedUser: User = {
+        ...user,
+        ...updates,
+        onboardingCompleted: true,
+      };
+
+      if (supabase) {
+        const payload = {
+          user_id: user.id,
+          name: updatedUser.name,
+          email: updatedUser.email,
+          login_identifier: updatedUser.loginId || updatedUser.email,
+          cpf: updatedUser.cpf || null,
+          funcao: updatedUser.funcao || "",
+          setor: updatedUser.setor,
+          contrato: updatedUser.contrato,
+          onboarding_completed: true,
+        };
+
+        const { error } = await supabase
+          .from("profiles")
+          .upsert(payload, { onConflict: "user_id" });
+        if (error) return { ok: false, error: `Erro no banco de dados: ${error.message}` };
+      }
+
+      setUsers((prev) => prev.map((u) => (u.id === user.id ? updatedUser : u)));
+      setUser(updatedUser);
+      return { ok: true };
+    },
+    [user],
+  );
 
   const logout = useCallback(() => {
     setUser(null);
@@ -381,8 +434,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const creditoAtual = useCallback(
     (userId: string) =>
-      indicacoes.filter((i) => i.criadoPorId === userId && i.status === "Contrato assinado").length *
-      VALOR_RECOMPENSA,
+      indicacoes.filter((i) => i.criadoPorId === userId && i.status === "Contrato assinado")
+        .length * VALOR_RECOMPENSA,
     [indicacoes],
   );
 
@@ -400,7 +453,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       }
       const stamp = now();
       const novaId = crypto.randomUUID();
-      
+
       const nova: Indicacao = {
         ...data,
         id: novaId,
@@ -443,7 +496,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const updateIndicacao: AppContextValue["updateIndicacao"] = useCallback(
     async (id, patch) => {
       if (!user) return;
-      
+
       if (user.authUserId) {
         const payload: any = {};
         if (patch.status) payload.status = patch.status;
@@ -453,7 +506,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         if (patch.emailLead) payload.email_lead = patch.emailLead;
         if (patch.produto) payload.produto = patch.produto;
         if (patch.observacao) payload.observacao = patch.observacao;
-        
+
         payload.modificado_por_nome = user.name;
         payload.updated_at = now();
 
@@ -466,9 +519,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
       setIndicacoes((prev) =>
         prev.map((i) =>
-          i.id === id
-            ? { ...i, ...patch, modificadoEm: now(), modificadoPorNome: user.name }
-            : i,
+          i.id === id ? { ...i, ...patch, modificadoEm: now(), modificadoPorNome: user.name } : i,
         ),
       );
     },
@@ -500,7 +551,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       if (!user) return { ok: false, error: "Não autenticado" };
       const stamp = now();
       const novoId = crypto.randomUUID();
-      
+
       const novo: Contato = {
         ...data,
         id: novoId,
@@ -538,7 +589,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const updateContato: AppContextValue["updateContato"] = useCallback(
     async (id, patch) => {
       if (!user) return;
-      
+
       if (user.authUserId) {
         const payload: any = {};
         if (patch.nome) payload.nome = patch.nome;
@@ -561,9 +612,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
       setContatos((prev) =>
         prev.map((c) =>
-          c.id === id
-            ? { ...c, ...patch, modificadoEm: now(), modificadoPorNome: user.name }
-            : c,
+          c.id === id ? { ...c, ...patch, modificadoEm: now(), modificadoPorNome: user.name } : c,
         ),
       );
     },

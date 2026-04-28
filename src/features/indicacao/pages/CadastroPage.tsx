@@ -23,7 +23,8 @@ export function CadastroPage() {
     const normalized = normalizeIdentifier(identifier);
     const authEmail = authEmailForIdentifier(identifier);
 
-    const displayName = normalized.type === "email" ? normalized.value.split("@")[0] : `Usuário ${identifier.trim()}`;
+    const displayName =
+      normalized.type === "email" ? normalized.value.split("@")[0] : `Usuário ${identifier.trim()}`;
     const cpf = normalized.type === "cpf" ? normalized.digits : undefined;
 
     const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
@@ -57,7 +58,9 @@ export function CadastroPage() {
         });
 
     if (signInResult.error) {
-      setError("Cadastro criado. Se o login não entrar agora, confirme o acesso pelo e-mail e tente novamente.");
+      setError(
+        "Cadastro criado. Se o login não entrar agora, confirme o acesso pelo e-mail e tente novamente.",
+      );
       setIsSubmitting(false);
       return;
     }
@@ -98,37 +101,62 @@ export function CadastroPage() {
 
           <div className="hidden lg:flex lg:col-span-7 flex-col justify-between overflow-hidden p-12 lg:p-14 relative">
             <div className="z-10 flex items-center gap-4">
-              <img src="/logo.png" alt="Logo" className="h-14 w-14 rounded-xl object-contain shadow-[0_0_30px_rgba(202,253,0,0.2)] mix-blend-screen brightness-125" />
+              <img
+                src="/logo.png"
+                alt="Logo"
+                className="h-14 w-14 rounded-xl object-contain shadow-[0_0_30px_rgba(202,253,0,0.2)] mix-blend-screen brightness-125"
+              />
               <div className="flex flex-col">
-                <span className="font-display text-3xl font-bold italic leading-none tracking-tighter text-primary-container uppercase">Net Turbo</span>
-                <span className="mt-1 text-[10px] font-black tracking-[0.4em] text-white/50 uppercase">Programa de Indicações</span>
+                <span className="font-display text-3xl font-bold italic leading-none tracking-tighter text-primary-container uppercase">
+                  Net Turbo
+                </span>
+                <span className="mt-1 text-[10px] font-black tracking-[0.4em] text-white/50 uppercase">
+                  Programa de Indicações
+                </span>
               </div>
             </div>
 
             <div className="z-10 max-w-md space-y-6">
               <h1 className="font-display text-4xl font-bold leading-[0.95] tracking-tight text-white uppercase lg:text-5xl">
                 Comece agora. <br />
-                <span className="font-light text-primary-container italic lowercase">Indique seu primeiro cliente.</span>
+                <span className="font-light text-primary-container italic lowercase">
+                  Indique seu primeiro cliente.
+                </span>
               </h1>
               <p className="text-sm font-light leading-relaxed text-on-surface-variant">
-                Cadastre seu acesso usando e-mail corporativo, RA ou CPF para entrar no programa de indicações.
+                Cadastre seu acesso usando e-mail corporativo, RA ou CPF para entrar no programa de
+                indicações.
               </p>
             </div>
 
             <div className="absolute inset-0 opacity-[0.04] pointer-events-none">
-              <div className="absolute inset-0" style={{ backgroundImage: "radial-gradient(circle at 1.5px 1.5px, #cafd00 1px, transparent 0)", backgroundSize: "40px 40px" }} />
+              <div
+                className="absolute inset-0"
+                style={{
+                  backgroundImage:
+                    "radial-gradient(circle at 1.5px 1.5px, #cafd00 1px, transparent 0)",
+                  backgroundSize: "40px 40px",
+                }}
+              />
             </div>
           </div>
 
           <div className="relative flex flex-col justify-center border-l border-outline-variant/10 bg-surface-low p-6 lg:col-span-5 lg:p-10">
-            <Link to="/" className="mb-8 inline-flex items-center gap-2 text-[10px] font-bold tracking-[0.18em] text-outline uppercase transition-colors hover:text-primary-container">
+            <Link
+              to="/"
+              className="mb-8 inline-flex items-center gap-2 text-[10px] font-bold tracking-[0.18em] text-outline uppercase transition-colors hover:text-primary-container"
+            >
               <ArrowLeft className="h-3 w-3" />
               Voltar ao login
             </Link>
 
             <header className="mb-8">
-              <h2 className="font-display text-2xl font-bold leading-none tracking-tight text-white uppercase lg:text-3xl">Criar cadastro</h2>
-              <p className="mt-3 text-[10px] font-black tracking-[0.2em] text-on-surface-variant uppercase">Use e-mail, RA ou CPF.</p>
+              <h2 className="font-display text-2xl font-bold leading-none tracking-tight text-white uppercase lg:text-3xl">
+                Criar cadastro
+              </h2>
+              <p className="mt-3 text-[10px] font-black tracking-[0.2em] text-on-surface-variant uppercase">
+                Use e-mail, RA ou CPF.
+              </p>
             </header>
 
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -155,7 +183,11 @@ export function CadastroPage() {
 
               {error && <p className="text-xs font-bold text-destructive">{error}</p>}
 
-              <PrimaryButton disabled={isSubmitting} type="submit" className="w-full py-5 text-[10px] tracking-[0.2em] uppercase shadow-[0_15px_30px_rgba(202,253,0,0.1)]">
+              <PrimaryButton
+                disabled={isSubmitting}
+                type="submit"
+                className="w-full py-5 text-[10px] tracking-[0.2em] uppercase shadow-[0_15px_30px_rgba(202,253,0,0.1)]"
+              >
                 {isSubmitting ? "CADASTRANDO..." : "CADASTRAR E ENTRAR"}
                 <ArrowRight className="h-3 w-3" />
               </PrimaryButton>

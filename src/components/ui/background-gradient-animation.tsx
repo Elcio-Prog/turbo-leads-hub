@@ -74,9 +74,12 @@ export const BackgroundGradientAnimation = ({
     }
   };
 
-  useEffect(() => () => {
-    if (frameRef.current !== null) cancelAnimationFrame(frameRef.current);
-  }, []);
+  useEffect(
+    () => () => {
+      if (frameRef.current !== null) cancelAnimationFrame(frameRef.current);
+    },
+    [],
+  );
 
   const [isSafari, setIsSafari] = useState(false);
   useEffect(() => {
@@ -87,10 +90,7 @@ export const BackgroundGradientAnimation = ({
     <div
       ref={containerRef}
       onMouseMove={handleMouseMove}
-      className={cn(
-        "relative overflow-hidden top-0 left-0 w-full h-full",
-        containerClassName
-      )}
+      className={cn("relative overflow-hidden top-0 left-0 w-full h-full", containerClassName)}
       style={{
         background: `linear-gradient(40deg, var(--gradient-background-start), var(--gradient-background-end))`,
       }}
@@ -113,7 +113,7 @@ export const BackgroundGradientAnimation = ({
       <div
         className={cn(
           "absolute inset-0 [filter:url(#blurMe)_blur(40px)]",
-          isSafari ? "blur-2xl" : "[filter:url(#blurMe)_blur(40px)]"
+          isSafari ? "blur-2xl" : "[filter:url(#blurMe)_blur(40px)]",
         )}
       >
         <div
@@ -122,7 +122,7 @@ export const BackgroundGradientAnimation = ({
             "top-[calc(50%-var(--size)/2)] left-[calc(50%-var(--size)/2)]",
             "[mix-blend-mode:var(--blending-value)]",
             "w-[var(--size)] h-[var(--size)]",
-            "animate-first opacity-100"
+            "animate-first opacity-100",
           )}
         />
         <div
@@ -131,7 +131,7 @@ export const BackgroundGradientAnimation = ({
             "top-[calc(50%-var(--size)/2)] left-[calc(50%-var(--size)/2)]",
             "[mix-blend-mode:var(--blending-value)]",
             "w-[var(--size)] h-[var(--size)]",
-            "animate-second opacity-100"
+            "animate-second opacity-100",
           )}
         />
         <div
@@ -140,7 +140,7 @@ export const BackgroundGradientAnimation = ({
             "top-[calc(50%-var(--size)/2)] left-[calc(50%-var(--size)/2)]",
             "[mix-blend-mode:var(--blending-value)]",
             "w-[var(--size)] h-[var(--size)]",
-            "animate-third opacity-100"
+            "animate-third opacity-100",
           )}
         />
         <div
@@ -149,7 +149,7 @@ export const BackgroundGradientAnimation = ({
             "top-[calc(50%-var(--size)/2)] left-[calc(50%-var(--size)/2)]",
             "[mix-blend-mode:var(--blending-value)]",
             "w-[var(--size)] h-[var(--size)]",
-            "animate-fourth opacity-100"
+            "animate-fourth opacity-100",
           )}
         />
         <div
@@ -158,7 +158,7 @@ export const BackgroundGradientAnimation = ({
             "top-[calc(50%-var(--size)/2)] left-[calc(50%-var(--size)/2)]",
             "[mix-blend-mode:var(--blending-value)]",
             "w-[var(--size)] h-[var(--size)]",
-            "animate-fifth opacity-100"
+            "animate-fifth opacity-100",
           )}
         />
 
@@ -169,7 +169,7 @@ export const BackgroundGradientAnimation = ({
               "absolute [background:radial-gradient(circle_at_center,_rgba(var(--pointer-color),_0.8)_0,_rgba(var(--pointer-color),_0)_25%)_no-repeat]",
               "w-full h-full -top-1/2 -left-1/2",
               "[mix-blend-mode:var(--blending-value)]",
-              "opacity-40"
+              "opacity-40",
             )}
           />
         )}
