@@ -416,3 +416,26 @@ function ModalField({
     </label>
   );
 }
+
+function ModalTextarea({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  return (
+    <label className="block md:col-span-2">
+      <span className="mb-1.5 block text-xs font-medium text-[#AAAAAA]">{label}</span>
+      <textarea
+        value={value}
+        maxLength={1000}
+        rows={4}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full resize-none rounded-lg border border-[#2a2a2a] bg-[#111111] px-3.5 py-2.5 text-sm text-white outline-none focus:border-[#CCFF00]"
+      />
+    </label>
+  );
+}
