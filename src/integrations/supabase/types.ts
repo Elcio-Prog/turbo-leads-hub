@@ -206,6 +206,27 @@ export type Database = {
         }
         Returns: boolean
       }
+      indicacao_update_allowed: {
+        Args: {
+          _contrato: Database["public"]["Enums"]["contrato_tipo"]
+          _criado_por_id: string
+          _criado_por_nome: string
+          _email_indicador: string
+          _email_lead: string
+          _empresa: string
+          _funcao: string
+          _id: string
+          _lead_nome: string
+          _modificado_por_nome: string
+          _observacao: string
+          _produto: Database["public"]["Enums"]["produto_tipo"]
+          _recompensa_paga: boolean
+          _setor: Database["public"]["Enums"]["setor_tipo"]
+          _status: Database["public"]["Enums"]["status_indicacao"]
+          _telefone: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
       app_role: "admin" | "aprovador" | "usuario" | "usuario_ra"
