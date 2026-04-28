@@ -199,6 +199,8 @@ function EditorialSelect({
   options: readonly string[];
   onChange: (v: string) => void;
 }) {
+  const displayOptions = options.includes(value) || !value ? options : [value, ...options];
+
   return (
     <div className="group space-y-2">
       <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-outline transition-colors group-focus-within:text-primary-container">
@@ -206,14 +208,14 @@ function EditorialSelect({
       </label>
       <Select value={value} onValueChange={onChange}>
         <SelectTrigger className="h-auto w-full rounded-none border-0 border-b border-outline-variant/30 bg-transparent px-0 py-2 text-sm font-medium text-on-surface shadow-none outline-none transition-colors hover:border-primary-container/50 focus:border-primary-container focus:outline-none focus:ring-0 data-[state=open]:border-primary-container [&>svg]:text-outline [&>svg]:opacity-60">
-          <SelectValue />
+          <SelectValue placeholder="Selecione">{value || "Selecione"}</SelectValue>
         </SelectTrigger>
         <SelectContent
           position="popper"
           sideOffset={6}
           className="max-h-72 min-w-[--radix-select-trigger-width] rounded-xl border border-outline-variant/20 bg-surface-low p-1.5 text-on-surface shadow-2xl shadow-black/60 backdrop-blur-xl"
         >
-          {options.map((o) => (
+          {displayOptions.map((o) => (
             <SelectItem
               key={o}
               value={o}
