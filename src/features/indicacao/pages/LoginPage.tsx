@@ -136,7 +136,7 @@ export function LoginPage() {
               </p>
             </header>
 
-            <form onSubmit={handleEmailLogin} className="space-y-6">
+            <form onSubmit={handleEmailLogin} className="space-y-5">
               <Field
                 label="Seu E-mail, RA ou CPF"
                 type="text"
@@ -161,7 +161,7 @@ export function LoginPage() {
                 <PrimaryButton
                   disabled={isSubmitting}
                   type="submit"
-                  className="w-full py-5 text-[10px] tracking-[0.2em] uppercase shadow-[0_15px_30px_rgba(202,253,0,0.1)]"
+                  className="w-full py-4 text-[9px] tracking-[0.22em] uppercase shadow-[0_15px_30px_rgba(202,253,0,0.1)]"
                 >
                   {isSubmitting ? "ENTRANDO..." : "ENTRAR NO DASHBOARD"}
                   <ArrowRight className="h-3 w-3" />
@@ -170,12 +170,12 @@ export function LoginPage() {
             </form>
 
             <div className="mt-5 rounded-xl border border-outline-variant/10 bg-surface-high/20 p-4 text-center">
-              <p className="text-[10px] uppercase tracking-[0.18em] text-on-surface-variant font-black">
+              <p className="text-[9px] uppercase tracking-[0.18em] text-on-surface-variant font-black">
                 Ainda não tem acesso?
               </p>
               <Link
                 to="/cadastro"
-                className="mt-2 inline-flex text-[11px] font-bold uppercase tracking-[0.18em] text-primary-container transition-colors hover:text-on-surface"
+                className="mt-2 inline-flex text-[10px] font-bold uppercase tracking-[0.18em] text-primary-container transition-colors hover:text-on-surface"
               >
                 Cadastrar nova conta
               </Link>
@@ -205,12 +205,12 @@ function Field({
   return (
     <div className="group relative">
       <div className="flex justify-between items-end mb-1">
-        <label className="block text-[10px] uppercase tracking-[0.2em] text-on-surface-variant font-bold group-focus-within:text-primary-container transition-colors">
+        <label className="block text-[9px] uppercase tracking-[0.2em] text-on-surface-variant font-bold group-focus-within:text-primary-container transition-colors">
           {label}
         </label>
         {showForgot && (
           <a
-            className="text-[10px] uppercase tracking-wider text-outline hover:text-primary-container transition-colors font-bold"
+            className="text-[9px] uppercase tracking-wider text-outline hover:text-primary-container transition-colors font-bold"
             href="#"
           >
             Esqueceu?
@@ -222,7 +222,7 @@ function Field({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full bg-transparent border-0 border-b border-outline-variant/30 py-3 px-0 text-on-surface placeholder:text-outline focus:ring-0 focus:border-primary-container transition-all text-base font-medium"
+        className="w-full bg-transparent border-0 border-b border-outline-variant/30 py-2.5 px-0 text-sm font-medium text-on-surface placeholder:text-outline focus:ring-0 focus:border-primary-container transition-all"
       />
     </div>
   );
