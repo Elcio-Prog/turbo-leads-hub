@@ -473,22 +473,9 @@ export function IndicacoesPage() {
         </section>
       )}
 
-      {editing && canEditAny && (
+      {editing && canEditItem(editing) && (
         <EditModal
           indicacao={editing}
-          onClose={() => setEditing(null)}
-          onSave={(patch) => {
-            updateIndicacao(editing.id, patch);
-            setEditing(null);
-            toast.success("Indicação atualizada.");
-          }}
-        />
-      )}
-
-      {editing && !canEditAny && (
-        <EditModal
-          indicacao={editing}
-          restricted
           onClose={() => setEditing(null)}
           onSave={(patch) => {
             updateIndicacao(editing.id, patch);
