@@ -22,7 +22,6 @@ import { authEmailForIdentifier } from "./authIdentifiers";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
-const STORAGE_AUTH = "ni:auth";
 interface RegisterUserInput {
   identifier: string;
   password: string;
@@ -71,32 +70,11 @@ interface AppContextValue {
 
 const AppContext = createContext<AppContextValue | null>(null);
 
-function loadJSON<T>(key: string, fallback: T): T {
-  if (typeof window === "undefined") return fallback;
-  try {
-    const raw = window.localStorage.getItem(key);
-    if (!raw) return fallback;
-    return JSON.parse(raw) as T;
-  } catch {
-    return fallback;
-  }
-}
-
-function saveJSON(key: string, value: unknown) {
-  if (typeof window === "undefined") return;
-  try {
-    window.localStorage.setItem(key, JSON.stringify(value));
-  } catch {
-    /* ignore */
-  }
-}
-
 export function AppProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [users, setUsers] = useState<User[]>([]);
   const [indicacoes, setIndicacoes] = useState<Indicacao[]>([]);
   const [contatos, setContatos] = useState<Contato[]>([]);
-  const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
     const init = async () => {
@@ -204,13 +182,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
       if (currentUser) {
         setUser(currentUser);
-        saveJSON(STORAGE_AUTH, currentUser.id);
       } else {
         setUser(null);
-        window.localStorage.removeItem(STORAGE_AUTH);
+
       }
       
-      setHydrated(true);
     };
 
     init();
@@ -219,7 +195,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_OUT') {
         setUser(null);
-        window.localStorage.removeItem(STORAGE_AUTH);
+
       } else if (session && event === 'SIGNED_IN') {
         // If they just signed in, we might need to reload their profile
         const { data: p } = await supabase.from("profiles").select("*").eq("user_id", session.user.id).single();
@@ -238,7 +214,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
             onboardingCompleted: p.onboarding_completed ?? false,
           };
           setUser(newUser);
-          saveJSON(STORAGE_AUTH, newUser.id);
           setUsers(prev => {
             const exists = prev.find(u => u.id === newUser.id);
             if (exists) return prev.map(u => u.id === newUser.id ? newUser : u);
@@ -257,7 +232,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const found = users.find((u) => u.id === userId);
     if (!found) return;
     setUser(found);
-    saveJSON(STORAGE_AUTH, userId);
   }, [users]);
 
   const registerUser: AppContextValue["registerUser"] = useCallback(async (data) => {
@@ -284,7 +258,25 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
     setUsers((prev) => [nextUser, ...prev]);
     setUser(nextUser);
-    saveJSON(STORAGE_AUTH, nextUser.id);
+    if (data.authUserId) {
+      const { error } = await supabase.from("profiles").upsert(
+        {
+          user_id: data.authUserId,
+          name: nextUser.name,
+          email: nextUser.email,
+          login_identifier: nextUser.loginId,
+          cpf: nextUser.cpf || null,
+          funcao: nextUser.funcao || "",
+          contrato: nextUser.contrato,
+          setor: nextUser.setor,
+          onboarding_completed: false,
+        },
+        { onConflict: "user_id" },
+      );
+
+      if (error) return { ok: false, error: `Erro ao salvar perfil no banco de dados: ${error.message}` };
+    }
+
     return { ok: true };
   }, [users]);
 
@@ -316,7 +308,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
     setUsers((prev) => prev.map((u) => (u.id === user.id ? updatedUser : u)));
     setUser(updatedUser);
-    saveJSON(STORAGE_AUTH, updatedUser.id);
     return { ok: true };
   }, [user]);
 
