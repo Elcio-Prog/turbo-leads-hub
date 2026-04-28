@@ -42,6 +42,7 @@ export interface User {
   name: string;
   email: string;
   loginId?: string;
+  ra?: string;
   cpf?: string;
   funcao?: string;
   role: Role;
