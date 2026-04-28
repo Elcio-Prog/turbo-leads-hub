@@ -36,7 +36,8 @@ export function ConfiguracoesPage() {
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({
     name: "",
-    loginId: "",
+    email: "",
+    ra: "",
     cpf: "",
     funcao: "",
     setor: "COMERCIAL" as Setor,
@@ -47,7 +48,8 @@ export function ConfiguracoesPage() {
     if (!user) return;
     const nextForm = {
       name: user.name,
-      loginId: user.loginId || user.email,
+      email: user.email,
+      ra: user.ra || "",
       cpf: user.cpf || "",
       funcao: user.funcao || "",
       setor: normalizeSetor(user.setor),
@@ -58,14 +60,15 @@ export function ConfiguracoesPage() {
 
     supabase
       .from("profiles")
-      .select("name, email, login_identifier, cpf, funcao, setor, contrato")
+      .select("name, email, ra, cpf, funcao, setor, contrato")
       .eq("user_id", user.id)
       .maybeSingle()
       .then(({ data }) => {
         if (!data) return;
         setForm({
           name: data.name || nextForm.name,
-          loginId: data.login_identifier || data.email || nextForm.loginId,
+          email: data.email || nextForm.email,
+          ra: data.ra || "",
           cpf: data.cpf || "",
           funcao: data.funcao || "",
           setor: normalizeSetor(data.setor),
@@ -78,6 +81,11 @@ export function ConfiguracoesPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!form.name.trim() || !form.setor || !form.contrato) {
+      toast.error("Preencha Nome Completo, Seu Setor e Tipo de Contrato.");
+      return;
+    }
+
     setSaving(true);
     const result = await updateProfile(form);
     setSaving(false);

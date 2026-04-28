@@ -40,7 +40,8 @@ interface RegisterUserInput {
 
 interface UpdateProfileInput {
   name: string;
-  ra: string;
+  loginId?: string;
+  ra?: string;
   cpf: string;
   funcao: string;
   setor: Setor;
