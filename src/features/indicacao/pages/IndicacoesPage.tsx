@@ -250,9 +250,9 @@ export function IndicacoesPage() {
                         {canChangeStatus ? (
                           <select
                             value={i.status}
-                            onChange={(e) => {
-                              updateStatus(i.id, e.target.value as StatusIndicacao);
-                              toast.success(`Status atualizado`);
+                            onChange={async (e) => {
+                              const result = await updateStatus(i.id, e.target.value as StatusIndicacao);
+                              if (result.ok) toast.success(`Status atualizado`);
                             }}
                             className={`cursor-pointer rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-widest outline-none border-0 ring-1 ring-inset ${STATUS_STYLES[i.status].bg} ${STATUS_STYLES[i.status].text} ring-current/20`}
                           >
@@ -485,10 +485,12 @@ export function IndicacoesPage() {
         <EditModal
           indicacao={editing}
           onClose={() => setEditing(null)}
-          onSave={(patch) => {
-            updateIndicacao(editing.id, patch);
-            setEditing(null);
-            toast.success("Indicação atualizada.");
+          onSave={async (patch) => {
+            const result = await updateIndicacao(editing.id, patch);
+            if (result.ok) {
+              setEditing(null);
+              toast.success("Indicação atualizada.");
+            }
           }}
         />
       )}
