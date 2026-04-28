@@ -34,52 +34,65 @@ const ROLE_LABEL = Object.fromEntries(
 ) as Record<Role, string>;
 
 export function GestaoUsuariosPage() {
-  const { user } = useApp();
+  const { user, authLoading } = useApp();
   const [users, setUsers] = useState<ManagedUser[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
   const [savingUserId, setSavingUserId] = useState<string | null>(null);
 
   const isAdmin = user?.role === "admin";
 
   const loadUsers = useCallback(async () => {
+    if (authLoading) return;
+
     if (!isAdmin) {
       setLoading(false);
       return;
     }
 
     setLoading(true);
-    const [profilesResult, rolesResult] = await Promise.all([
-      supabase
-        .from("profiles")
-        .select("user_id, name, email, login_identifier, setor, contrato")
-        .order("name", { ascending: true }),
-      supabase.from("user_roles").select("user_id, role"),
-    ]);
+    setLoadError("");
 
-    setLoading(false);
+    try {
+      const [profilesResult, rolesResult] = await Promise.all([
+        supabase
+          .from("profiles")
+          .select("user_id, name, email, login_identifier, setor, contrato")
+          .order("name", { ascending: true }),
+        supabase.from("user_roles").select("user_id, role"),
+      ]);
 
-    if (profilesResult.error || rolesResult.error) {
+      if (profilesResult.error || rolesResult.error) {
+        const message = profilesResult.error?.message || rolesResult.error?.message || "Erro desconhecido.";
+        setLoadError(message);
+        toast.error("Não foi possível carregar os usuários.");
+        return;
+      }
+
+      const roleByUserId = new Map<string, Role>();
+      rolesResult.data?.forEach((roleRow) => {
+        roleByUserId.set(roleRow.user_id, roleRow.role as Role);
+      });
+
+      setUsers(
+        (profilesResult.data ?? []).map((profile) => ({
+          userId: profile.user_id,
+          name: profile.name,
+          email: profile.email,
+          loginId: profile.login_identifier || profile.email,
+          setor: profile.setor,
+          contrato: profile.contrato,
+          role: roleByUserId.get(profile.user_id) ?? "usuario",
+        })),
+      );
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Erro inesperado ao carregar usuários.";
+      setLoadError(message);
       toast.error("Não foi possível carregar os usuários.");
-      return;
+    } finally {
+      setLoading(false);
     }
-
-    const roleByUserId = new Map<string, Role>();
-    rolesResult.data?.forEach((roleRow) => {
-      roleByUserId.set(roleRow.user_id, roleRow.role as Role);
-    });
-
-    setUsers(
-      (profilesResult.data ?? []).map((profile) => ({
-        userId: profile.user_id,
-        name: profile.name,
-        email: profile.email,
-        loginId: profile.login_identifier || profile.email,
-        setor: profile.setor,
-        contrato: profile.contrato,
-        role: roleByUserId.get(profile.user_id) ?? "usuario",
-      })),
-    );
-  }, [isAdmin]);
+  }, [authLoading, isAdmin]);
 
   useEffect(() => {
     loadUsers();
@@ -186,6 +199,17 @@ export function GestaoUsuariosPage() {
         {loading ? (
           <div className="px-5 py-10 text-sm font-medium text-on-surface-variant">
             Carregando usuários...
+          </div>
+        ) : loadError ? (
+          <div className="space-y-4 px-5 py-10 text-sm font-medium text-on-surface-variant">
+            <p>Não foi possível carregar os usuários.</p>
+            <button
+              type="button"
+              onClick={loadUsers}
+              className="rounded-lg border border-outline-variant/20 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-primary-container transition-colors hover:bg-primary-container/10"
+            >
+              Tentar novamente
+            </button>
           </div>
         ) : users.length === 0 ? (
           <div className="px-5 py-10 text-sm font-medium text-on-surface-variant">
