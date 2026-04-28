@@ -29,13 +29,23 @@ export function ContatosPage() {
   }, [visibleContatos, fSearch]);
 
   if (!user) return null;
+  if (user.role === "usuario") {
+    return (
+      <div className="max-w-3xl mx-auto py-20 font-body">
+        <h1 className="font-display text-4xl font-bold uppercase tracking-tight">Acesso restrito</h1>
+        <p className="mt-3 text-sm text-on-surface-variant">
+          Contatos são permitidos somente para Usuário RA.
+        </p>
+      </div>
+    );
+  }
 
   const canEdit = (c: Contato) =>
     user.role === "admin" ||
-    ((user.role === "usuario" || user.role === "usuario_ra") && c.criadoPorId === user.id);
+    (user.role === "usuario_ra" && c.criadoPorId === user.id);
   const canDelete = (c: Contato) =>
     user.role === "admin" ||
-    ((user.role === "usuario" || user.role === "usuario_ra") && c.criadoPorId === user.id);
+    (user.role === "usuario_ra" && c.criadoPorId === user.id);
 
   const handleExport = () => {
     const rows = [
