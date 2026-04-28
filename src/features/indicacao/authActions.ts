@@ -45,7 +45,10 @@ export const registerAuthUser = createServerFn({ method: "POST" })
       email_confirm: true,
       user_metadata: {
         login_identifier: normalized.value,
-        name: normalized.type === "email" ? normalized.value.split("@")[0] : `Usuário ${data.identifier.trim()}`,
+        name:
+          normalized.type === "email"
+            ? normalized.value.split("@")[0]
+            : `Usuário ${data.identifier.trim()}`,
         ra: normalized.type === "ra" ? normalized.value : undefined,
         cpf: normalized.type === "cpf" ? normalized.digits : undefined,
         contrato: "CLT",
