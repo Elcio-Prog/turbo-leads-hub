@@ -561,6 +561,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const createContato: AppContextValue["createContato"] = useCallback(
     async (data) => {
       if (!user) return { ok: false, error: "Não autenticado" };
+      if (user.role === "usuario") {
+        return { ok: false, error: "Contatos são permitidos somente para Usuário RA." };
+      }
       const stamp = now();
       const novoId = crypto.randomUUID();
 
@@ -642,7 +645,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const visibleContatos = useMemo(() => {
     if (!user) return [];
-    if (user.role === "usuario" || user.role === "usuario_ra") {
+    if (user.role === "usuario") return [];
+    if (user.role === "usuario_ra") {
       return contatos.filter((c) => c.criadoPorId === user.id);
     }
     return contatos;
