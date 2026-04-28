@@ -56,6 +56,7 @@ export function NovaIndicacaoPage() {
     observacao: "",
   });
   const [loadingCnpj, setLoadingCnpj] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const lastFetchedRef = useRef<string>("");
 
   useEffect(() => {
@@ -118,27 +119,36 @@ export function NovaIndicacaoPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
     if (!form.leadNome.trim() || !form.empresa.trim() || !form.emailLead.trim()) {
       toast.error("Preencha os campos obrigatórios.");
       return;
     }
-    const result = await createIndicacao(form);
-    if (!result.ok) {
-      toast.error(result.error || "Erro ao criar indicação.");
-      return;
+    setIsSubmitting(true);
+    try {
+      const result = await createIndicacao(form);
+      if (!result.ok) {
+        toast.error(result.error || "Erro ao criar indicação.");
+        return;
+      }
+      toast.success("Indicação criada com sucesso!", {
+        description: `Lead ${form.leadNome} salvo com status “Indicado”.`,
+      });
+      setForm({
+        ...form,
+        leadNome: "",
+        cnpj: "",
+        empresa: "",
+        telefone: "",
+        emailLead: "",
+        observacao: "",
+      });
+    } catch (error) {
+      console.error("Erro ao criar indicação", error);
+      toast.error("Não foi possível confirmar o registro. Tente novamente.");
+    } finally {
+      setIsSubmitting(false);
     }
-    toast.success("Indicação criada com sucesso!", {
-      description: `Lead ${form.leadNome} salvo com status “Indicado”.`,
-    });
-    setForm({
-      ...form,
-      leadNome: "",
-      cnpj: "",
-      empresa: "",
-      telefone: "",
-      emailLead: "",
-      observacao: "",
-    });
   };
 
   return (
@@ -282,8 +292,9 @@ export function NovaIndicacaoPage() {
               R$ {VALOR_RECOMPENSA} por contrato implantado
             </div>
             <div className="flex items-center gap-3 w-full sm:w-auto">
-              <PrimaryButton type="submit" disabled={cltBlocked} className="px-8 py-4 text-xs tracking-[0.2em] uppercase">
-                Confirmar Registro
+              <PrimaryButton type="submit" disabled={cltBlocked || isSubmitting} className="px-8 py-4 text-xs tracking-[0.2em] uppercase">
+                {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+                {isSubmitting ? "Registrando..." : "Confirmar Registro"}
               </PrimaryButton>
             </div>
           </footer>
