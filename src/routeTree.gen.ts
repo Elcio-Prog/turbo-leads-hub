@@ -15,6 +15,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppNovoContatoRouteImport } from './routes/app.novo-contato'
 import { Route as AppNovaRouteImport } from './routes/app.nova'
 import { Route as AppIndicacoesRouteImport } from './routes/app.indicacoes'
+import { Route as AppGestaoUsuariosRouteImport } from './routes/app.gestao-usuarios'
 import { Route as AppContatosRouteImport } from './routes/app.contatos'
 import { Route as AppConfiguracoesRouteImport } from './routes/app.configuracoes'
 import { Route as AppAnalyticsRouteImport } from './routes/app.analytics'
@@ -49,6 +50,11 @@ const AppIndicacoesRoute = AppIndicacoesRouteImport.update({
   path: '/indicacoes',
   getParentRoute: () => AppRoute,
 } as any)
+const AppGestaoUsuariosRoute = AppGestaoUsuariosRouteImport.update({
+  id: '/gestao-usuarios',
+  path: '/gestao-usuarios',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppContatosRoute = AppContatosRouteImport.update({
   id: '/contatos',
   path: '/contatos',
@@ -72,6 +78,7 @@ export interface FileRoutesByFullPath {
   '/app/analytics': typeof AppAnalyticsRoute
   '/app/configuracoes': typeof AppConfiguracoesRoute
   '/app/contatos': typeof AppContatosRoute
+  '/app/gestao-usuarios': typeof AppGestaoUsuariosRoute
   '/app/indicacoes': typeof AppIndicacoesRoute
   '/app/nova': typeof AppNovaRoute
   '/app/novo-contato': typeof AppNovoContatoRoute
@@ -83,6 +90,7 @@ export interface FileRoutesByTo {
   '/app/analytics': typeof AppAnalyticsRoute
   '/app/configuracoes': typeof AppConfiguracoesRoute
   '/app/contatos': typeof AppContatosRoute
+  '/app/gestao-usuarios': typeof AppGestaoUsuariosRoute
   '/app/indicacoes': typeof AppIndicacoesRoute
   '/app/nova': typeof AppNovaRoute
   '/app/novo-contato': typeof AppNovoContatoRoute
@@ -95,6 +103,7 @@ export interface FileRoutesById {
   '/app/analytics': typeof AppAnalyticsRoute
   '/app/configuracoes': typeof AppConfiguracoesRoute
   '/app/contatos': typeof AppContatosRoute
+  '/app/gestao-usuarios': typeof AppGestaoUsuariosRoute
   '/app/indicacoes': typeof AppIndicacoesRoute
   '/app/nova': typeof AppNovaRoute
   '/app/novo-contato': typeof AppNovoContatoRoute
@@ -108,6 +117,7 @@ export interface FileRouteTypes {
     | '/app/analytics'
     | '/app/configuracoes'
     | '/app/contatos'
+    | '/app/gestao-usuarios'
     | '/app/indicacoes'
     | '/app/nova'
     | '/app/novo-contato'
@@ -119,6 +129,7 @@ export interface FileRouteTypes {
     | '/app/analytics'
     | '/app/configuracoes'
     | '/app/contatos'
+    | '/app/gestao-usuarios'
     | '/app/indicacoes'
     | '/app/nova'
     | '/app/novo-contato'
@@ -130,6 +141,7 @@ export interface FileRouteTypes {
     | '/app/analytics'
     | '/app/configuracoes'
     | '/app/contatos'
+    | '/app/gestao-usuarios'
     | '/app/indicacoes'
     | '/app/nova'
     | '/app/novo-contato'
@@ -185,6 +197,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppIndicacoesRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/gestao-usuarios': {
+      id: '/app/gestao-usuarios'
+      path: '/gestao-usuarios'
+      fullPath: '/app/gestao-usuarios'
+      preLoaderRoute: typeof AppGestaoUsuariosRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/contatos': {
       id: '/app/contatos'
       path: '/contatos'
@@ -213,6 +232,7 @@ interface AppRouteChildren {
   AppAnalyticsRoute: typeof AppAnalyticsRoute
   AppConfiguracoesRoute: typeof AppConfiguracoesRoute
   AppContatosRoute: typeof AppContatosRoute
+  AppGestaoUsuariosRoute: typeof AppGestaoUsuariosRoute
   AppIndicacoesRoute: typeof AppIndicacoesRoute
   AppNovaRoute: typeof AppNovaRoute
   AppNovoContatoRoute: typeof AppNovoContatoRoute
@@ -222,6 +242,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppAnalyticsRoute: AppAnalyticsRoute,
   AppConfiguracoesRoute: AppConfiguracoesRoute,
   AppContatosRoute: AppContatosRoute,
+  AppGestaoUsuariosRoute: AppGestaoUsuariosRoute,
   AppIndicacoesRoute: AppIndicacoesRoute,
   AppNovaRoute: AppNovaRoute,
   AppNovoContatoRoute: AppNovoContatoRoute,
