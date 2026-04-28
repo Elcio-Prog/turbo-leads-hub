@@ -47,7 +47,9 @@ function mapCurrentUserToManagedUser(currentUser: User): ManagedUser {
 
 export function GestaoUsuariosPage() {
   const { user, authLoading } = useApp();
-  const [users, setUsers] = useState<ManagedUser[]>(() => (user ? [mapCurrentUserToManagedUser(user)] : []));
+  const [users, setUsers] = useState<ManagedUser[]>(() =>
+    user ? [mapCurrentUserToManagedUser(user)] : [],
+  );
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
   const [savingUserId, setSavingUserId] = useState<string | null>(null);
@@ -84,7 +86,8 @@ export function GestaoUsuariosPage() {
       ]);
 
       if (profilesResult.error || rolesResult.error) {
-        const message = profilesResult.error?.message || rolesResult.error?.message || "Erro desconhecido.";
+        const message =
+          profilesResult.error?.message || rolesResult.error?.message || "Erro desconhecido.";
         setLoadError(message);
         toast.error("Não foi possível carregar os usuários.");
         return;
@@ -107,7 +110,8 @@ export function GestaoUsuariosPage() {
         })),
       );
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Erro inesperado ao carregar usuários.";
+      const message =
+        error instanceof Error ? error.message : "Erro inesperado ao carregar usuários.";
       setLoadError(message);
       toast.error("Não foi possível carregar os usuários.");
     } finally {
