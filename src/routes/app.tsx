@@ -9,13 +9,17 @@ export const Route = createFileRoute("/app")({
 });
 
 function AppLayout() {
-  const { user } = useApp();
+  const { user, authLoading } = useApp();
   const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(false);
 
   useEffect(() => {
-    if (!user) navigate({ to: "/" });
-  }, [user, navigate]);
+    if (!authLoading && !user) navigate({ to: "/" });
+  }, [authLoading, user, navigate]);
+
+  if (authLoading) {
+    return <div className="min-h-screen bg-[#0a0a0a]" />;
+  }
 
   if (!user) return null;
 
