@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Eye, EyeOff } from "lucide-react";
 import { useApp } from "../AppContext";
 import { PrimaryButton } from "../components/PrimaryButton";
 import { BackgroundGradientAnimation } from "@/components/ui/background-gradient-animation";
@@ -8,6 +8,28 @@ import { supabase } from "@/integrations/supabase/client";
 import { resolveLoginIdentifier } from "../authActions";
 
 const LAST_LOGIN_IDENTIFIER_KEY = "indicacao:last-login-identifier";
+
+function loginErrorMessage(message?: string) {
+  const normalized = (message || "").toLowerCase();
+
+  if (normalized.includes("invalid login credentials")) {
+    return "E-mail, RA, CPF ou senha inválidos.";
+  }
+
+  if (normalized.includes("email not confirmed")) {
+    return "Seu e-mail ainda não foi confirmado.";
+  }
+
+  if (normalized.includes("too many requests") || normalized.includes("rate limit")) {
+    return "Muitas tentativas de login. Aguarde alguns minutos e tente novamente.";
+  }
+
+  if (!message) {
+    return "Não foi possível acessar. Tente novamente.";
+  }
+
+  return `Erro ao acessar: ${message}`;
+}
 
 export function LoginPage() {
   const { registerUser } = useApp();
@@ -18,6 +40,7 @@ export function LoginPage() {
       : window.localStorage.getItem(LAST_LOGIN_IDENTIFIER_KEY) || "",
   );
   const [senha, setSenha] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -28,7 +51,7 @@ export function LoginPage() {
 
     const resolved = await resolveLoginIdentifier({ data: { identifier: email } });
     if (!resolved.ok) {
-      setError(resolved.error || "Cadastro não encontrado ou senha inválida.");
+      setError(resolved.error || "Cadastro não encontrado para o E-mail, RA ou CPF informado.");
       setIsSubmitting(false);
       return;
     }
@@ -57,7 +80,7 @@ export function LoginPage() {
 
       navigate({ to: "/app/nova" });
     } else {
-      setError("Cadastro não encontrado ou senha inválida.");
+      setError(loginErrorMessage(signInError.message));
       setIsSubmitting(false);
     }
   };
@@ -163,11 +186,17 @@ export function LoginPage() {
               />
               <Field
                 label="Sua Senha"
-                type="password"
+                type={showPassword ? "text" : "password"}
                 value={senha}
-                onChange={(v) => setSenha(v)}
+                onChange={(v) => {
+                  setSenha(v);
+                  setError("");
+                }}
                 placeholder="••••••••"
                 showForgot
+                showPasswordToggle
+                isPasswordVisible={showPassword}
+                onTogglePassword={() => setShowPassword((current) => !current)}
               />
               {error && <p className="text-xs font-bold text-destructive">{error}</p>}
 
@@ -208,6 +237,9 @@ function Field({
   onChange,
   placeholder,
   showForgot = false,
+  showPasswordToggle = false,
+  isPasswordVisible = false,
+  onTogglePassword,
 }: {
   label: string;
   type: string;
@@ -215,6 +247,9 @@ function Field({
   onChange: (v: string) => void;
   placeholder?: string;
   showForgot?: boolean;
+  showPasswordToggle?: boolean;
+  isPasswordVisible?: boolean;
+  onTogglePassword?: () => void;
 }) {
   return (
     <div className="group relative">
@@ -231,13 +266,25 @@ function Field({
           </a>
         )}
       </div>
-      <input
-        type={type}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        className="w-full bg-transparent border-0 border-b border-outline-variant/30 py-2.5 px-0 text-sm font-medium text-on-surface placeholder:text-outline focus:ring-0 focus:border-primary-container transition-all"
-      />
+      <div className="relative">
+        <input
+          type={type}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={placeholder}
+          className="w-full bg-transparent border-0 border-b border-outline-variant/30 py-2.5 px-0 pr-10 text-sm font-medium text-on-surface placeholder:text-outline focus:ring-0 focus:border-primary-container transition-all"
+        />
+        {showPasswordToggle && onTogglePassword && (
+          <button
+            type="button"
+            onClick={onTogglePassword}
+            className="absolute right-0 top-1/2 -translate-y-1/2 p-2 text-outline transition-colors hover:text-primary-container focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary-container"
+            aria-label={isPasswordVisible ? "Ocultar senha" : "Mostrar senha"}
+          >
+            {isPasswordVisible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+          </button>
+        )}
+      </div>
     </div>
   );
 }
