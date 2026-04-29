@@ -55,6 +55,7 @@ interface AppContextValue {
   login: (userId: string) => void;
   registerUser: (data: RegisterUserInput) => Promise<{ ok: boolean; error?: string }>;
   updateProfile: (data: UpdateProfileInput) => Promise<{ ok: boolean; error?: string }>;
+  refreshData: () => Promise<{ ok: boolean; error?: string }>;
   logout: () => void;
   indicacoes: Indicacao[];
   visibleIndicacoes: Indicacao[];
@@ -434,6 +435,47 @@ export function AppProvider({ children }: { children: ReactNode }) {
     supabase.auth.signOut();
   }, []);
 
+  const refreshData = useCallback(async () => {
+    if (!user) return { ok: false, error: "Usuário não autenticado." };
+
+    const isBroadAccess = user.role === "admin" || user.role === "aprovador";
+    const canAccessContatos = isBroadAccess || user.role === "usuario_ra";
+    const ownerId = user.authUserId || user.id;
+    const indicacoesQuery = supabase
+      .from("indicacoes")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(100);
+    const contatosQuery = supabase
+      .from("contatos")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(100);
+
+    const [indicacoesResult, contatosResult] = await Promise.all([
+      isBroadAccess ? indicacoesQuery : indicacoesQuery.eq("criado_por_id", ownerId),
+      canAccessContatos
+        ? isBroadAccess
+          ? contatosQuery
+          : contatosQuery.eq("criado_por_id", ownerId)
+        : Promise.resolve({ data: [] }),
+    ]);
+
+    if (indicacoesResult.error || "error" in contatosResult && contatosResult.error) {
+      return {
+        ok: false,
+        error:
+          indicacoesResult.error?.message ||
+          ("error" in contatosResult ? contatosResult.error?.message : undefined) ||
+          "Erro ao atualizar os dados.",
+      };
+    }
+
+    setIndicacoes(indicacoesResult.data?.map(mapIndicacao) ?? []);
+    setContatos(contatosResult.data?.map(mapContato) ?? []);
+    return { ok: true };
+  }, [user]);
+
   const countCltThisMonth = useCallback(
     (userId: string) => {
       const now = new Date();
@@ -686,6 +728,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       login,
       registerUser,
       updateProfile,
+      refreshData,
       logout,
       indicacoes,
       visibleIndicacoes,
@@ -708,6 +751,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       login,
       registerUser,
       updateProfile,
+      refreshData,
       logout,
       indicacoes,
       visibleIndicacoes,
