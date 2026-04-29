@@ -237,6 +237,9 @@ function Field({
   onChange,
   placeholder,
   showForgot = false,
+  showPasswordToggle = false,
+  isPasswordVisible = false,
+  onTogglePassword,
 }: {
   label: string;
   type: string;
@@ -244,6 +247,9 @@ function Field({
   onChange: (v: string) => void;
   placeholder?: string;
   showForgot?: boolean;
+  showPasswordToggle?: boolean;
+  isPasswordVisible?: boolean;
+  onTogglePassword?: () => void;
 }) {
   return (
     <div className="group relative">
@@ -260,13 +266,25 @@ function Field({
           </a>
         )}
       </div>
-      <input
-        type={type}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        className="w-full bg-transparent border-0 border-b border-outline-variant/30 py-2.5 px-0 text-sm font-medium text-on-surface placeholder:text-outline focus:ring-0 focus:border-primary-container transition-all"
-      />
+      <div className="relative">
+        <input
+          type={type}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={placeholder}
+          className="w-full bg-transparent border-0 border-b border-outline-variant/30 py-2.5 px-0 pr-10 text-sm font-medium text-on-surface placeholder:text-outline focus:ring-0 focus:border-primary-container transition-all"
+        />
+        {showPasswordToggle && onTogglePassword && (
+          <button
+            type="button"
+            onClick={onTogglePassword}
+            className="absolute right-0 top-1/2 -translate-y-1/2 p-2 text-outline transition-colors hover:text-primary-container focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary-container"
+            aria-label={isPasswordVisible ? "Ocultar senha" : "Mostrar senha"}
+          >
+            {isPasswordVisible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+          </button>
+        )}
+      </div>
     </div>
   );
 }
