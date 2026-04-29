@@ -7,6 +7,8 @@ import { BackgroundGradientAnimation } from "@/components/ui/background-gradient
 import { supabase } from "@/integrations/supabase/client";
 import { authEmailForIdentifier, normalizeIdentifier } from "../authIdentifiers";
 
+const LAST_LOGIN_IDENTIFIER_KEY = "indicacao:last-login-identifier";
+
 export function CadastroPage() {
   const navigate = useNavigate();
   const { registerUser } = useApp();
@@ -80,6 +82,10 @@ export function CadastroPage() {
       setError(result.error || "Não foi possível salvar o perfil no banco de dados.");
       setIsSubmitting(false);
       return;
+    }
+
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(LAST_LOGIN_IDENTIFIER_KEY, identifier.trim());
     }
 
     navigate({ to: "/app/nova" });

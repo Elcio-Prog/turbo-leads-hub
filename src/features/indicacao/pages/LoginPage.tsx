@@ -7,10 +7,16 @@ import { BackgroundGradientAnimation } from "@/components/ui/background-gradient
 import { supabase } from "@/integrations/supabase/client";
 import { resolveLoginIdentifier } from "../authActions";
 
+const LAST_LOGIN_IDENTIFIER_KEY = "indicacao:last-login-identifier";
+
 export function LoginPage() {
   const { registerUser } = useApp();
   const navigate = useNavigate();
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(() =>
+    typeof window === "undefined"
+      ? ""
+      : window.localStorage.getItem(LAST_LOGIN_IDENTIFIER_KEY) || "",
+  );
   const [senha, setSenha] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -43,6 +49,10 @@ export function LoginPage() {
         setError(result.error || "Não foi possível carregar o perfil.");
         setIsSubmitting(false);
         return;
+      }
+
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem(LAST_LOGIN_IDENTIFIER_KEY, email.trim());
       }
 
       navigate({ to: "/app/nova" });
