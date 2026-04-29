@@ -8,9 +8,21 @@ import { supabase } from "@/integrations/supabase/client";
 import { authEmailForIdentifier } from "../authIdentifiers";
 
 const LAST_LOGIN_IDENTIFIER_KEY = "indicacao:last-login-identifier";
+const LOGIN_TIMEOUT_MS = 15000;
+
+function withTimeout<T>(promise: Promise<T>, message: string): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) => window.setTimeout(() => reject(new Error(message)), LOGIN_TIMEOUT_MS)),
+  ]);
+}
 
 function loginErrorMessage(message?: string) {
   const normalized = (message || "").toLowerCase();
+
+  if (normalized.includes("tempo limite") || normalized.includes("timeout")) {
+    return "O Supabase demorou para responder. Verifique a conexão e tente novamente.";
+  }
 
   if (normalized.includes("invalid login credentials")) {
     return "E-mail, RA, CPF ou senha inválidos.";
@@ -51,21 +63,27 @@ export function LoginPage() {
 
     try {
       const loginEmail = authEmailForIdentifier(email);
-      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-        email: loginEmail,
-        password: senha,
-      });
+      const { data: signInData, error: signInError } = await withTimeout(
+        supabase.auth.signInWithPassword({
+          email: loginEmail,
+          password: senha,
+        }),
+        "Tempo limite ao conectar com o Supabase.",
+      );
 
       if (signInError) {
         setError(loginErrorMessage(signInError.message));
         return;
       }
 
-      const result = await registerUser({
-        identifier: email,
-        password: senha,
-        authUserId: signInData.user?.id,
-      });
+      const result = await withTimeout(
+        registerUser({
+          identifier: email,
+          password: senha,
+          authUserId: signInData.user?.id,
+        }),
+        "Tempo limite ao carregar o perfil do usuário.",
+      );
 
       if (!result.ok) {
         setError(result.error || "Não foi possível carregar o perfil.");
