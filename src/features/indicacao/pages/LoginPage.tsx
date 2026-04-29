@@ -5,7 +5,7 @@ import { useApp } from "../AppContext";
 import { PrimaryButton } from "../components/PrimaryButton";
 import { BackgroundGradientAnimation } from "@/components/ui/background-gradient-animation";
 import { supabase } from "@/integrations/supabase/client";
-import { resolveLoginIdentifier } from "../authActions";
+import { authEmailForIdentifier } from "../authIdentifiers";
 
 const LAST_LOGIN_IDENTIFIER_KEY = "indicacao:last-login-identifier";
 
@@ -49,19 +49,18 @@ export function LoginPage() {
     setError("");
     setIsSubmitting(true);
 
-    const resolved = await resolveLoginIdentifier({ data: { identifier: email } });
-    if (!resolved.ok) {
-      setError(resolved.error || "Cadastro não encontrado para o E-mail, RA ou CPF informado.");
-      setIsSubmitting(false);
-      return;
-    }
+    try {
+      const loginEmail = authEmailForIdentifier(email);
+      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+        email: loginEmail,
+        password: senha,
+      });
 
-    const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-      email: resolved.email,
-      password: senha,
-    });
+      if (signInError) {
+        setError(loginErrorMessage(signInError.message));
+        return;
+      }
 
-    if (!signInError) {
       const result = await registerUser({
         identifier: email,
         password: senha,
@@ -70,17 +69,17 @@ export function LoginPage() {
 
       if (!result.ok) {
         setError(result.error || "Não foi possível carregar o perfil.");
-        setIsSubmitting(false);
         return;
       }
 
       if (typeof window !== "undefined") {
         window.localStorage.setItem(LAST_LOGIN_IDENTIFIER_KEY, email.trim());
       }
-
       navigate({ to: "/app/nova" });
-    } else {
-      setError(loginErrorMessage(signInError.message));
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Erro inesperado no login.";
+      setError(loginErrorMessage(message));
+    } finally {
       setIsSubmitting(false);
     }
   };
