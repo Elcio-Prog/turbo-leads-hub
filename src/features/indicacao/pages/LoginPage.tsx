@@ -5,12 +5,24 @@ import { useApp } from "../AppContext";
 import { PrimaryButton } from "../components/PrimaryButton";
 import { BackgroundGradientAnimation } from "@/components/ui/background-gradient-animation";
 import { supabase } from "@/integrations/supabase/client";
-import { resolveLoginIdentifier } from "../authActions";
+import { authEmailForIdentifier } from "../authIdentifiers";
 
 const LAST_LOGIN_IDENTIFIER_KEY = "indicacao:last-login-identifier";
+const LOGIN_TIMEOUT_MS = 15000;
+
+function withTimeout<T>(promise: Promise<T>, message: string): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) => window.setTimeout(() => reject(new Error(message)), LOGIN_TIMEOUT_MS)),
+  ]);
+}
 
 function loginErrorMessage(message?: string) {
   const normalized = (message || "").toLowerCase();
+
+  if (normalized.includes("tempo limite") || normalized.includes("timeout")) {
+    return "O Supabase demorou para responder. Verifique a conexão e tente novamente.";
+  }
 
   if (normalized.includes("invalid login credentials")) {
     return "E-mail, RA, CPF ou senha inválidos.";
@@ -49,38 +61,43 @@ export function LoginPage() {
     setError("");
     setIsSubmitting(true);
 
-    const resolved = await resolveLoginIdentifier({ data: { identifier: email } });
-    if (!resolved.ok) {
-      setError(resolved.error || "Cadastro não encontrado para o E-mail, RA ou CPF informado.");
-      setIsSubmitting(false);
-      return;
-    }
+    try {
+      const loginEmail = authEmailForIdentifier(email);
+      const { data: signInData, error: signInError } = await withTimeout(
+        supabase.auth.signInWithPassword({
+          email: loginEmail,
+          password: senha,
+        }),
+        "Tempo limite ao conectar com o Supabase.",
+      );
 
-    const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-      email: resolved.email,
-      password: senha,
-    });
+      if (signInError) {
+        setError(loginErrorMessage(signInError.message));
+        return;
+      }
 
-    if (!signInError) {
-      const result = await registerUser({
-        identifier: email,
-        password: senha,
-        authUserId: signInData.user?.id,
-      });
+      const result = await withTimeout(
+        registerUser({
+          identifier: email,
+          password: senha,
+          authUserId: signInData.user?.id,
+        }),
+        "Tempo limite ao carregar o perfil do usuário.",
+      );
 
       if (!result.ok) {
         setError(result.error || "Não foi possível carregar o perfil.");
-        setIsSubmitting(false);
         return;
       }
 
       if (typeof window !== "undefined") {
         window.localStorage.setItem(LAST_LOGIN_IDENTIFIER_KEY, email.trim());
       }
-
       navigate({ to: "/app/nova" });
-    } else {
-      setError(loginErrorMessage(signInError.message));
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Erro inesperado no login.";
+      setError(loginErrorMessage(message));
+    } finally {
       setIsSubmitting(false);
     }
   };
