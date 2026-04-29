@@ -56,7 +56,7 @@ export function Sidebar({ collapsed, onToggle }: { collapsed?: boolean; onToggle
     user.role === "aprovador"
       ? ([
           { to: "/app/indicacoes", label: "Indicações", Icon: ListChecks },
-           { to: "/app/contatos", label: "Contatos Quentes", Icon: Contact },
+          { to: "/app/contatos", label: "Contatos Quentes", Icon: Contact },
           { to: "/app/analytics", label: "Analytics", Icon: BarChart3 },
         ] as const)
       : user.role === "admin"
@@ -67,18 +67,18 @@ export function Sidebar({ collapsed, onToggle }: { collapsed?: boolean; onToggle
             { to: "/app/analytics", label: "Analytics", Icon: BarChart3 },
           ] as const)
         : user.role === "usuario_ra"
-        ? ([
-            { to: "/app/nova", label: "Nova Indicação", Icon: PlusCircle },
-            { to: "/app/indicacoes", label: "Indicações", Icon: ListChecks },
-             { to: "/app/novo-contato", label: "Novo Contato Quente", Icon: UserPlus },
-             { to: "/app/contatos", label: "Contatos Quentes", Icon: Contact },
-            { to: "/app/analytics", label: "Analytics", Icon: BarChart3 },
-          ] as const)
-        : ([
-            { to: "/app/nova", label: "Nova Indicação", Icon: PlusCircle },
-            { to: "/app/indicacoes", label: "Indicações", Icon: ListChecks },
-            { to: "/app/analytics", label: "Analytics", Icon: BarChart3 },
-          ] as const);
+          ? ([
+              { to: "/app/nova", label: "Nova Indicação", Icon: PlusCircle },
+              { to: "/app/indicacoes", label: "Indicações", Icon: ListChecks },
+              { to: "/app/novo-contato", label: "Novo Contato Quente", Icon: UserPlus },
+              { to: "/app/contatos", label: "Contatos Quentes", Icon: Contact },
+              { to: "/app/analytics", label: "Analytics", Icon: BarChart3 },
+            ] as const)
+          : ([
+              { to: "/app/nova", label: "Nova Indicação", Icon: PlusCircle },
+              { to: "/app/indicacoes", label: "Indicações", Icon: ListChecks },
+              { to: "/app/analytics", label: "Analytics", Icon: BarChart3 },
+            ] as const);
 
   const adminNav =
     user.role === "admin"

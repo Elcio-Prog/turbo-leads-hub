@@ -461,7 +461,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         : Promise.resolve({ data: [] }),
     ]);
 
-    if (indicacoesResult.error || "error" in contatosResult && contatosResult.error) {
+    if (indicacoesResult.error || ("error" in contatosResult && contatosResult.error)) {
       return {
         ok: false,
         error:
