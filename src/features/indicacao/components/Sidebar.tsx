@@ -10,6 +10,7 @@ import {
   UserPlus,
   Contact,
   UsersRound,
+  RefreshCw,
 } from "lucide-react";
 import { useApp } from "../AppContext";
 import { Logo } from "./Logo";
@@ -24,10 +25,11 @@ const ROLE_LABEL: Record<string, string> = {
 };
 
 export function Sidebar({ collapsed, onToggle }: { collapsed?: boolean; onToggle?: () => void }) {
-  const { user, logout } = useApp();
+  const { user, logout, refreshData } = useApp();
   const location = useLocation();
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   // Close mobile menu on route change
   useEffect(() => {
@@ -41,11 +43,20 @@ export function Sidebar({ collapsed, onToggle }: { collapsed?: boolean; onToggle
     navigate({ to: "/" });
   };
 
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    try {
+      await refreshData();
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
   const NAV =
     user.role === "aprovador"
       ? ([
           { to: "/app/indicacoes", label: "Indicações", Icon: ListChecks },
-           { to: "/app/contatos", label: "Contatos Quentes", Icon: Contact },
+          { to: "/app/contatos", label: "Contatos Quentes", Icon: Contact },
           { to: "/app/analytics", label: "Analytics", Icon: BarChart3 },
         ] as const)
       : user.role === "admin"
@@ -56,18 +67,18 @@ export function Sidebar({ collapsed, onToggle }: { collapsed?: boolean; onToggle
             { to: "/app/analytics", label: "Analytics", Icon: BarChart3 },
           ] as const)
         : user.role === "usuario_ra"
-        ? ([
-            { to: "/app/nova", label: "Nova Indicação", Icon: PlusCircle },
-            { to: "/app/indicacoes", label: "Indicações", Icon: ListChecks },
-             { to: "/app/novo-contato", label: "Novo Contato Quente", Icon: UserPlus },
-             { to: "/app/contatos", label: "Contatos Quentes", Icon: Contact },
-            { to: "/app/analytics", label: "Analytics", Icon: BarChart3 },
-          ] as const)
-        : ([
-            { to: "/app/nova", label: "Nova Indicação", Icon: PlusCircle },
-            { to: "/app/indicacoes", label: "Indicações", Icon: ListChecks },
-            { to: "/app/analytics", label: "Analytics", Icon: BarChart3 },
-          ] as const);
+          ? ([
+              { to: "/app/nova", label: "Nova Indicação", Icon: PlusCircle },
+              { to: "/app/indicacoes", label: "Indicações", Icon: ListChecks },
+              { to: "/app/novo-contato", label: "Novo Contato Quente", Icon: UserPlus },
+              { to: "/app/contatos", label: "Contatos Quentes", Icon: Contact },
+              { to: "/app/analytics", label: "Analytics", Icon: BarChart3 },
+            ] as const)
+          : ([
+              { to: "/app/nova", label: "Nova Indicação", Icon: PlusCircle },
+              { to: "/app/indicacoes", label: "Indicações", Icon: ListChecks },
+              { to: "/app/analytics", label: "Analytics", Icon: BarChart3 },
+            ] as const);
 
   const adminNav =
     user.role === "admin"
@@ -210,6 +221,16 @@ export function Sidebar({ collapsed, onToggle }: { collapsed?: boolean; onToggle
         </nav>
 
         <div className="p-4 space-y-2 mt-auto border-t border-outline-variant/5">
+          <button
+            type="button"
+            onClick={handleRefresh}
+            disabled={refreshing}
+            title={collapsed ? "Atualizar" : undefined}
+            className={`flex w-full items-center gap-4 rounded-xl px-4 py-3 text-[11px] font-black uppercase tracking-[0.15em] text-outline hover:bg-surface-high hover:text-white transition-all disabled:opacity-50 ${collapsed ? "justify-center" : ""}`}
+          >
+            <RefreshCw className={`h-4 w-4 shrink-0 ${refreshing ? "animate-spin" : ""}`} />
+            {!collapsed && <span className="font-display">Atualizar</span>}
+          </button>
           <button
             type="button"
             onClick={handleLogout}
