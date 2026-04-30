@@ -73,28 +73,43 @@ export const resolveLoginIdentifier = createServerFn({ method: "POST" })
   .inputValidator((input) => identifierSchema.parse(input))
   .handler(async ({ data }) => {
     const normalized = normalizeIdentifier(data.identifier);
+
+    // Para e-mail, retorna direto sem consultar o banco.
+    if (normalized.type === "email") {
+      return { ok: true, email: normalized.value };
+    }
+
+    // Busca por CPF (com e sem máscara), RA ou login_identifier.
     const filters =
-      normalized.type === "email"
-        ? [`email.eq.${normalized.value}`, `login_identifier.eq.${normalized.value}`]
-        : [
+      normalized.type === "cpf"
+        ? [
+            `cpf.eq.${normalized.digits}`,
+            `cpf.eq.${cpfMask(normalized.digits)}`,
             `login_identifier.eq.${normalized.value}`,
-            normalized.type === "cpf"
-              ? `cpf.in.("${normalized.digits}","${cpfMask(normalized.digits)}")`
-              : `ra.eq.${normalized.value}`,
+          ]
+        : [
+            `ra.eq.${normalized.value}`,
+            `login_identifier.eq.${normalized.value}`,
           ];
 
     const { data: profile, error } = await supabaseAdmin
       .from("profiles")
       .select("email")
       .or(filters.join(","))
+      .limit(1)
       .maybeSingle();
 
-    if (normalized.type === "email" && !profile?.email && !error) {
-      return { ok: true, email: normalized.value };
+    if (error) {
+      return { ok: false, error: `Erro ao localizar cadastro: ${error.message}` };
     }
 
-    if (error || !profile?.email) {
-      return { ok: false, error: "Cadastro não encontrado." };
+    if (!profile?.email) {
+      // Fallback: tenta o e-mail sintético antigo (contas criadas só por CPF/RA).
+      const fallback =
+        normalized.type === "cpf"
+          ? `${normalized.digits}@cpf.ntt-indicacoes.local`
+          : `${normalized.value.replace(/[^a-z0-9._-]/g, "-")}@ra.ntt-indicacoes.local`;
+      return { ok: true, email: fallback };
     }
 
     return { ok: true, email: profile.email };
