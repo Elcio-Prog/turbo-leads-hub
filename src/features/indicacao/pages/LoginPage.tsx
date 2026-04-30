@@ -5,7 +5,8 @@ import { useApp } from "../AppContext";
 import { PrimaryButton } from "../components/PrimaryButton";
 import { BackgroundGradientAnimation } from "@/components/ui/background-gradient-animation";
 import { supabase } from "@/integrations/supabase/client";
-import { authEmailForIdentifier } from "../authIdentifiers";
+import { authEmailForIdentifier, normalizeIdentifier } from "../authIdentifiers";
+import { resolveLoginIdentifier } from "../authActions";
 
 const LAST_LOGIN_IDENTIFIER_KEY = "indicacao:last-login-identifier";
 const LOGIN_TIMEOUT_MS = 15000;
@@ -62,14 +63,47 @@ export function LoginPage() {
     setIsSubmitting(true);
 
     try {
-      const loginEmail = authEmailForIdentifier(email);
-      const { data: signInData, error: signInError } = await withTimeout(
+      const normalized = normalizeIdentifier(email);
+      let loginEmail: string;
+
+      if (normalized.type === "email") {
+        loginEmail = normalized.value;
+      } else {
+        // CPF/RA: busca o e-mail real cadastrado no perfil.
+        const resolved = await withTimeout(
+          resolveLoginIdentifier({ data: { identifier: email } }),
+          "Tempo limite ao localizar cadastro.",
+        );
+        if (!resolved.ok || !resolved.email) {
+          setError(resolved.error || "Cadastro não encontrado para este CPF/RA.");
+          return;
+        }
+        loginEmail = resolved.email;
+      }
+
+      let { data: signInData, error: signInError } = await withTimeout(
         supabase.auth.signInWithPassword({
           email: loginEmail,
           password: senha,
         }),
         "Tempo limite ao conectar com o Supabase.",
       );
+
+      // Fallback para contas antigas criadas com e-mail sintético de CPF/RA.
+      if (signInError && normalized.type !== "email") {
+        const synthetic = authEmailForIdentifier(email);
+        if (synthetic !== loginEmail) {
+          const retry = await withTimeout(
+            supabase.auth.signInWithPassword({
+              email: synthetic,
+              password: senha,
+            }),
+            "Tempo limite ao conectar com o Supabase.",
+          );
+          signInData = retry.data;
+          signInError = retry.error;
+        }
+      }
 
       if (signInError) {
         setError(loginErrorMessage(signInError.message));
