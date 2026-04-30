@@ -147,6 +147,7 @@ export function ConfiguracoesPage() {
               value={form.ra}
               onChange={(v) => setForm({ ...form, ra: v })}
               placeholder="Seu RA"
+              readOnly={!!form.ra}
             />
             <EditorialField
               label="CPF"
