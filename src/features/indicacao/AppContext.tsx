@@ -41,6 +41,7 @@ interface RegisterUserInput {
 interface UpdateProfileInput {
   name: string;
   loginId?: string;
+  email?: string;
   ra?: string;
   cpf: string;
   funcao: string;
@@ -402,6 +403,21 @@ export function AppProvider({ children }: { children: ReactNode }) {
         ...updates,
         onboardingCompleted: true,
       };
+
+      // Se o usuário forneceu um novo e-mail real (ex.: Usuário RA cadastrado
+      // sem e-mail), atualiza também o e-mail de autenticação no Supabase Auth.
+      const newEmail = (updates as { email?: string }).email?.trim();
+      const currentEmail = user.email?.trim();
+      if (newEmail && newEmail.toLowerCase() !== currentEmail?.toLowerCase()) {
+        const { error: authError } = await supabase.auth.updateUser({ email: newEmail });
+        if (authError) {
+          return {
+            ok: false,
+            error: `Erro ao atualizar e-mail no login: ${authError.message}`,
+          };
+        }
+        updatedUser.email = newEmail;
+      }
 
       if (supabase) {
         const payload = {
