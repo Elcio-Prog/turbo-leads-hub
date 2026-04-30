@@ -19,6 +19,7 @@ import type {
 } from "./types";
 import { LIMITE_CLT_MES, VALOR_RECOMPENSA } from "./types";
 import { authEmailForIdentifier } from "./authIdentifiers";
+import { replaceAuthEmail } from "./authActions";
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
 import type { Session } from "@supabase/supabase-js";
@@ -409,14 +410,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const newEmail = (updates as { email?: string }).email?.trim();
       const currentEmail = user.email?.trim();
       if (newEmail && newEmail.toLowerCase() !== currentEmail?.toLowerCase()) {
-        const { error: authError } = await supabase.auth.updateUser({ email: newEmail });
-        if (authError) {
-          return {
-            ok: false,
-            error: `Erro ao atualizar e-mail no login: ${authError.message}`,
-          };
+        const result = await replaceAuthEmail({
+          data: { userId: user.id, newEmail: newEmail.toLowerCase() },
+        });
+        if (!result.ok) {
+          return { ok: false, error: result.error };
         }
-        updatedUser.email = newEmail;
+        updatedUser.email = result.email ?? newEmail.toLowerCase();
+        updatedUser.loginId = updatedUser.email;
+        // Refresh session so the JWT carries the new email immediately.
+        await supabase.auth.refreshSession();
       }
 
       if (supabase) {

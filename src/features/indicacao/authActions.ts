@@ -11,6 +11,11 @@ const identifierSchema = z.object({
   identifier: z.string().trim().min(3).max(255),
 });
 
+const replaceEmailSchema = z.object({
+  userId: z.string().uuid(),
+  newEmail: z.string().trim().email().max(255),
+});
+
 function normalizeIdentifier(identifier: string) {
   const value = identifier.trim().toLowerCase();
   const digits = value.replace(/\D/g, "");
@@ -113,4 +118,28 @@ export const resolveLoginIdentifier = createServerFn({ method: "POST" })
     }
 
     return { ok: true, email: profile.email };
+  });
+
+export const replaceAuthEmail = createServerFn({ method: "POST" })
+  .inputValidator((input) => replaceEmailSchema.parse(input))
+  .handler(async ({ data }) => {
+    const newEmail = data.newEmail.trim().toLowerCase();
+
+    const { error: authError } = await supabaseAdmin.auth.admin.updateUserById(data.userId, {
+      email: newEmail,
+      email_confirm: true,
+    });
+    if (authError) {
+      return { ok: false, error: `Erro ao atualizar e-mail no login: ${authError.message}` };
+    }
+
+    const { error: profileError } = await supabaseAdmin
+      .from("profiles")
+      .update({ email: newEmail, login_identifier: newEmail })
+      .eq("user_id", data.userId);
+    if (profileError) {
+      return { ok: false, error: `Erro ao atualizar e-mail no perfil: ${profileError.message}` };
+    }
+
+    return { ok: true, email: newEmail };
   });
