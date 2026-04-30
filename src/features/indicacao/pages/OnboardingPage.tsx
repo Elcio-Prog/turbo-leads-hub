@@ -69,7 +69,9 @@ export function OnboardingPage() {
         toast.error(result.error || "Erro ao salvar configurações.");
       }
     } catch (error) {
-      toast.error("Ocorreu um erro inesperado.");
+      const message = error instanceof Error ? error.message : String(error);
+      console.error("[Onboarding] erro inesperado:", error);
+      toast.error(`Ocorreu um erro inesperado: ${message}`);
     } finally {
       setLoading(false);
     }
