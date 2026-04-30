@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { toast } from "sonner";
-import { Loader2, ArrowRight, User as UserIcon, Building2, Briefcase, FileText } from "lucide-react";
+import { Loader2, ArrowRight, User as UserIcon, Building2, Briefcase, FileText, Mail } from "lucide-react";
 import { useApp } from "../AppContext";
 import {
   Select,
@@ -20,9 +20,13 @@ import { PrimaryButton } from "../components/PrimaryButton";
 export function OnboardingPage() {
   const { user, updateProfile } = useApp();
   const [loading, setLoading] = useState(false);
+  const isRaUser = user?.role === "usuario_ra";
+  const hasSyntheticEmail = !!user?.email && /@(ra|cpf)\.ntt-indicacoes\.local$/i.test(user.email);
+  const requiresEmail = isRaUser && hasSyntheticEmail;
   const [form, setForm] = useState({
     name: user?.name || "",
     loginId: user?.loginId || user?.email || "",
+    email: hasSyntheticEmail ? "" : user?.email || "",
     cpf: user?.cpf || "",
     setor: "" as Setor | "", // No default value
     funcao: user?.funcao || "",
@@ -38,11 +42,21 @@ export function OnboardingPage() {
       return;
     }
 
+    if (requiresEmail) {
+      const emailTrim = form.email.trim();
+      const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailTrim);
+      if (!emailValid) {
+        toast.error("Informe um e-mail válido para acessar futuramente também por e-mail.");
+        return;
+      }
+    }
+
     setLoading(true);
     try {
       const result = await updateProfile({
         name: form.name,
         loginId: form.loginId,
+        email: requiresEmail ? form.email.trim() : undefined,
         cpf: form.cpf,
         setor: form.setor as Setor,
         funcao: form.funcao,
@@ -86,7 +100,18 @@ export function OnboardingPage() {
               onChange={(v) => setForm({ ...form, name: v })}
               placeholder="Ex: João Silva"
             />
-            
+
+            {requiresEmail && (
+              <EditorialField
+                label="Seu E-mail *"
+                icon={<Mail className="h-4 w-4" />}
+                value={form.email}
+                onChange={(v) => setForm({ ...form, email: v })}
+                placeholder="nome@empresa.com.br"
+                type="email"
+              />
+            )}
+
             <EditorialSelect
               label="Seu Setor *"
               icon={<Building2 className="h-4 w-4" />}
