@@ -12,6 +12,7 @@ import { useApp } from "../AppContext";
 import { PrimaryButton } from "../components/PrimaryButton";
 import { CONTRATOS, SETORES, type Contrato, type Setor } from "../types";
 import { supabase } from "@/integrations/supabase/client";
+import { AnnouncementSettings } from "../components/AnnouncementSettings";
 
 function maskCpf(value: string) {
   const d = value.replace(/\D/g, "").slice(0, 11);
@@ -33,6 +34,7 @@ function normalizeContrato(value: string | undefined): Contrato {
 
 export function ConfiguracoesPage() {
   const { user, updateProfile } = useApp();
+  const [activeTab, setActiveTab] = useState<"perfil" | "anuncios">("perfil");
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({
     name: "",
@@ -116,7 +118,35 @@ export function ConfiguracoesPage() {
         </div>
       </header>
 
-      <form onSubmit={handleSubmit} className="space-y-8">
+      {user.role === "admin" && (
+        <div className="flex items-center gap-4 border-b border-outline-variant/10 mb-8">
+          <button
+            type="button"
+            onClick={() => setActiveTab("perfil")}
+            className={`pb-3 text-xs font-bold uppercase tracking-widest transition-colors ${
+              activeTab === "perfil"
+                ? "border-b-2 border-primary-container text-primary-container"
+                : "border-b-2 border-transparent text-on-surface-variant hover:text-on-surface"
+            }`}
+          >
+            Meu Perfil
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab("anuncios")}
+            className={`pb-3 text-xs font-bold uppercase tracking-widest transition-colors ${
+              activeTab === "anuncios"
+                ? "border-b-2 border-primary-container text-primary-container"
+                : "border-b-2 border-transparent text-on-surface-variant hover:text-on-surface"
+            }`}
+          >
+            Anúncios do Sistema
+          </button>
+        </div>
+      )}
+
+      {activeTab === "perfil" ? (
+        <form onSubmit={handleSubmit} className="space-y-8">
         <section className="space-y-5">
           <div className="flex items-center gap-3">
             <span className="font-display text-2xl font-bold italic text-outline-variant/30">
@@ -191,6 +221,9 @@ export function ConfiguracoesPage() {
           </PrimaryButton>
         </footer>
       </form>
+      ) : (
+        <AnnouncementSettings />
+      )}
     </div>
   );
 }

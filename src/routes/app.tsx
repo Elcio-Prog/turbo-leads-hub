@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useApp } from "../features/indicacao/AppContext";
 import { Sidebar } from "../features/indicacao/components/Sidebar";
 import { OnboardingPage } from "../features/indicacao/pages/OnboardingPage";
+import { AnnouncementPopup } from "../features/indicacao/components/AnnouncementPopup";
 
 export const Route = createFileRoute("/app")({
   component: AppLayout,
@@ -33,6 +34,7 @@ function AppLayout() {
       <main className="flex-1 overflow-x-hidden p-6 lg:p-8 max-lg:pt-16">
         <Outlet />
       </main>
+      <AnnouncementPopup />
     </div>
   );
 }
