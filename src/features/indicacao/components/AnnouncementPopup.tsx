@@ -36,19 +36,16 @@ export function AnnouncementPopup() {
 
     let shouldShow = false;
 
-    if (parsed.exibicao === "sempre") {
-      shouldShow = true;
-    } else if (parsed.exibicao === "uma_vez_por_dia") {
+    if (parsed.exibicao === "uma_vez_por_dia") {
       const lastSeen = localStorage.getItem(seenKey);
       if (!lastSeen) {
         shouldShow = true;
       } else {
-        const lastSeenDate = new Date(lastSeen);
-        const diffMs = now.getTime() - lastSeenDate.getTime();
-        const diffHours = diffMs / (1000 * 60 * 60);
-        if (diffHours >= 24) shouldShow = true;
+        const lastSeenDate = new Date(lastSeen).toLocaleDateString('pt-BR');
+        const currentDate = now.toLocaleDateString('pt-BR');
+        if (lastSeenDate !== currentDate) shouldShow = true;
       }
-    } else if (parsed.exibicao === "ao_login" || parsed.exibicao === "periodo_especifico") {
+    } else if (parsed.exibicao === "ao_login" || parsed.exibicao === "sempre" || parsed.exibicao === "periodo_especifico") {
       let withinPeriod = true;
       if (parsed.exibicao === "periodo_especifico") {
         if (parsed.dataInicio && new Date(parsed.dataInicio) > now) withinPeriod = false;

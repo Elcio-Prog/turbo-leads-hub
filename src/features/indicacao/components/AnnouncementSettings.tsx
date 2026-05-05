@@ -18,7 +18,7 @@ type AnnouncementConfig = {
     tipo: "imagem" | "video";
     base64: string;
   } | null;
-  exibicao: "ao_login" | "sempre" | "uma_vez_por_dia" | "periodo_especifico";
+  exibicao: "ao_login" | "uma_vez_por_dia" | "periodo_especifico" | string; // Permitindo string para não quebrar salvos antigos
   dataInicio: string | null;
   dataFim: string | null;
   ativo: boolean;
@@ -219,7 +219,6 @@ export function AnnouncementSettings() {
                 </SelectTrigger>
                 <SelectContent className="border border-outline-variant/20 bg-surface-low text-on-surface rounded-xl shadow-2xl p-1.5">
                   <SelectItem value="ao_login">Ao fazer login</SelectItem>
-                  <SelectItem value="sempre">Sempre que abrir o app</SelectItem>
                   <SelectItem value="uma_vez_por_dia">Uma vez por dia</SelectItem>
                   <SelectItem value="periodo_especifico">Período específico</SelectItem>
                 </SelectContent>
