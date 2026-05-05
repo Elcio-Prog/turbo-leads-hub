@@ -96,8 +96,10 @@ export function Sidebar({ collapsed, onToggle }: { collapsed?: boolean; onToggle
     // Análises & Config
     const sistema = [
       { to: "/app/analytics", label: "Analytics", Icon: BarChart3 },
-      { to: "/app/configuracoes", label: "Configurações", Icon: Settings },
     ];
+    if (user.role === "admin") {
+      sistema.push({ to: "/app/configuracoes", label: "Configurações", Icon: Settings });
+    }
     sections.push({ title: "Sistema", items: sistema });
 
     // Administração

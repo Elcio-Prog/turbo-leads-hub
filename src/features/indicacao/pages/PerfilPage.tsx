@@ -1,4 +1,4 @@
-import { useMemo, useRef } from "react";
+import { useMemo, useRef, useState, useEffect } from "react";
 import { useApp, LEVELS } from "../AppContext";
 import { 
   Rocket, 
@@ -30,9 +30,101 @@ import {
   TooltipTrigger 
 } from "@/components/ui/tooltip";
 import { toast } from "sonner";
+import { CONTRATOS, SETORES, type Contrato, type Setor } from "../types";
+import { supabase } from "@/integrations/supabase/client";
+import { PrimaryButton } from "../components/PrimaryButton";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+function maskCpf(value: string) {
+  const d = value.replace(/\D/g, "").slice(0, 11);
+  return d
+    .replace(/^(\d{3})(\d)/, "$1.$2")
+    .replace(/^(\d{3})\.(\d{3})(\d)/, "$1.$2.$3")
+    .replace(/\.(\d{3})(\d)/, ".$1-$2");
+}
+
+function normalizeSetor(value: string | undefined): Setor {
+  const normalized = value?.trim().toUpperCase();
+  return SETORES.find((setor) => setor.toUpperCase() === normalized) ?? "COMERCIAL";
+}
+
+function normalizeContrato(value: string | undefined): Contrato {
+  const normalized = value?.trim().toUpperCase();
+  return CONTRATOS.find((contrato) => contrato === normalized) ?? "CLT";
+}
 
 export function PerfilPage() {
-  const { user, indicacoes, meta, setMeta, avatar, setAvatar } = useApp();
+  const { user, indicacoes, meta, setMeta, avatar, setAvatar, updateProfile } = useApp();
+  const [isEditing, setIsEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    ra: "",
+    cpf: "",
+    funcao: "",
+    setor: "COMERCIAL" as Setor,
+    contrato: "CLT" as Contrato,
+  });
+
+  useEffect(() => {
+    if (!user) return;
+    const nextForm = {
+      name: user.name,
+      email: user.email,
+      ra: user.ra || "",
+      cpf: user.cpf || "",
+      funcao: user.funcao || "",
+      setor: normalizeSetor(user.setor),
+      contrato: normalizeContrato(user.contrato),
+    };
+
+    setForm(nextForm);
+
+    supabase
+      .from("profiles")
+      .select("name, email, ra, cpf, funcao, setor, contrato")
+      .eq("user_id", user.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (!data) return;
+        setForm({
+          name: data.name || nextForm.name,
+          email: data.email || nextForm.email,
+          ra: data.ra || "",
+          cpf: data.cpf || "",
+          funcao: data.funcao || "",
+          setor: normalizeSetor(data.setor),
+          contrato: normalizeContrato(data.contrato),
+        });
+      });
+  }, [user]);
+
+  const handleSaveProfile = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!form.name.trim() || !form.setor || !form.contrato) {
+      toast.error("Preencha Nome Completo, Seu Setor e Tipo de Contrato.");
+      return;
+    }
+
+    setSaving(true);
+    const result = await updateProfile(form);
+    setSaving(false);
+
+    if (!result.ok) {
+      toast.error(result.error || "Erro ao salvar configurações.");
+      return;
+    }
+
+    toast.success("Configurações salvas com sucesso.");
+    setIsEditing(false);
+  };
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -197,27 +289,93 @@ export function PerfilPage() {
               <div className="w-full h-px bg-outline-variant/10 my-8" />
 
               <div className="w-full space-y-4">
-                <div className="flex items-center justify-between text-left">
-                  <div className="flex items-center gap-3 text-outline">
-                    <Building2 className="h-4 w-4" />
-                    <span className="text-xs font-bold uppercase tracking-wider">Setor</span>
-                  </div>
-                  <span className="text-white text-sm font-bold">{user.setor}</span>
-                </div>
-                <div className="flex items-center justify-between text-left">
-                  <div className="flex items-center gap-3 text-outline">
-                    <FileText className="h-4 w-4" />
-                    <span className="text-xs font-bold uppercase tracking-wider">Contrato</span>
-                  </div>
-                  <span className="text-white text-sm font-bold">{user.contrato}</span>
-                </div>
-                <div className="flex items-center justify-between text-left">
-                  <div className="flex items-center gap-3 text-outline">
-                    <Briefcase className="h-4 w-4" />
-                    <span className="text-xs font-bold uppercase tracking-wider">Função</span>
-                  </div>
-                  <span className="text-white text-sm font-bold truncate max-w-[150px]">{user.funcao}</span>
-                </div>
+                {isEditing ? (
+                  <form onSubmit={handleSaveProfile} className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                    <EditorialField
+                      label="Nome Completo *"
+                      value={form.name}
+                      onChange={(v) => setForm({ ...form, name: v })}
+                    />
+                    <EditorialField
+                      label="Email"
+                      value={form.email}
+                      onChange={() => undefined}
+                      readOnly
+                    />
+                    <EditorialField
+                      label="RA"
+                      value={form.ra}
+                      onChange={(v) => setForm({ ...form, ra: v })}
+                      readOnly={!!user.ra}
+                    />
+                    <EditorialField
+                      label="CPF"
+                      value={form.cpf}
+                      onChange={(v) => setForm({ ...form, cpf: maskCpf(v) })}
+                    />
+                    <EditorialField
+                      label="Sua Função"
+                      value={form.funcao}
+                      onChange={(v) => setForm({ ...form, funcao: v })}
+                    />
+                    <EditorialSelect
+                      label="Seu Setor *"
+                      value={form.setor}
+                      onChange={(v) => setForm({ ...form, setor: v as Setor })}
+                      options={SETORES}
+                    />
+                    <EditorialSelect
+                      label="Tipo de Contrato *"
+                      value={form.contrato}
+                      onChange={(v) => setForm({ ...form, contrato: v as Contrato })}
+                      options={CONTRATOS}
+                    />
+                    <div className="pt-2 flex items-center justify-end gap-2">
+                      <button 
+                        type="button" 
+                        onClick={() => setIsEditing(false)}
+                        className="text-[10px] font-black uppercase tracking-widest text-outline hover:text-white transition-colors px-3 py-2"
+                      >
+                        Cancelar
+                      </button>
+                      <PrimaryButton disabled={saving} type="submit" className="px-4 py-2 text-[10px]">
+                        {saving ? "Salvando..." : "Salvar"}
+                      </PrimaryButton>
+                    </div>
+                  </form>
+                ) : (
+                  <>
+                    <div className="flex justify-end mb-2">
+                      <button 
+                        onClick={() => setIsEditing(true)}
+                        className="text-[10px] font-black uppercase tracking-widest text-primary-container hover:underline"
+                      >
+                        Editar Perfil
+                      </button>
+                    </div>
+                    <div className="flex items-center justify-between text-left">
+                      <div className="flex items-center gap-3 text-outline">
+                        <Building2 className="h-4 w-4" />
+                        <span className="text-xs font-bold uppercase tracking-wider">Setor</span>
+                      </div>
+                      <span className="text-white text-sm font-bold">{user.setor}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-left">
+                      <div className="flex items-center gap-3 text-outline">
+                        <FileText className="h-4 w-4" />
+                        <span className="text-xs font-bold uppercase tracking-wider">Contrato</span>
+                      </div>
+                      <span className="text-white text-sm font-bold">{user.contrato}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-left">
+                      <div className="flex items-center gap-3 text-outline">
+                        <Briefcase className="h-4 w-4" />
+                        <span className="text-xs font-bold uppercase tracking-wider">Função</span>
+                      </div>
+                      <span className="text-white text-sm font-bold truncate max-w-[150px]">{user.funcao || "-"}</span>
+                    </div>
+                  </>
+                )}
               </div>
 
               <div className="w-full mt-8 p-6 rounded-2xl bg-surface-high/50 border border-outline-variant/10">
@@ -474,6 +632,80 @@ export function PerfilPage() {
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+function EditorialField({
+  label,
+  value,
+  onChange,
+  placeholder,
+  type = "text",
+  readOnly = false,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+  type?: string;
+  readOnly?: boolean;
+}) {
+  return (
+    <div className="group space-y-1">
+      <label className="block text-[9px] font-black uppercase tracking-[0.2em] text-outline transition-colors group-focus-within:text-primary-container">
+        {label}
+      </label>
+      <input
+        type={type}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        readOnly={readOnly}
+        className="w-full border-0 border-b border-outline-variant/30 bg-transparent px-0 py-1 text-xs font-bold text-white caret-primary-container outline-none transition-all placeholder:text-outline-variant/50 read-only:cursor-not-allowed read-only:text-on-surface-variant read-only:focus:border-outline-variant/30 focus:border-primary-container focus:outline-none focus:ring-0"
+      />
+    </div>
+  );
+}
+
+function EditorialSelect({
+  label,
+  value,
+  options,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  options: readonly string[];
+  onChange: (v: string) => void;
+}) {
+  const displayOptions = options.includes(value) || !value ? options : [value, ...options];
+
+  return (
+    <div className="group space-y-1">
+      <label className="block text-[9px] font-black uppercase tracking-[0.2em] text-outline transition-colors group-focus-within:text-primary-container">
+        {label}
+      </label>
+      <Select value={value} onValueChange={onChange}>
+        <SelectTrigger className="h-auto w-full rounded-none border-0 border-b border-outline-variant/30 bg-transparent px-0 py-1 text-xs font-bold text-white shadow-none outline-none transition-colors hover:border-primary-container/50 focus:border-primary-container focus:outline-none focus:ring-0 data-[state=open]:border-primary-container [&>svg]:text-outline [&>svg]:opacity-60">
+          <SelectValue placeholder="Selecione">{value || "Selecione"}</SelectValue>
+        </SelectTrigger>
+        <SelectContent
+          position="popper"
+          sideOffset={6}
+          className="max-h-72 min-w-[--radix-select-trigger-width] rounded-xl border border-outline-variant/20 bg-surface-low p-1.5 text-on-surface shadow-2xl shadow-black/60 backdrop-blur-xl z-[200]"
+        >
+          {displayOptions.map((o) => (
+            <SelectItem
+              key={o}
+              value={o}
+              className="cursor-pointer rounded-md px-3 py-2 text-xs font-bold uppercase tracking-widest text-on-surface-variant transition-colors focus:bg-primary-container/15 focus:text-primary-container data-[state=checked]:bg-primary-container/20 data-[state=checked]:text-primary-container"
+            >
+              {o}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
     </div>
   );
 }
