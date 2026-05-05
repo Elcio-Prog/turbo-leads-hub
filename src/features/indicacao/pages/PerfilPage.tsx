@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState, useEffect } from "react";
+import { useMemo, useRef, useState, useEffect, useCallback } from "react";
 import { useApp, LEVELS } from "../AppContext";
 import { 
   Rocket, 
@@ -17,7 +17,9 @@ import {
   Building2,
   FileText,
   CreditCard,
-  Camera
+  Camera,
+  Search,
+  Users as UsersIcon
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Avatar } from "../components/Avatar";
@@ -59,8 +61,19 @@ function normalizeContrato(value: string | undefined): Contrato {
   return CONTRATOS.find((contrato) => contrato === normalized) ?? "CLT";
 }
 
+interface SearchableUser {
+  userId: string;
+  name: string;
+  email: string;
+  setor: string;
+  contrato: string;
+  funcao: string;
+  ra: string;
+  cpf: string;
+}
+
 export function PerfilPage() {
-  const { user, indicacoes, meta, setMeta, avatar, setAvatar, updateProfile } = useApp();
+  const { user, indicacoes, meta, setMeta, avatar, setAvatar, updateProfile, getAvatar } = useApp();
   const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({
@@ -73,16 +86,112 @@ export function PerfilPage() {
     contrato: "CLT" as Contrato,
   });
 
+  // Aprovador: user search state
+  const isAprovador = user?.role === "aprovador";
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<SearchableUser[]>([]);
+  const [allSearchableUsers, setAllSearchableUsers] = useState<SearchableUser[]>([]);
+  const [selectedUser, setSelectedUser] = useState<SearchableUser | null>(null);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [loadingUsers, setLoadingUsers] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
+
+  // Load all users for aprovador
   useEffect(() => {
-    if (!user) return;
+    if (!isAprovador) return;
+    setLoadingUsers(true);
+    supabase
+      .from("profiles")
+      .select("user_id, name, email, setor, contrato, funcao, ra, cpf")
+      .order("name", { ascending: true })
+      .then(({ data }) => {
+        if (data) {
+          setAllSearchableUsers(
+            data.map((p) => ({
+              userId: p.user_id,
+              name: p.name || "",
+              email: p.email || "",
+              setor: p.setor || "",
+              contrato: p.contrato || "",
+              funcao: p.funcao || "",
+              ra: p.ra || "",
+              cpf: p.cpf || "",
+            }))
+          );
+        }
+        setLoadingUsers(false);
+      });
+  }, [isAprovador]);
+
+  // Filter users based on search query
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setSearchResults([]);
+      return;
+    }
+    const q = searchQuery.toLowerCase();
+    setSearchResults(
+      allSearchableUsers.filter(
+        (u) =>
+          u.name.toLowerCase().includes(q) ||
+          u.email.toLowerCase().includes(q)
+      ).slice(0, 8)
+    );
+  }, [searchQuery, allSearchableUsers]);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
+        setShowDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const handleSelectUser = useCallback((u: SearchableUser) => {
+    setSelectedUser(u);
+    setSearchQuery(u.name);
+    setShowDropdown(false);
+    setIsEditing(false);
+  }, []);
+
+  // The "target" user whose profile is being displayed
+  const targetUser = isAprovador && selectedUser
+    ? {
+        id: selectedUser.userId,
+        authUserId: selectedUser.userId,
+        name: selectedUser.name,
+        email: selectedUser.email,
+        setor: selectedUser.setor as Setor,
+        contrato: selectedUser.contrato as Contrato,
+        funcao: selectedUser.funcao,
+        ra: selectedUser.ra,
+        cpf: selectedUser.cpf,
+        role: "usuario" as const,
+      }
+    : user;
+
+  const targetAvatar = isAprovador && selectedUser
+    ? getAvatar(selectedUser.userId)
+    : avatar;
+
+  const isViewingOther = isAprovador && selectedUser !== null;
+
+  useEffect(() => {
+    if (!targetUser) return;
+    // Don't sync form for aprovador viewing someone else
+    if (isViewingOther) return;
+
     const nextForm = {
-      name: user.name,
-      email: user.email,
-      ra: user.ra || "",
-      cpf: user.cpf || "",
-      funcao: user.funcao || "",
-      setor: normalizeSetor(user.setor),
-      contrato: normalizeContrato(user.contrato),
+      name: targetUser.name,
+      email: targetUser.email,
+      ra: targetUser.ra || "",
+      cpf: targetUser.cpf || "",
+      funcao: targetUser.funcao || "",
+      setor: normalizeSetor(targetUser.setor),
+      contrato: normalizeContrato(targetUser.contrato),
     };
 
     setForm(nextForm);
@@ -90,7 +199,7 @@ export function PerfilPage() {
     supabase
       .from("profiles")
       .select("name, email, ra, cpf, funcao, setor, contrato")
-      .eq("user_id", user.id)
+      .eq("user_id", targetUser.id)
       .maybeSingle()
       .then(({ data }) => {
         if (!data) return;
@@ -104,7 +213,7 @@ export function PerfilPage() {
           contrato: normalizeContrato(data.contrato),
         });
       });
-  }, [user]);
+  }, [targetUser?.id, isViewingOther]);
 
   const handleSaveProfile = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -190,37 +299,98 @@ export function PerfilPage() {
   };
 
   const userIndicacoes = useMemo(() => {
-    if (!user) return [];
-    return indicacoes.filter(i => i.criadoPorId === user.id);
-  }, [indicacoes, user]);
+    if (!targetUser) return [];
+    return indicacoes.filter(i => i.criadoPorId === targetUser.id);
+  }, [indicacoes, targetUser]);
 
   if (!user) return null;
 
-  // Cálculos de Indicações (Apenas do usuário logado)
+  // Aprovador sem seleção: mostrar tela de busca
+  if (isAprovador && !selectedUser) {
+    return (
+      <div className="space-y-8 animate-in fade-in duration-700">
+        <div className="flex flex-col items-center justify-center min-h-[60vh] gap-8">
+          <div className="text-center space-y-3">
+            <div className="h-20 w-20 rounded-2xl bg-primary-container/10 border border-primary-container/20 grid place-items-center mx-auto mb-4">
+              <UsersIcon className="h-10 w-10 text-primary-container" />
+            </div>
+            <h1 className="text-2xl font-display font-bold text-white uppercase tracking-tight">Consultar Perfil</h1>
+            <p className="text-sm text-outline max-w-md">
+              Busque um colaborador pelo nome ou e-mail para visualizar o perfil completo, indicações e conquistas.
+            </p>
+          </div>
+
+          <div ref={searchRef} className="relative w-full max-w-md">
+            <div className="relative">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-outline" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setShowDropdown(true);
+                }}
+                onFocus={() => setShowDropdown(true)}
+                placeholder="Digite o nome ou e-mail do colaborador..."
+                className="w-full bg-surface-low border border-outline-variant/20 rounded-2xl pl-12 pr-4 py-4 text-sm text-white placeholder:text-outline/60 focus:outline-none focus:border-primary-container/50 focus:ring-1 focus:ring-primary-container/20 transition-all"
+              />
+            </div>
+
+            {showDropdown && searchResults.length > 0 && (
+              <div className="absolute top-full mt-2 w-full bg-surface-low border border-outline-variant/20 rounded-2xl overflow-hidden shadow-2xl shadow-black/60 z-50 max-h-80 overflow-y-auto custom-scrollbar">
+                {searchResults.map((u) => (
+                  <button
+                    key={u.userId}
+                    onClick={() => handleSelectUser(u)}
+                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-primary-container/5 transition-colors text-left border-b border-outline-variant/5 last:border-b-0"
+                  >
+                    <Avatar name={u.name} size="sm" src={getAvatar(u.userId)} className="shrink-0" />
+                    <div className="min-w-0">
+                      <p className="text-sm font-bold text-white truncate">{u.name}</p>
+                      <p className="text-[10px] text-outline truncate">{u.email}</p>
+                    </div>
+                    <span className="text-[8px] font-black uppercase tracking-widest text-outline ml-auto shrink-0">{u.setor}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {showDropdown && searchQuery.trim() && searchResults.length === 0 && !loadingUsers && (
+              <div className="absolute top-full mt-2 w-full bg-surface-low border border-outline-variant/20 rounded-2xl overflow-hidden shadow-2xl shadow-black/60 z-50">
+                <div className="px-4 py-6 text-center text-outline text-sm italic">
+                  Nenhum colaborador encontrado.
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Cálculos de Indicações
   const totalIndicacoes = userIndicacoes.length;
   const conversoes = userIndicacoes.filter(i => i.status === "Contrato assinado").length;
   const taxaConversao = totalIndicacoes > 0 ? (conversoes / totalIndicacoes) * 100 : 0;
   const creditoAcumulado = conversoes * 200;
 
   // Nível Atual
-  const currentLevel = useMemo(() => {
-    return LEVELS.find(l => conversoes >= l.min && conversoes <= l.max) || LEVELS[0];
-  }, [conversoes]);
+  const currentLevel = LEVELS.find(l => conversoes >= l.min && conversoes <= l.max) || LEVELS[0];
 
-  const nextLevel = useMemo(() => {
+  const nextLevel = (() => {
     const currentIndex = LEVELS.findIndex(l => l.name === currentLevel.name);
     return LEVELS[currentIndex + 1] || null;
-  }, [currentLevel]);
+  })();
 
-  const progressToNext = useMemo(() => {
+  const progressToNext = (() => {
     if (!nextLevel) return 100;
     const range = nextLevel.min - currentLevel.min;
     const currentProgress = conversoes - currentLevel.min;
     return Math.min(Math.max((currentProgress / range) * 100, 0), 100);
-  }, [conversoes, currentLevel, nextLevel]);
+  })();
 
   // Conversoes Trimestre Atual
-  const conversoesTrimestre = useMemo(() => {
+  const conversoesTrimestre = (() => {
     const now = new Date();
     const quarter = Math.floor(now.getMonth() / 3);
     const startOfQuarter = new Date(now.getFullYear(), quarter * 3, 1);
@@ -228,14 +398,14 @@ export function PerfilPage() {
       const date = new Date(i.criadoEm);
       return i.status === "Contrato assinado" && date >= startOfQuarter;
     }).length;
-  }, [userIndicacoes]);
+  })();
 
   // Conquistas
-  const achievements = useMemo(() => {
+  const displayUser = targetUser!;
+  const achievements = (() => {
     const uniqueProducts = new Set(userIndicacoes.map(i => i.produto)).size;
     
-    // Mês Perfeito: 2 conversões no mesmo mês (apenas CLT)
-    const hasPerfectMonth = user.contrato === "CLT" && (() => {
+    const hasPerfectMonth = displayUser.contrato === "CLT" && (() => {
       const months: Record<string, number> = {};
       userIndicacoes.forEach(i => {
         if (i.status === "Contrato assinado") {
@@ -257,21 +427,72 @@ export function PerfilPage() {
       { id: "perfect_month", title: "Mês Perfeito", icon: Calendar, unlocked: hasPerfectMonth, info: "Apenas CLT", description: "Consiga 2 conversões em um único mês (Exclusivo CLT)." },
       { id: "diversified", title: "Diversificado", icon: Globe, unlocked: uniqueProducts >= 3, description: "Tenha indicações em pelo menos 3 produtos diferentes." },
     ];
-  }, [userIndicacoes, totalIndicacoes, conversoes, user.contrato]);
+  })();
 
   return (
     <div className="space-y-8 animate-in fade-in duration-700">
+      {/* Aprovador: Search bar when viewing a profile */}
+      {isViewingOther && (
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => {
+              setSelectedUser(null);
+              setSearchQuery("");
+            }}
+            className="text-[10px] font-black uppercase tracking-widest text-primary-container hover:underline shrink-0 flex items-center gap-1"
+          >
+            <ChevronRight className="h-3 w-3 rotate-180" /> Voltar
+          </button>
+          <div ref={searchRef} className="relative flex-1 max-w-sm">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-outline" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setShowDropdown(true);
+                  if (e.target.value !== selectedUser?.name) {
+                    // Don't deselect yet, just show results
+                  }
+                }}
+                onFocus={() => setShowDropdown(true)}
+                placeholder="Buscar outro colaborador..."
+                className="w-full bg-surface-low border border-outline-variant/20 rounded-xl pl-10 pr-4 py-2.5 text-xs text-white placeholder:text-outline/60 focus:outline-none focus:border-primary-container/50 transition-all"
+              />
+            </div>
+            {showDropdown && searchResults.length > 0 && (
+              <div className="absolute top-full mt-2 w-full bg-surface-low border border-outline-variant/20 rounded-2xl overflow-hidden shadow-2xl shadow-black/60 z-50 max-h-64 overflow-y-auto custom-scrollbar">
+                {searchResults.map((u) => (
+                  <button
+                    key={u.userId}
+                    onClick={() => handleSelectUser(u)}
+                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-primary-container/5 transition-colors text-left border-b border-outline-variant/5 last:border-b-0"
+                  >
+                    <Avatar name={u.name} size="sm" src={getAvatar(u.userId)} className="shrink-0" />
+                    <div className="min-w-0">
+                      <p className="text-sm font-bold text-white truncate">{u.name}</p>
+                      <p className="text-[10px] text-outline truncate">{u.email}</p>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Header Mobile - Nome e Nível */}
       <div className="lg:hidden flex items-center justify-between bg-surface-low p-3 sm:p-4 rounded-2xl border border-outline-variant/10">
         <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
           <Avatar 
-            name={user.name} 
+            name={displayUser.name} 
             size="sm" 
-            src={avatar} 
+            src={targetAvatar} 
             className={cn("ring-2 h-10 w-10 shrink-0", currentLevel.border)} 
           />
           <div className="min-w-0">
-            <h1 className="text-white font-bold text-sm sm:text-lg truncate">{user.name}</h1>
+            <h1 className="text-white font-bold text-sm sm:text-lg truncate">{displayUser.name}</h1>
             <span className={cn("text-[8px] sm:text-xs font-black uppercase tracking-wider flex items-center gap-1", currentLevel.color)}>
               {currentLevel.icon} {currentLevel.name}
             </span>
@@ -292,23 +513,25 @@ export function PerfilPage() {
             <div className={cn("h-32 w-full opacity-20", currentLevel.bg)} />
             <div className="px-5 sm:px-8 pb-8 -mt-16 flex flex-col items-center text-center">
               <div 
-                className="relative group cursor-pointer" 
-                onClick={() => fileInputRef.current?.click()}
-                title="Clique para mudar a foto"
+                className={cn("relative group", !isViewingOther && "cursor-pointer")}
+                onClick={() => !isViewingOther && fileInputRef.current?.click()}
+                title={isViewingOther ? displayUser.name : "Clique para mudar a foto"}
               >
                 <div className={cn("absolute inset-0 rounded-full blur-2xl opacity-40 transition-all duration-500 group-hover:opacity-70", currentLevel.bg)} />
                 <Avatar 
-                  name={user.name} 
+                  name={displayUser.name} 
                   size="lg" 
-                  src={avatar}
+                  src={targetAvatar}
                   className={cn("h-24 w-24 sm:h-32 sm:w-32 text-4xl ring-4 ring-surface-low relative z-10 transition-transform duration-500 group-hover:scale-105", currentLevel.bg)} 
                 />
                 
-                {/* Overlay de Edição */}
-                <div className="absolute inset-0 rounded-full bg-black/40 opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col items-center justify-center z-20 backdrop-blur-[2px]">
-                  <Camera className="text-white h-8 w-8 mb-1 animate-in zoom-in duration-300" />
-                  <span className="text-[8px] text-white font-black uppercase tracking-widest">Editar</span>
-                </div>
+                {/* Overlay de Edição - only for own profile */}
+                {!isViewingOther && (
+                  <div className="absolute inset-0 rounded-full bg-black/40 opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col items-center justify-center z-20 backdrop-blur-[2px]">
+                    <Camera className="text-white h-8 w-8 mb-1 animate-in zoom-in duration-300" />
+                    <span className="text-[8px] text-white font-black uppercase tracking-widest">Editar</span>
+                  </div>
+                )}
 
                 <div className="absolute -bottom-2 -right-2 bg-surface-highest border border-outline-variant/20 rounded-full h-10 w-10 grid place-items-center z-30 shadow-lg">
                   <span className="text-xl">{currentLevel.icon}</span>
@@ -324,8 +547,8 @@ export function PerfilPage() {
               />
 
               <div className="mt-6 space-y-1">
-                <h2 className="text-2xl font-display font-bold text-white uppercase tracking-tight">{user.name}</h2>
-                <p className="text-outline text-sm font-medium">{user.email}</p>
+                <h2 className="text-2xl font-display font-bold text-white uppercase tracking-tight">{displayUser.name}</h2>
+                <p className="text-outline text-sm font-medium">{displayUser.email}</p>
                 <div className={cn("inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest mt-2 border", currentLevel.border, currentLevel.color)}>
                   {currentLevel.icon} {currentLevel.name}
                 </div>
@@ -334,7 +557,7 @@ export function PerfilPage() {
               <div className="w-full h-px bg-outline-variant/10 my-8" />
 
               <div className="w-full space-y-4">
-                {isEditing ? (
+                {isEditing && !isViewingOther ? (
                   <form onSubmit={handleSaveProfile} className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
                     <EditorialField
                       label="Nome Completo *"
@@ -390,35 +613,37 @@ export function PerfilPage() {
                   </form>
                 ) : (
                   <>
-                    <div className="flex justify-end mb-4">
-                      <button 
-                        onClick={() => setIsEditing(true)}
-                        className="text-[10px] font-black uppercase tracking-widest text-primary-container hover:underline"
-                      >
-                        Editar Perfil
-                      </button>
-                    </div>
+                    {!isViewingOther && (
+                      <div className="flex justify-end mb-4">
+                        <button 
+                          onClick={() => setIsEditing(true)}
+                          className="text-[10px] font-black uppercase tracking-widest text-primary-container hover:underline"
+                        >
+                          Editar Perfil
+                        </button>
+                      </div>
+                    )}
                     <div className="space-y-4">
                       <div className="flex items-center justify-between text-left gap-4">
                         <div className="flex items-center gap-3 text-outline shrink-0">
                           <Building2 className="h-4 w-4" />
                           <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider">Setor</span>
                         </div>
-                        <span className="text-white text-xs sm:text-sm font-bold truncate">{user.setor}</span>
+                        <span className="text-white text-xs sm:text-sm font-bold truncate">{displayUser.setor}</span>
                       </div>
                       <div className="flex items-center justify-between text-left gap-4">
                         <div className="flex items-center gap-3 text-outline shrink-0">
                           <FileText className="h-4 w-4" />
                           <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider">Contrato</span>
                         </div>
-                        <span className="text-white text-xs sm:text-sm font-bold truncate">{user.contrato}</span>
+                        <span className="text-white text-xs sm:text-sm font-bold truncate">{displayUser.contrato}</span>
                       </div>
                       <div className="flex items-center justify-between text-left gap-4">
                         <div className="flex items-center gap-3 text-outline shrink-0">
                           <Briefcase className="h-4 w-4" />
                           <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider">Função</span>
                         </div>
-                        <span className="text-white text-xs sm:text-sm font-bold truncate">{user.funcao || "-"}</span>
+                        <span className="text-white text-xs sm:text-sm font-bold truncate">{displayUser.funcao || "-"}</span>
                       </div>
                     </div>
                   </>

@@ -67,11 +67,31 @@ export function Sidebar({ collapsed, onToggle }: { collapsed?: boolean; onToggle
     if (!user) return [];
     const sections: { title: string; items: any[] }[] = [];
 
-    // Pessoal
+    // Registros (first)
+    const registros = [];
+    registros.push({ to: "/app/indicacoes", label: user.role === "admin" ? "Registros" : "Indicações", Icon: ListChecks });
+    if (user.role === "aprovador" || user.role === "usuario_ra") {
+      registros.push({ to: "/app/contatos", label: "Contatos Quentes", Icon: Contact });
+    }
+    sections.push({ title: "Registros", items: registros });
+
+    // Perfil
     sections.push({
       title: "Pessoal",
-      items: [{ to: "/app/perfil", label: "Meu Perfil", Icon: User }]
+      items: [{ to: "/app/perfil", label: user.role === "aprovador" ? "Consultar Perfil" : "Meu Perfil", Icon: User }]
     });
+
+    // Análises & Config
+    const sistema = [
+      { to: "/app/analytics", label: "Analytics", Icon: BarChart3 },
+    ];
+    if (user.role === "admin") {
+      sistema.push({ to: "/app/configuracoes", label: "Anúncios", Icon: Settings });
+    }
+    if (user.role === "aprovador") {
+      sistema.push({ to: "/app/configuracoes", label: "Configurações", Icon: Settings });
+    }
+    sections.push({ title: "Sistema", items: sistema });
 
     // Ações
     const acoes = [];
@@ -84,23 +104,6 @@ export function Sidebar({ collapsed, onToggle }: { collapsed?: boolean; onToggle
     if (acoes.length > 0) {
       sections.push({ title: "Operações", items: acoes });
     }
-
-    // Registros
-    const registros = [];
-    registros.push({ to: "/app/indicacoes", label: user.role === "admin" ? "Registros" : "Indicações", Icon: ListChecks });
-    if (user.role === "aprovador" || user.role === "usuario_ra") {
-      registros.push({ to: "/app/contatos", label: "Contatos Quentes", Icon: Contact });
-    }
-    sections.push({ title: "Registros", items: registros });
-
-    // Análises & Config
-    const sistema = [
-      { to: "/app/analytics", label: "Analytics", Icon: BarChart3 },
-    ];
-    if (user.role === "admin") {
-      sistema.push({ to: "/app/configuracoes", label: "Anúncios", Icon: Settings });
-    }
-    sections.push({ title: "Sistema", items: sistema });
 
     // Administração
     if (user.role === "admin") {
