@@ -131,15 +131,60 @@ export function PerfilPage() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 2 * 1024 * 1024) {
-      toast.error("A imagem deve ter no máximo 2MB.");
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("A imagem deve ter no máximo 10MB.");
       return;
     }
 
     const reader = new FileReader();
-    reader.onloadend = () => {
-      setAvatar(reader.result as string);
-      toast.success("Foto de perfil atualizada!");
+    
+    // Se a imagem for menor que 2.5MB, não aplicamos nenhuma compressão de canvas para manter 100% da qualidade original
+    if (file.size <= 2.5 * 1024 * 1024) {
+      reader.onloadend = () => {
+        setAvatar(reader.result as string);
+        toast.success("Foto de perfil atualizada!");
+      };
+      reader.readAsDataURL(file);
+      return;
+    }
+
+    // Para imagens maiores, usamos o canvas para downscale seguro
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const MAX_WIDTH = 1200; // Resolução ainda maior
+        const MAX_HEIGHT = 1200;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > MAX_WIDTH) {
+            height *= MAX_WIDTH / width;
+            width = MAX_WIDTH;
+          }
+        } else {
+          if (height > MAX_HEIGHT) {
+            width *= MAX_HEIGHT / height;
+            height = MAX_HEIGHT;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        
+        if (ctx) {
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = "high";
+          ctx.drawImage(img, 0, 0, width, height);
+          
+          const dataUrl = canvas.toDataURL("image/jpeg", 0.95); // Qualidade 95%
+          setAvatar(dataUrl);
+          toast.success("Foto de perfil atualizada!");
+        }
+      };
+      img.src = event.target?.result as string;
     };
     reader.readAsDataURL(file);
   };
