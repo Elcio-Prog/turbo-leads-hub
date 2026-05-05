@@ -19,6 +19,9 @@ import {
   CreditCard,
   Camera,
   Search,
+  Users,
+  Zap,
+  ThermometerSun,
   Users as UsersIcon
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -70,10 +73,11 @@ interface SearchableUser {
   funcao: string;
   ra: string;
   cpf: string;
+  role: string;
 }
 
 export function PerfilPage() {
-  const { user, indicacoes, meta, setMeta, avatar, setAvatar, updateProfile, getAvatar } = useApp();
+  const { user, indicacoes, contatos, meta, setMeta, avatar, setAvatar, updateProfile, getAvatar } = useApp();
   const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({
@@ -102,7 +106,7 @@ export function PerfilPage() {
     setLoadingUsers(true);
     supabase
       .from("profiles")
-      .select("user_id, name, email, setor, contrato, funcao, ra, cpf")
+      .select("user_id, name, email, setor, contrato, funcao, ra, cpf, role")
       .order("name", { ascending: true })
       .then(({ data }) => {
         if (data) {
@@ -116,6 +120,7 @@ export function PerfilPage() {
               funcao: p.funcao || "",
               ra: p.ra || "",
               cpf: p.cpf || "",
+              role: p.role || "usuario",
             }))
           );
         }
@@ -169,7 +174,7 @@ export function PerfilPage() {
         funcao: selectedUser.funcao,
         ra: selectedUser.ra,
         cpf: selectedUser.cpf,
-        role: "usuario" as const,
+        role: selectedUser.role as Role,
       }
     : user;
 
@@ -303,6 +308,11 @@ export function PerfilPage() {
     return indicacoes.filter(i => i.criadoPorId === targetUser.id);
   }, [indicacoes, targetUser]);
 
+  const userContatos = useMemo(() => {
+    if (!targetUser) return [];
+    return contatos.filter(c => c.criadoPorId === targetUser.id);
+  }, [contatos, targetUser]);
+
   if (!user) return null;
 
   // Aprovador sem seleção: mostrar tela de busca
@@ -417,7 +427,10 @@ export function PerfilPage() {
       return Object.values(months).some(count => count >= 2);
     })();
 
-    return [
+    const isRA = displayUser.role === "usuario_ra";
+    const totalContatos = userContatos.length;
+
+    const baseAchievements = [
       { id: "1st", title: "Primeira Indicação", icon: Rocket, unlocked: totalIndicacoes >= 1, description: "Crie a sua 1ª indicação no sistema." },
       { id: "1st_contract", title: "Primeiro Contrato", icon: Handshake, unlocked: conversoes >= 1, description: "Tenha pelo menos 1 indicação com status 'Contrato assinado'." },
       { id: "hat_trick", title: "Hat-Trick", icon: Target, unlocked: conversoes >= 3, description: "Alcance 3 conversões confirmadas." },
@@ -427,6 +440,14 @@ export function PerfilPage() {
       { id: "perfect_month", title: "Mês Perfeito", icon: Calendar, unlocked: hasPerfectMonth, info: "Apenas CLT", description: "Consiga 2 conversões em um único mês (Exclusivo CLT)." },
       { id: "diversified", title: "Diversificado", icon: Globe, unlocked: uniqueProducts >= 3, description: "Tenha indicações em pelo menos 3 produtos diferentes." },
     ];
+
+    const raAchievements = [
+      { id: "ra_pioneer", title: "Pioneiro RA", icon: Zap, unlocked: totalContatos >= 1, info: "Exclusivo RA", description: "Registre o seu 1º Contato Quente no sistema." },
+      { id: "ra_network", title: "Rede de Contatos", icon: Users, unlocked: totalContatos >= 5, info: "Exclusivo RA", description: "Alcance a marca de 5 Contatos Quentes registrados." },
+      { id: "ra_master", title: "Mestre dos Contatos", icon: ThermometerSun, unlocked: totalContatos >= 10, info: "Exclusivo RA", description: "Alcance a marca de 10 Contatos Quentes registrados." },
+    ];
+
+    return [...baseAchievements, ...(isRA ? raAchievements : [])];
   })();
 
   return (
