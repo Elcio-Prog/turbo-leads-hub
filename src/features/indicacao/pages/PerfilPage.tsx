@@ -679,9 +679,9 @@ export function PerfilPage() {
                 )}
               </div>
 
-              <div className="w-full mt-8 p-4 sm:p-6 rounded-2xl bg-surface-high/50 border border-outline-variant/10">
-                <p className="text-[8px] sm:text-[10px] text-outline uppercase font-black tracking-[0.2em] mb-1">Total de Créditos</p>
-                <p className="text-2xl sm:text-3xl font-display font-bold text-primary-container leading-none">
+              <div className="w-full min-w-0 mt-8 p-4 sm:p-6 rounded-2xl bg-surface-high/50 border border-outline-variant/10">
+                <p className="text-[8px] sm:text-[10px] text-outline uppercase font-black tracking-widest mb-1">Total de Créditos</p>
+                <p className="break-words text-xl sm:text-3xl font-display font-bold text-primary-container leading-tight">
                    {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(creditoAcumulado)}
                 </p>
               </div>
@@ -689,7 +689,7 @@ export function PerfilPage() {
           </div>
  
           {/* Meta Pessoal */}
-          <div className="bg-surface-low rounded-3xl border border-outline-variant/10 p-5 sm:p-8 space-y-4 sm:space-y-6">
+          <div className="min-w-0 bg-surface-low rounded-2xl sm:rounded-3xl border border-outline-variant/10 p-4 sm:p-8 space-y-4 sm:space-y-6">
             <div className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                 <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-xl bg-primary-container/10 border border-primary-container/20 grid place-items-center shrink-0">
@@ -741,16 +741,16 @@ export function PerfilPage() {
         {/* Coluna Direita - Stats e Histórico */}
         <div className="lg:col-span-8 space-y-8">
           {/* KPI Cards */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid min-w-0 grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
             {[
               { label: "Total Indicações", value: totalIndicacoes, icon: Rocket },
               { label: "Conversões", value: conversoes, icon: Handshake },
               { label: "Taxa de Conversão", value: `${Math.round(taxaConversao)}%`, icon: TrendingUp },
               { label: "Crédito Acumulado", value: new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(creditoAcumulado), icon: CreditCard },
             ].map((kpi, i) => (
-              <div key={i} className="bg-surface-low p-3 sm:p-5 rounded-2xl border border-outline-variant/10 hover:border-primary-container/20 transition-all group">
+              <div key={i} className="min-w-0 bg-surface-low p-3 sm:p-5 rounded-2xl border border-outline-variant/10 hover:border-primary-container/20 transition-all group">
                 <kpi.icon className="h-4 w-4 sm:h-5 sm:w-5 text-outline group-hover:text-primary-container mb-2 sm:mb-3 transition-colors" />
-                <p className="text-lg sm:text-2xl font-display font-bold text-white mb-0.5 sm:mb-1 tracking-tight">{kpi.value}</p>
+                <p className="break-words text-base sm:text-2xl font-display font-bold text-white mb-0.5 sm:mb-1 tracking-tight leading-tight">{kpi.value}</p>
                 <p className="text-[8px] sm:text-[10px] text-outline uppercase font-black tracking-wider leading-tight">{kpi.label}</p>
               </div>
             ))}
