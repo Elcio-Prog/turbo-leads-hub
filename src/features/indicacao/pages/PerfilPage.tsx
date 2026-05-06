@@ -459,7 +459,7 @@ export function PerfilPage() {
   })();
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-700">
+    <div className="w-full max-w-full min-w-0 space-y-6 sm:space-y-8 overflow-x-hidden animate-in fade-in duration-700">
       {/* Aprovador: Search bar when viewing a profile */}
       {isViewingOther && (
         <div className="flex items-center gap-4">
@@ -535,10 +535,10 @@ export function PerfilPage() {
         </div>
       </div>
 
-      <div className="grid lg:grid-cols-12 gap-8">
+      <div className="grid min-w-0 grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
         {/* Coluna Esquerda - Identidade */}
-        <div className="lg:col-span-4 space-y-6">
-          <div className="bg-surface-low rounded-3xl border border-outline-variant/10 overflow-hidden shadow-2xl shadow-black/40">
+        <div className="min-w-0 lg:col-span-4 space-y-6">
+          <div className="min-w-0 bg-surface-low rounded-2xl sm:rounded-3xl border border-outline-variant/10 overflow-hidden shadow-2xl shadow-black/40">
             <div className={cn("h-32 w-full opacity-20", currentLevel.bg)} />
             <div className="px-5 sm:px-8 pb-8 -mt-16 flex flex-col items-center text-center">
               <div 
@@ -575,9 +575,9 @@ export function PerfilPage() {
                 onChange={handleAvatarChange}
               />
 
-              <div className="mt-6 space-y-1">
-                <h2 className="text-2xl font-display font-bold text-white uppercase tracking-tight">{displayUser.name}</h2>
-                <p className="text-outline text-sm font-medium">{displayUser.email}</p>
+              <div className="mt-6 w-full min-w-0 space-y-1">
+                <h2 className="max-w-full break-words text-xl sm:text-2xl font-display font-bold text-white uppercase tracking-tight">{displayUser.name}</h2>
+                <p className="max-w-full break-all text-outline text-xs sm:text-sm font-medium">{displayUser.email}</p>
                 <div className={cn("inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest mt-2 border", currentLevel.border, currentLevel.color)}>
                   {currentLevel.icon} {currentLevel.name}
                 </div>
