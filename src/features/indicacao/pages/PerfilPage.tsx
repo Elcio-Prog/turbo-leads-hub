@@ -459,7 +459,7 @@ export function PerfilPage() {
   })();
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-700">
+    <div className="w-full max-w-full min-w-0 space-y-6 sm:space-y-8 overflow-x-hidden animate-in fade-in duration-700">
       {/* Aprovador: Search bar when viewing a profile */}
       {isViewingOther && (
         <div className="flex items-center gap-4">
@@ -512,7 +512,7 @@ export function PerfilPage() {
       )}
 
       {/* Header Mobile - Nome e Nível */}
-      <div className="lg:hidden flex items-center justify-between bg-surface-low p-3 sm:p-4 rounded-2xl border border-outline-variant/10">
+      <div className="lg:hidden flex min-w-0 items-center justify-between overflow-hidden bg-surface-low p-3 sm:p-4 rounded-2xl border border-outline-variant/10">
         <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
           <Avatar 
             name={displayUser.name} 
@@ -527,18 +527,18 @@ export function PerfilPage() {
             </span>
           </div>
         </div>
-        <div className="text-right shrink-0 pl-3">
+        <div className="min-w-0 text-right shrink-0 pl-2">
           <p className="text-[8px] text-outline uppercase font-black tracking-widest">Crédito</p>
-          <p className="text-primary-container font-display font-bold text-base sm:text-lg">
+          <p className="text-primary-container font-display font-bold text-sm sm:text-lg leading-tight">
             {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(creditoAcumulado)}
           </p>
         </div>
       </div>
 
-      <div className="grid lg:grid-cols-12 gap-8">
+      <div className="grid min-w-0 grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
         {/* Coluna Esquerda - Identidade */}
-        <div className="lg:col-span-4 space-y-6">
-          <div className="bg-surface-low rounded-3xl border border-outline-variant/10 overflow-hidden shadow-2xl shadow-black/40">
+        <div className="min-w-0 lg:col-span-4 space-y-6">
+          <div className="min-w-0 bg-surface-low rounded-2xl sm:rounded-3xl border border-outline-variant/10 overflow-hidden shadow-2xl shadow-black/40">
             <div className={cn("h-32 w-full opacity-20", currentLevel.bg)} />
             <div className="px-5 sm:px-8 pb-8 -mt-16 flex flex-col items-center text-center">
               <div 
@@ -575,9 +575,9 @@ export function PerfilPage() {
                 onChange={handleAvatarChange}
               />
 
-              <div className="mt-6 space-y-1">
-                <h2 className="text-2xl font-display font-bold text-white uppercase tracking-tight">{displayUser.name}</h2>
-                <p className="text-outline text-sm font-medium">{displayUser.email}</p>
+              <div className="mt-6 w-full min-w-0 space-y-1">
+                <h2 className="max-w-full break-words text-xl sm:text-2xl font-display font-bold text-white uppercase tracking-tight">{displayUser.name}</h2>
+                <p className="max-w-full break-all text-outline text-xs sm:text-sm font-medium">{displayUser.email}</p>
                 <div className={cn("inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest mt-2 border", currentLevel.border, currentLevel.color)}>
                   {currentLevel.icon} {currentLevel.name}
                 </div>
@@ -658,30 +658,30 @@ export function PerfilPage() {
                           <Building2 className="h-4 w-4" />
                           <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider">Setor</span>
                         </div>
-                        <span className="text-white text-xs sm:text-sm font-bold truncate">{displayUser.setor}</span>
+                        <span className="min-w-0 text-right text-white text-xs sm:text-sm font-bold truncate">{displayUser.setor}</span>
                       </div>
                       <div className="flex items-center justify-between text-left gap-4">
                         <div className="flex items-center gap-3 text-outline shrink-0">
                           <FileText className="h-4 w-4" />
                           <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider">Contrato</span>
                         </div>
-                        <span className="text-white text-xs sm:text-sm font-bold truncate">{displayUser.contrato}</span>
+                        <span className="min-w-0 text-right text-white text-xs sm:text-sm font-bold truncate">{displayUser.contrato}</span>
                       </div>
                       <div className="flex items-center justify-between text-left gap-4">
                         <div className="flex items-center gap-3 text-outline shrink-0">
                           <Briefcase className="h-4 w-4" />
                           <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider">Função</span>
                         </div>
-                        <span className="text-white text-xs sm:text-sm font-bold truncate">{displayUser.funcao || "-"}</span>
+                        <span className="min-w-0 text-right text-white text-xs sm:text-sm font-bold truncate">{displayUser.funcao || "-"}</span>
                       </div>
                     </div>
                   </>
                 )}
               </div>
 
-              <div className="w-full mt-8 p-4 sm:p-6 rounded-2xl bg-surface-high/50 border border-outline-variant/10">
-                <p className="text-[8px] sm:text-[10px] text-outline uppercase font-black tracking-[0.2em] mb-1">Total de Créditos</p>
-                <p className="text-2xl sm:text-3xl font-display font-bold text-primary-container leading-none">
+              <div className="w-full min-w-0 mt-8 p-4 sm:p-6 rounded-2xl bg-surface-high/50 border border-outline-variant/10">
+                <p className="text-[8px] sm:text-[10px] text-outline uppercase font-black tracking-widest mb-1">Total de Créditos</p>
+                <p className="break-words text-xl sm:text-3xl font-display font-bold text-primary-container leading-tight">
                    {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(creditoAcumulado)}
                 </p>
               </div>
@@ -689,7 +689,7 @@ export function PerfilPage() {
           </div>
  
           {/* Meta Pessoal */}
-          <div className="bg-surface-low rounded-3xl border border-outline-variant/10 p-5 sm:p-8 space-y-4 sm:space-y-6">
+          <div className="min-w-0 bg-surface-low rounded-2xl sm:rounded-3xl border border-outline-variant/10 p-4 sm:p-8 space-y-4 sm:space-y-6">
             <div className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                 <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-xl bg-primary-container/10 border border-primary-container/20 grid place-items-center shrink-0">
@@ -739,33 +739,33 @@ export function PerfilPage() {
         </div>
 
         {/* Coluna Direita - Stats e Histórico */}
-        <div className="lg:col-span-8 space-y-8">
+        <div className="min-w-0 lg:col-span-8 space-y-6 sm:space-y-8">
           {/* KPI Cards */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid min-w-0 grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
             {[
               { label: "Total Indicações", value: totalIndicacoes, icon: Rocket },
               { label: "Conversões", value: conversoes, icon: Handshake },
               { label: "Taxa de Conversão", value: `${Math.round(taxaConversao)}%`, icon: TrendingUp },
               { label: "Crédito Acumulado", value: new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(creditoAcumulado), icon: CreditCard },
             ].map((kpi, i) => (
-              <div key={i} className="bg-surface-low p-3 sm:p-5 rounded-2xl border border-outline-variant/10 hover:border-primary-container/20 transition-all group">
+              <div key={i} className="min-w-0 bg-surface-low p-3 sm:p-5 rounded-2xl border border-outline-variant/10 hover:border-primary-container/20 transition-all group">
                 <kpi.icon className="h-4 w-4 sm:h-5 sm:w-5 text-outline group-hover:text-primary-container mb-2 sm:mb-3 transition-colors" />
-                <p className="text-lg sm:text-2xl font-display font-bold text-white mb-0.5 sm:mb-1 tracking-tight">{kpi.value}</p>
+                <p className="break-words text-base sm:text-2xl font-display font-bold text-white mb-0.5 sm:mb-1 tracking-tight leading-tight">{kpi.value}</p>
                 <p className="text-[8px] sm:text-[10px] text-outline uppercase font-black tracking-wider leading-tight">{kpi.label}</p>
               </div>
             ))}
           </div>
 
           {/* Evolução de Nível */}
-          <div className="bg-surface-low rounded-3xl border border-outline-variant/10 p-5 sm:p-8">
+          <div className="min-w-0 bg-surface-low rounded-2xl sm:rounded-3xl border border-outline-variant/10 p-4 sm:p-8 overflow-hidden">
             <h3 className="font-display font-bold text-white uppercase tracking-tight mb-6 sm:mb-8 text-sm sm:text-base">Evolução de Nível</h3>
             
-            <div className="overflow-x-auto custom-scrollbar pb-6 -mx-5 px-5 sm:mx-0 sm:px-0">
-              <div className="relative mb-8 sm:mb-10 px-8 sm:px-12 min-w-[400px]">
-                <div className="absolute top-1/2 left-8 sm:left-12 right-8 sm:right-12 h-1 bg-surface-highest -translate-y-1/2 rounded-full" />
+            <div className="pb-6">
+              <div className="relative mb-8 sm:mb-10 px-3 sm:px-12">
+                <div className="absolute top-4 sm:top-5 left-8 sm:left-12 right-8 sm:right-12 h-1 bg-surface-highest -translate-y-1/2 rounded-full" />
                 <div 
-                  className="absolute top-1/2 left-8 sm:left-12 h-1 bg-primary-container -translate-y-1/2 rounded-full transition-all duration-1000 shadow-[0_0_15px_rgba(202,253,0,0.3)]" 
-                  style={{ width: `calc(${(LEVELS.findIndex(l => l.name === currentLevel.name) / (LEVELS.length - 1)) * 100}% - ${(LEVELS.findIndex(l => l.name === currentLevel.name) / (LEVELS.length - 1)) * (window.innerWidth < 640 ? 64 : 96)}px)` }}
+                  className="absolute top-4 sm:top-5 left-8 sm:left-12 h-1 bg-primary-container -translate-y-1/2 rounded-full transition-all duration-1000 shadow-[0_0_15px_rgba(202,253,0,0.3)]" 
+                  style={{ width: `calc(${(LEVELS.findIndex(l => l.name === currentLevel.name) / (LEVELS.length - 1)) * 100}% - ${(LEVELS.findIndex(l => l.name === currentLevel.name) / (LEVELS.length - 1)) * 96}px)` }}
                 />
                 
                 <div className="relative flex justify-between">
@@ -774,7 +774,7 @@ export function PerfilPage() {
                   const isCurrent = lvl.name === currentLevel.name;
                   
                   return (
-                    <div key={lvl.name} className="flex flex-col items-center gap-2 sm:gap-3 relative">
+                    <div key={lvl.name} className="flex min-w-0 flex-col items-center gap-2 sm:gap-3 relative">
                       <div className={cn(
                         "h-8 w-8 sm:h-10 sm:w-10 rounded-full border-2 sm:border-4 ring-4 sm:ring-8 ring-surface-low grid place-items-center z-10 transition-all duration-500",
                         isPast ? "bg-primary-container border-primary-container" : 
@@ -783,9 +783,9 @@ export function PerfilPage() {
                       )}>
                         {isPast ? <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5 text-on-primary-container" /> : <span className="text-sm sm:text-lg">{lvl.icon}</span>}
                       </div>
-                      <div className="text-center absolute -bottom-7 sm:bottom-[-2rem] w-20 sm:w-28 left-1/2 -translate-x-1/2">
+                      <div className="min-w-0 text-center w-14 sm:w-28">
                         <p className={cn(
-                          "text-[7px] sm:text-[9px] font-black uppercase tracking-wider leading-none",
+                          "break-words text-[7px] sm:text-[9px] font-black uppercase tracking-wider leading-none",
                           isCurrent ? lvl.color : "text-outline"
                         )}>
                           {lvl.name}
@@ -799,7 +799,7 @@ export function PerfilPage() {
             </div>
 
             <div className="mt-16 space-y-4">
-              <div className="flex justify-between items-end">
+              <div className="flex flex-col gap-2 sm:flex-row sm:justify-between sm:items-end">
                 <p className="text-sm text-outline">
                   {nextLevel ? (
                     <>Faltam <span className="text-primary-container font-bold">{nextLevel.min - conversoes}</span> conversões para o próximo nível</>
@@ -823,9 +823,9 @@ export function PerfilPage() {
           </div>
 
           {/* Conquistas */}
-          <div className="bg-surface-low rounded-3xl border border-outline-variant/10 p-5 sm:p-8">
+          <div className="min-w-0 bg-surface-low rounded-2xl sm:rounded-3xl border border-outline-variant/10 p-4 sm:p-8 overflow-hidden">
             <h3 className="font-display font-bold text-white uppercase tracking-tight mb-6 text-sm sm:text-base">Conquistas</h3>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div className="grid min-w-0 grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
               {achievements.map((ach) => (
                 <Tooltip key={ach.id}>
                   <TooltipTrigger asChild>
@@ -833,7 +833,7 @@ export function PerfilPage() {
                       role="button"
                       tabIndex={0}
                       className={cn(
-                        "relative p-4 rounded-2xl border transition-all duration-300 flex flex-col items-center text-center gap-2 overflow-hidden cursor-help outline-none focus-visible:ring-2 focus-visible:ring-primary-container/50",
+                        "relative min-w-0 p-3 sm:p-4 rounded-2xl border transition-all duration-300 flex flex-col items-center text-center gap-2 overflow-hidden cursor-help outline-none focus-visible:ring-2 focus-visible:ring-primary-container/50",
                         ach.unlocked 
                           ? "bg-primary-container/5 border-primary-container/20" 
                           : "bg-surface-high/30 border-outline-variant/5 grayscale opacity-60"
@@ -845,7 +845,7 @@ export function PerfilPage() {
                       )}>
                         <ach.icon className="h-6 w-6" />
                       </div>
-                      <p className="text-[10px] font-black uppercase tracking-wider text-white leading-tight h-8 flex items-center">
+                      <p className="max-w-full break-words text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-white leading-tight min-h-8 flex items-center">
                         {ach.title}
                       </p>
                       {!ach.unlocked && (
@@ -875,12 +875,12 @@ export function PerfilPage() {
           </div>
 
           {/* Histórico Resumido */}
-          <div className="bg-surface-low rounded-3xl border border-outline-variant/10 overflow-hidden">
-            <div className="p-8 pb-4 flex items-center justify-between">
-              <h3 className="font-display font-bold text-white uppercase tracking-tight">Últimas Indicações</h3>
+          <div className="min-w-0 bg-surface-low rounded-2xl sm:rounded-3xl border border-outline-variant/10 overflow-hidden">
+            <div className="p-4 sm:p-8 sm:pb-4 flex items-center justify-between gap-3">
+              <h3 className="min-w-0 font-display font-bold text-white uppercase tracking-tight text-sm sm:text-base">Últimas Indicações</h3>
               <Link 
                 to="/app/indicacoes" 
-                className="text-xs font-black uppercase tracking-widest text-primary-container hover:underline flex items-center gap-1"
+                className="shrink-0 text-[10px] sm:text-xs font-black uppercase tracking-widest text-primary-container hover:underline flex items-center gap-1"
               >
                 Ver todas <ChevronRight className="h-3 w-3" />
               </Link>
