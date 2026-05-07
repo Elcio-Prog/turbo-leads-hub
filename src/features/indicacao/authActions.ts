@@ -25,6 +25,14 @@ function cpfMask(digits: string) {
     .replace(/\.(\d{3})(\d)/, ".$1-$2");
 }
 
+/**
+ * Strip PostgREST OR-filter special characters from a value before
+ * interpolating into `.or()`. Prevents filter injection.
+ */
+function sanitizeFilterValue(value: string) {
+  return value.replace(/[,()"]/g, "");
+}
+
 function authEmailForIdentifier(identifier: string) {
   const normalized = normalizeIdentifier(identifier);
   if (normalized.type === "email") return normalized.value;
@@ -100,13 +108,13 @@ export const loginWithIdentifier = createServerFn({ method: "POST" })
       const filters =
         normalized.type === "cpf"
           ? [
-              `cpf.eq.${normalized.digits}`,
-              `cpf.eq.${cpfMask(normalized.digits)}`,
-              `login_identifier.eq.${normalized.value}`,
+              `cpf.eq.${sanitizeFilterValue(normalized.digits)}`,
+              `cpf.eq.${sanitizeFilterValue(cpfMask(normalized.digits))}`,
+              `login_identifier.eq.${sanitizeFilterValue(normalized.value)}`,
             ]
           : [
-              `ra.eq.${normalized.value}`,
-              `login_identifier.eq.${normalized.value}`,
+              `ra.eq.${sanitizeFilterValue(normalized.value)}`,
+              `login_identifier.eq.${sanitizeFilterValue(normalized.value)}`,
             ];
 
       const { data: profile } = await supabaseAdmin
