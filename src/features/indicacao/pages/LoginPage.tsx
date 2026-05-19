@@ -28,6 +28,15 @@ function loginErrorMessage(message?: string) {
     return "E-mail, RA, CPF ou senha inválidos.";
   }
 
+  if (normalized.includes("credenciais inválidas")) {
+    return "E-mail, RA, CPF ou senha inválidos.";
+  }
+
+  // Message is already friendly Portuguese — return as-is.
+  if (/[áàâãéêíóôõúç]/i.test(message ?? "") || /^[A-ZÀ-Ú]/.test(message ?? "")) {
+    return message as string;
+  }
+
   if (normalized.includes("email not confirmed")) {
     return "Seu e-mail ainda não foi confirmado.";
   }
@@ -40,7 +49,7 @@ function loginErrorMessage(message?: string) {
     return "Não foi possível acessar. Tente novamente.";
   }
 
-  return `Erro ao acessar: ${message}`;
+  return "Não foi possível acessar. Verifique seus dados e tente novamente.";
 }
 
 export function LoginPage() {
