@@ -96,8 +96,20 @@ export const registerAuthUser = createServerFn({ method: "POST" })
  * prevents user enumeration.
  */
 export const loginWithIdentifier = createServerFn({ method: "POST" })
-  .inputValidator((input) => credentialsSchema.parse(input))
+  .inputValidator((input) => input as z.infer<typeof credentialsSchema>)
   .handler(async ({ data }) => {
+    const parsed = credentialsSchema.safeParse(data);
+    if (!parsed.success) {
+      const issue = parsed.error.issues[0];
+      let message = "Credenciais inválidas.";
+      if (issue?.path[0] === "password") {
+        message = "A senha deve ter pelo menos 6 caracteres.";
+      } else if (issue?.path[0] === "identifier") {
+        message = "Informe seu e-mail, RA ou CPF.";
+      }
+      return { ok: false as const, error: message };
+    }
+    data = parsed.data;
     const normalized = normalizeIdentifier(data.identifier);
     const genericError = "Credenciais inválidas." as const;
 
