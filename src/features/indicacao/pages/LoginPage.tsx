@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { ArrowRight, Eye, EyeOff } from "lucide-react";
+import { toast } from "sonner";
 import { useApp } from "../AppContext";
 import { PrimaryButton } from "../components/PrimaryButton";
 import { BackgroundGradientAnimation } from "@/components/ui/background-gradient-animation";
@@ -64,6 +65,33 @@ export function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [forgotOpen, setForgotOpen] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [forgotSubmitting, setForgotSubmitting] = useState(false);
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const target = forgotEmail.trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(target)) {
+      toast.error("Informe um e-mail válido.");
+      return;
+    }
+    setForgotSubmitting(true);
+    try {
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(target, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      if (resetError) {
+        toast.error("Não foi possível enviar o link. Tente novamente.");
+        return;
+      }
+      toast.success("Se houver uma conta com esse e-mail, enviaremos um link de redefinição.");
+      setForgotOpen(false);
+      setForgotEmail("");
+    } finally {
+      setForgotSubmitting(false);
+    }
+  };
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -228,6 +256,11 @@ export function LoginPage() {
                 }}
                 placeholder="••••••••"
                 showForgot
+                onForgotClick={() => {
+                  const maybeEmail = email.trim();
+                  setForgotEmail(/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(maybeEmail) ? maybeEmail : "");
+                  setForgotOpen(true);
+                }}
                 showPasswordToggle
                 isPasswordVisible={showPassword}
                 onTogglePassword={() => setShowPassword((current) => !current)}
@@ -260,6 +293,60 @@ export function LoginPage() {
           </div>
         </main>
       </div>
+
+      {forgotOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
+          onClick={() => !forgotSubmitting && setForgotOpen(false)}
+        >
+          <div
+            className="w-full max-w-sm rounded-2xl border border-outline-variant/10 bg-surface-low p-6 shadow-[0_24px_64px_rgba(0,0,0,0.8)]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="font-display text-lg font-bold uppercase tracking-tight text-white">
+              Esqueceu a senha?
+            </h3>
+            <p className="mt-2 text-[10px] font-black uppercase tracking-[0.18em] text-on-surface-variant">
+              Enviaremos um link de redefinição para o seu e-mail.
+            </p>
+
+            <form onSubmit={handleForgotPassword} className="mt-5 space-y-4">
+              <div>
+                <label className="block mb-1 text-[9px] uppercase tracking-[0.2em] text-on-surface-variant font-bold">
+                  E-mail da conta
+                </label>
+                <input
+                  type="email"
+                  autoFocus
+                  value={forgotEmail}
+                  onChange={(e) => setForgotEmail(e.target.value)}
+                  placeholder="nome@empresa.com.br"
+                  className="w-full bg-transparent border-0 border-b border-outline-variant/30 py-2.5 px-0 text-sm font-medium text-on-surface placeholder:text-outline focus:ring-0 focus:outline-none focus:border-primary-container transition-all"
+                />
+              </div>
+
+              <div className="flex items-center gap-2 pt-2">
+                <button
+                  type="button"
+                  disabled={forgotSubmitting}
+                  onClick={() => setForgotOpen(false)}
+                  className="flex-1 py-3 text-[9px] uppercase tracking-[0.22em] font-bold text-on-surface-variant border border-outline-variant/30 rounded-md hover:text-white transition-colors"
+                >
+                  Cancelar
+                </button>
+                <PrimaryButton
+                  type="submit"
+                  disabled={forgotSubmitting}
+                  className="flex-1 py-3 text-[9px] tracking-[0.22em] uppercase"
+                >
+                  {forgotSubmitting ? "ENVIANDO..." : "ENVIAR LINK"}
+                  <ArrowRight className="h-3 w-3" />
+                </PrimaryButton>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </BackgroundGradientAnimation>
   );
 }
@@ -271,6 +358,7 @@ function Field({
   onChange,
   placeholder,
   showForgot = false,
+  onForgotClick,
   showPasswordToggle = false,
   isPasswordVisible = false,
   onTogglePassword,
@@ -281,6 +369,7 @@ function Field({
   onChange: (v: string) => void;
   placeholder?: string;
   showForgot?: boolean;
+  onForgotClick?: () => void;
   showPasswordToggle?: boolean;
   isPasswordVisible?: boolean;
   onTogglePassword?: () => void;
@@ -292,12 +381,13 @@ function Field({
           {label}
         </label>
         {showForgot && (
-          <a
+          <button
+            type="button"
+            onClick={onForgotClick}
             className="text-[9px] uppercase tracking-wider text-outline hover:text-primary-container transition-colors font-bold"
-            href="#"
           >
             Esqueceu?
-          </a>
+          </button>
         )}
       </div>
       <div className="relative">

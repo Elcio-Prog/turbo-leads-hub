@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as CadastroRouteImport } from './routes/cadastro'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
@@ -21,6 +22,11 @@ import { Route as AppContatosRouteImport } from './routes/app.contatos'
 import { Route as AppConfiguracoesRouteImport } from './routes/app.configuracoes'
 import { Route as AppAnalyticsRouteImport } from './routes/app.analytics'
 
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CadastroRoute = CadastroRouteImport.update({
   id: '/cadastro',
   path: '/cadastro',
@@ -81,6 +87,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
   '/cadastro': typeof CadastroRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/app/analytics': typeof AppAnalyticsRoute
   '/app/configuracoes': typeof AppConfiguracoesRoute
   '/app/contatos': typeof AppContatosRoute
@@ -94,6 +101,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
   '/cadastro': typeof CadastroRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/app/analytics': typeof AppAnalyticsRoute
   '/app/configuracoes': typeof AppConfiguracoesRoute
   '/app/contatos': typeof AppContatosRoute
@@ -108,6 +116,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
   '/cadastro': typeof CadastroRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/app/analytics': typeof AppAnalyticsRoute
   '/app/configuracoes': typeof AppConfiguracoesRoute
   '/app/contatos': typeof AppContatosRoute
@@ -123,6 +132,7 @@ export interface FileRouteTypes {
     | '/'
     | '/app'
     | '/cadastro'
+    | '/reset-password'
     | '/app/analytics'
     | '/app/configuracoes'
     | '/app/contatos'
@@ -136,6 +146,7 @@ export interface FileRouteTypes {
     | '/'
     | '/app'
     | '/cadastro'
+    | '/reset-password'
     | '/app/analytics'
     | '/app/configuracoes'
     | '/app/contatos'
@@ -149,6 +160,7 @@ export interface FileRouteTypes {
     | '/'
     | '/app'
     | '/cadastro'
+    | '/reset-password'
     | '/app/analytics'
     | '/app/configuracoes'
     | '/app/contatos'
@@ -163,10 +175,18 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRoute: typeof AppRouteWithChildren
   CadastroRoute: typeof CadastroRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/cadastro': {
       id: '/cadastro'
       path: '/cadastro'
@@ -275,6 +295,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRoute: AppRouteWithChildren,
   CadastroRoute: CadastroRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
