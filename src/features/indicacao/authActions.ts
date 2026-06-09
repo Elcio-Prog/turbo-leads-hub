@@ -109,6 +109,7 @@ export const adminResetUserPassword = createServerFn({ method: "POST" })
       .maybeSingle();
 
     if (roleError || !roleRow) {
+      console.error("[adminResetUserPassword] role check failed", { roleError, userId: context.userId });
       return { ok: false as const, error: "Apenas administradores podem alterar senhas." };
     }
 
@@ -117,6 +118,7 @@ export const adminResetUserPassword = createServerFn({ method: "POST" })
     });
 
     if (error) {
+      console.error("[adminResetUserPassword] updateUserById failed", error);
       return { ok: false as const, error: error.message || "Não foi possível alterar a senha." };
     }
 
