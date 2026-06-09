@@ -25,6 +25,14 @@ export function CadastroPage() {
     const normalized = normalizeIdentifier(identifier);
     const authEmail = authEmailForIdentifier(identifier);
 
+    // Bloquear emails que não sejam @netturbo.com.br
+    // RA e CPF são sempre permitidos (usam emails sintéticos internos)
+    if (normalized.type === "email" && !normalized.value.endsWith("@netturbo.com.br")) {
+      setError("Apenas emails @netturbo.com.br são permitidos. Use seu e-mail corporativo, RA ou CPF.");
+      setIsSubmitting(false);
+      return;
+    }
+
     const displayName =
       normalized.type === "email" ? normalized.value.split("@")[0] : `Usuário ${identifier.trim()}`;
     const cpf = normalized.type === "cpf" ? normalized.digits : undefined;
@@ -88,7 +96,7 @@ export function CadastroPage() {
       window.localStorage.setItem(LAST_LOGIN_IDENTIFIER_KEY, identifier.trim());
     }
 
-    navigate({ to: "/app/nova" });
+    navigate({ to: "/app" });
   };
 
   return (

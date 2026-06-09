@@ -136,6 +136,9 @@ export function Sidebar({ collapsed, onToggle }: { collapsed?: boolean; onToggle
           { to: "/app/configuracoes", label: "Anúncios", Icon: Settings },
         ],
       });
+    }
+
+    if (user.role === "admin" || user.role === "aprovador") {
       sections.push({
         title: "Gestão",
         items: [{ to: "/app/gestao-usuarios", label: "Usuários", Icon: UsersRound }]

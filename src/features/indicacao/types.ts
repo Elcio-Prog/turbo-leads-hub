@@ -49,6 +49,7 @@ export interface User {
   contrato: Contrato;
   setor: Setor;
   onboardingCompleted?: boolean;
+  aprovado?: boolean;
 }
 
 export interface Indicacao {

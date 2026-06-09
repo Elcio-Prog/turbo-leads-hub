@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useApp } from "../features/indicacao/AppContext";
 import { Sidebar } from "../features/indicacao/components/Sidebar";
 import { OnboardingPage } from "../features/indicacao/pages/OnboardingPage";
+import { AguardandoAprovacaoPage } from "../features/indicacao/pages/AguardandoAprovacaoPage";
 import { AnnouncementPopup } from "../features/indicacao/components/AnnouncementPopup";
 
 export const Route = createFileRoute("/app")({
@@ -23,6 +24,10 @@ function AppLayout() {
   }
 
   if (!user) return null;
+
+  if (!user.aprovado) {
+    return <AguardandoAprovacaoPage />;
+  }
 
   if (!user.onboardingCompleted) {
     return <OnboardingPage />;

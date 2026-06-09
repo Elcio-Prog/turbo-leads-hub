@@ -120,6 +120,7 @@ function mapProfileToUser(profile: any, role: Role = "usuario"): User {
     contrato: profile.contrato as Contrato,
     setor: profile.setor as Setor,
     onboardingCompleted: profile.onboarding_completed ?? false,
+    aprovado: profile.aprovado ?? true,
   };
 }
 
@@ -455,6 +456,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         return { ok: false, error: "Este cadastro já existe." };
       }
 
+      const digits = identifier.replace(/\D/g, "");
+      const isCpfOrRa = !identifier.includes("@") && (digits.length === 11 || digits.length > 0);
       const nextUser: User = {
         id: data.authUserId || `local-${Date.now()}`,
         authUserId: data.authUserId,
@@ -468,6 +471,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         role: data.authUserId ? await getUserRole(data.authUserId) : "usuario",
         contrato: data.contrato ?? "CLT",
         setor: data.setor ?? "COMERCIAL",
+        aprovado: !isCpfOrRa,
       };
 
       if (data.authUserId) {
@@ -483,6 +487,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
             contrato: nextUser.contrato,
             setor: nextUser.setor,
             onboarding_completed: false,
+            aprovado: nextUser.aprovado,
           },
           { onConflict: "user_id" },
         );
@@ -503,7 +508,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       if (!user) return { ok: false, error: "Usuário não autenticado." };
 
       const sanitizedUpdates = Object.fromEntries(
-        Object.entries(updates).filter(([, value]) => value !== undefined),
+          Object.entries(updates).filter(([, value]) => value !== undefined),
       ) as Partial<User>;
 
       const updatedUser: User = {
@@ -535,6 +540,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
           setor: updatedUser.setor,
           contrato: updatedUser.contrato,
           onboarding_completed: true,
+          aprovado: user.aprovado ?? true,
         };
 
         const { error } = await supabase

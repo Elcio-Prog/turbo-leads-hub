@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { KeyRound, ShieldCheck, UsersRound } from "lucide-react";
+import { KeyRound, ShieldCheck, UsersRound, Check, X } from "lucide-react";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import {
@@ -33,6 +33,9 @@ type ManagedUser = {
   setor: string;
   contrato: string;
   role: Role;
+  aprovado: boolean;
+  ra?: string;
+  cpf?: string;
 };
 
 const ROLE_OPTIONS: { value: Role; label: string }[] = [
@@ -55,6 +58,9 @@ function mapCurrentUserToManagedUser(currentUser: User): ManagedUser {
     setor: currentUser.setor,
     contrato: currentUser.contrato,
     role: currentUser.role,
+    aprovado: currentUser.aprovado ?? true,
+    ra: currentUser.ra,
+    cpf: currentUser.cpf,
   };
 }
 
@@ -72,6 +78,7 @@ export function GestaoUsuariosPage() {
   const [resettingPassword, setResettingPassword] = useState(false);
   const resetPasswordFn = useServerFn(adminResetUserPassword);
 
+  const isAuthorized = user?.role === "admin" || user?.role === "aprovador";
   const isAdmin = user?.role === "admin";
 
   const openPasswordDialog = (managedUser: ManagedUser) => {
@@ -124,7 +131,7 @@ export function GestaoUsuariosPage() {
       return;
     }
 
-    if (!isAdmin) {
+    if (!isAuthorized) {
       setLoading(false);
       return;
     }
@@ -136,7 +143,7 @@ export function GestaoUsuariosPage() {
       const [profilesResult, rolesResult] = await Promise.all([
         supabase
           .from("profiles")
-          .select("user_id, name, email, login_identifier, setor, contrato")
+          .select("user_id, name, email, login_identifier, setor, contrato, aprovado, ra, cpf")
           .order("name", { ascending: true }),
         supabase.from("user_roles").select("user_id, role"),
       ]);
@@ -163,6 +170,9 @@ export function GestaoUsuariosPage() {
           setor: profile.setor,
           contrato: profile.contrato,
           role: roleByUserId.get(profile.user_id) ?? "usuario",
+          aprovado: profile.aprovado ?? true,
+          ra: profile.ra || undefined,
+          cpf: profile.cpf || undefined,
         })),
       );
     } catch (error) {
@@ -173,20 +183,67 @@ export function GestaoUsuariosPage() {
     } finally {
       setLoading(false);
     }
-  }, [authLoading, isAdmin, user, users.length]);
+  }, [authLoading, isAuthorized, user, users.length]);
 
   useEffect(() => {
     loadUsers();
   }, [loadUsers]);
 
+  const [activeTab, setActiveTab] = useState<"ativos" | "pendentes">(
+    isAdmin ? "ativos" : "pendentes",
+  );
+
   const totals = useMemo(
     () =>
       ROLE_OPTIONS.map((role) => ({
         ...role,
-        total: users.filter((managedUser) => managedUser.role === role.value).length,
+        total: users.filter((managedUser) => managedUser.role === role.value && managedUser.aprovado).length,
       })),
     [users],
   );
+
+  const filteredUsers = useMemo(() => {
+    return users.filter((u) => (activeTab === "ativos" ? u.aprovado : !u.aprovado));
+  }, [users, activeTab]);
+
+  const handleApprove = async (managedUser: ManagedUser) => {
+    setSavingUserId(managedUser.userId);
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .update({ aprovado: true })
+        .eq("user_id", managedUser.userId);
+
+      if (error) {
+        toast.error(`Erro ao aprovar: ${error.message}`);
+        return;
+      }
+
+      toast.success(`Usuário ${managedUser.name} aprovado.`);
+      setUsers((prev) =>
+        prev.map((u) => (u.userId === managedUser.userId ? { ...u, aprovado: true } : u)),
+      );
+    } catch (error: any) {
+      toast.error(`Erro: ${error.message || error}`);
+    } finally {
+      setSavingUserId(null);
+    }
+  };
+
+  const handleReject = async (managedUser: ManagedUser) => {
+    if (!window.confirm(`Tem certeza que deseja recusar e excluir o cadastro de ${managedUser.name}?`)) return;
+    setSavingUserId(managedUser.userId);
+    try {
+      await supabase.from("profiles").delete().eq("user_id", managedUser.userId);
+      await supabase.from("user_roles").delete().eq("user_id", managedUser.userId);
+      toast.success(`Cadastro de ${managedUser.name} recusado e excluído.`);
+      setUsers((prev) => prev.filter((u) => u.userId !== managedUser.userId));
+    } catch (error: any) {
+      toast.error(`Erro ao recusar: ${error.message || error}`);
+    } finally {
+      setSavingUserId(null);
+    }
+  };
 
   const updateRole = async (managedUser: ManagedUser, nextRole: Role) => {
     if (managedUser.role === nextRole) return;
@@ -226,14 +283,14 @@ export function GestaoUsuariosPage() {
     toast.success(`Role de ${managedUser.name} alterada para ${ROLE_LABEL[nextRole]}.`);
   };
 
-  if (!isAdmin) {
+  if (!isAuthorized) {
     return (
       <div className="mx-auto max-w-3xl space-y-4 py-10 font-body">
         <h1 className="font-display text-3xl font-bold uppercase tracking-tight text-on-surface">
           Acesso restrito
         </h1>
         <p className="text-sm text-on-surface-variant">
-          Apenas administradores podem acessar a gestão de usuários.
+          Apenas administradores ou aprovadores podem acessar a gestão de usuários.
         </p>
       </div>
     );
@@ -252,37 +309,75 @@ export function GestaoUsuariosPage() {
               <span className="font-light italic text-on-surface-variant">Usuários</span>
             </h1>
           </div>
-          <div className="flex items-center gap-3 rounded-xl border border-outline-variant/10 bg-surface-low px-4 py-3 text-xs font-bold uppercase tracking-widest text-on-surface-variant">
-            <UsersRound className="h-4 w-4 text-primary-container" /> {users.length} usuários ativos
-          </div>
+          {isAdmin && (
+            <div className="flex items-center gap-3 rounded-xl border border-outline-variant/10 bg-surface-low px-4 py-3 text-xs font-bold uppercase tracking-widest text-on-surface-variant">
+              <UsersRound className="h-4 w-4 text-primary-container" /> {users.filter(u => u.aprovado).length} usuários ativos
+            </div>
+          )}
         </div>
       </header>
 
-      <section className="grid gap-3 md:grid-cols-4">
-        {totals.map((role) => (
-          <div key={role.value} className="border border-outline-variant/10 bg-surface-low p-4">
-            <div className="text-[10px] font-black uppercase tracking-[0.2em] text-outline">
-              {role.label}
+      {isAdmin && (
+        <section className="grid gap-3 md:grid-cols-4">
+          {totals.map((role) => (
+            <div key={role.value} className="border border-outline-variant/10 bg-surface-low p-4">
+              <div className="text-[10px] font-black uppercase tracking-[0.2em] text-outline">
+                {role.label}
+              </div>
+              <div className="mt-3 font-display text-3xl font-bold text-on-surface">{role.total}</div>
             </div>
-            <div className="mt-3 font-display text-3xl font-bold text-on-surface">{role.total}</div>
-          </div>
-        ))}
-      </section>
+          ))}
+        </section>
+      )}
+
+      <div className="flex border-b border-outline-variant/10">
+        {isAdmin && (
+          <button
+            type="button"
+            onClick={() => setActiveTab("ativos")}
+            className={`px-6 py-3 text-xs font-black uppercase tracking-[0.2em] border-b-2 transition-all ${
+              activeTab === "ativos"
+                ? "border-primary-container text-primary-container"
+                : "border-transparent text-outline hover:text-white"
+            }`}
+          >
+            Ativos ({users.filter((u) => u.aprovado).length})
+          </button>
+        )}
+        <button
+          type="button"
+          onClick={() => setActiveTab("pendentes")}
+          className={`px-6 py-3 text-xs font-black uppercase tracking-[0.2em] border-b-2 transition-all ${
+            activeTab === "pendentes"
+              ? "border-primary-container text-primary-container"
+              : "border-transparent text-outline hover:text-white"
+          }`}
+        >
+          Pendentes ({users.filter((u) => !u.aprovado).length})
+        </button>
+      </div>
 
       <section className="overflow-hidden border border-outline-variant/10 bg-surface-low">
-        <div className="grid grid-cols-[1.4fr_1.2fr_0.8fr_0.8fr_auto] gap-4 border-b border-outline-variant/10 px-5 py-3 text-[10px] font-black uppercase tracking-[0.2em] text-outline max-lg:hidden">
-          <span>Usuário</span>
-          <span>Email / login</span>
-          <span>Perfil</span>
-          <span>Role</span>
-          <span>Ações</span>
-        </div>
+        {activeTab === "ativos" ? (
+          <div className="grid grid-cols-[1.4fr_1.2fr_0.8fr_0.8fr_auto] gap-4 border-b border-outline-variant/10 px-5 py-3 text-[10px] font-black uppercase tracking-[0.2em] text-outline max-lg:hidden">
+            <span>Usuário</span>
+            <span>Email / login</span>
+            <span>Perfil</span>
+            <span>Role</span>
+            <span>Ações</span>
+          </div>
+        ) : (
+          <div className="grid grid-cols-[1fr_auto] gap-4 border-b border-outline-variant/10 px-5 py-3 text-[10px] font-black uppercase tracking-[0.2em] text-outline max-lg:hidden">
+            <span>Usuário</span>
+            <span>Ações</span>
+          </div>
+        )}
 
-        {loading && users.length === 0 ? (
+        {loading && filteredUsers.length === 0 ? (
           <div className="px-5 py-10 text-sm font-medium text-on-surface-variant">
             Carregando usuários...
           </div>
-        ) : loadError && users.length === 0 ? (
+        ) : loadError && filteredUsers.length === 0 ? (
           <div className="space-y-4 px-5 py-10 text-sm font-medium text-on-surface-variant">
             <p>Não foi possível carregar os usuários.</p>
             <button
@@ -293,71 +388,127 @@ export function GestaoUsuariosPage() {
               Tentar novamente
             </button>
           </div>
-        ) : users.length === 0 ? (
+        ) : filteredUsers.length === 0 ? (
           <div className="px-5 py-10 text-sm font-medium text-on-surface-variant">
-            Nenhum usuário ativo encontrado.
+            {activeTab === "ativos"
+              ? "Nenhum usuário ativo encontrado."
+              : "Nenhum cadastro pendente de aprovação."}
           </div>
         ) : (
-          users.map((managedUser) => (
-            <div
-              key={managedUser.userId}
-              className="grid grid-cols-[1.4fr_1.2fr_0.8fr_0.8fr_auto] gap-4 border-b border-outline-variant/10 px-5 py-4 last:border-b-0 max-lg:grid-cols-1"
-            >
-              <div className="flex items-center gap-3">
-                <Avatar 
-                  name={managedUser.name} 
-                  size="sm" 
-                  src={getAvatar(managedUser.userId)}
-                  className="ring-2 ring-outline-variant/10" 
-                />
-                <div>
-                  <div className="font-display text-sm font-bold uppercase text-on-surface">
-                    {managedUser.name}
+          filteredUsers.map((managedUser) => {
+            if (activeTab === "ativos") {
+              return (
+                <div
+                  key={managedUser.userId}
+                  className="grid grid-cols-[1.4fr_1.2fr_0.8fr_0.8fr_auto] gap-4 border-b border-outline-variant/10 px-5 py-4 last:border-b-0 max-lg:grid-cols-1"
+                >
+                  <div className="flex items-center gap-3">
+                    <Avatar 
+                      name={managedUser.name} 
+                      size="sm" 
+                      src={getAvatar(managedUser.userId)}
+                      className="ring-2 ring-outline-variant/10" 
+                    />
+                    <div>
+                      <div className="font-display text-sm font-bold uppercase text-on-surface">
+                        {managedUser.name}
+                      </div>
+                      <div className="mt-1 text-[10px] font-black uppercase tracking-widest text-primary-container/70">
+                        {managedUser.userId === user?.id ? "Você" : "Usuário ativo"}
+                      </div>
+                    </div>
                   </div>
-                  <div className="mt-1 text-[10px] font-black uppercase tracking-widest text-primary-container/70">
-                    {managedUser.userId === user?.id ? "Você" : "Usuário ativo"}
+                  <div className="min-w-0 text-sm font-medium text-on-surface-variant">
+                    <div className="truncate text-on-surface">{managedUser.email}</div>
+                    <div className="mt-1 truncate text-xs text-outline">{managedUser.loginId}</div>
+                  </div>
+                  <div className="text-xs font-bold uppercase tracking-widest text-on-surface-variant">
+                    <div>{managedUser.setor}</div>
+                    <div className="mt-1 text-outline">{managedUser.contrato}</div>
+                  </div>
+                  <Select
+                    value={managedUser.role}
+                    onValueChange={(value) => updateRole(managedUser, value as Role)}
+                    disabled={!isAdmin || savingUserId === managedUser.userId || managedUser.userId === user?.id}
+                  >
+                    <SelectTrigger className="h-10 rounded-lg border-outline-variant/20 bg-surface text-xs font-black uppercase tracking-widest text-on-surface shadow-none focus:ring-primary-container/30 disabled:opacity-50">
+                      <SelectValue>{ROLE_LABEL[managedUser.role]}</SelectValue>
+                    </SelectTrigger>
+                    <SelectContent className="rounded-xl border border-outline-variant/20 bg-surface-low p-1.5 text-on-surface shadow-2xl shadow-black/60">
+                      {ROLE_OPTIONS.map((role) => (
+                        <SelectItem
+                          key={role.value}
+                          value={role.value}
+                          className="cursor-pointer rounded-md px-3 py-2 text-xs font-bold uppercase tracking-widest text-on-surface-variant focus:bg-primary-container/15 focus:text-primary-container data-[state=checked]:bg-primary-container/20 data-[state=checked]:text-primary-container"
+                        >
+                          {role.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {isAdmin && (
+                    <button
+                      type="button"
+                      onClick={() => openPasswordDialog(managedUser)}
+                      className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-outline-variant/20 bg-surface px-3 text-[10px] font-black uppercase tracking-widest text-on-surface-variant transition-colors hover:border-primary-container/40 hover:text-primary-container"
+                      title="Alterar senha"
+                    >
+                      <KeyRound className="h-3.5 w-3.5" />
+                      Senha
+                    </button>
+                  )}
+                </div>
+              );
+            } else {
+              return (
+                <div
+                  key={managedUser.userId}
+                  className="flex items-center justify-between gap-4 border-b border-outline-variant/10 px-5 py-4 last:border-b-0"
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <Avatar
+                      name={managedUser.name}
+                      size="sm"
+                      src={getAvatar(managedUser.userId)}
+                      className="ring-2 ring-outline-variant/10 shrink-0"
+                    />
+                    <div className="min-w-0">
+                      <div className="font-display text-sm font-bold uppercase text-on-surface truncate">
+                        {managedUser.name}
+                      </div>
+                      <div className="mt-1 text-[10px] font-black uppercase tracking-widest text-outline">
+                        {managedUser.ra
+                          ? <span>RA: <span className="text-on-surface-variant">{managedUser.ra}</span></span>
+                          : managedUser.cpf
+                          ? <span>CPF: <span className="text-on-surface-variant">{managedUser.cpf}</span></span>
+                          : <span className="text-outline/50">Sem identificador</span>}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => handleApprove(managedUser)}
+                      disabled={savingUserId === managedUser.userId}
+                      className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg bg-primary-container px-4 text-[10px] font-black uppercase tracking-widest text-on-primary-container transition-opacity hover:opacity-90 disabled:opacity-50"
+                    >
+                      <Check className="h-3.5 w-3.5" />
+                      Aprovar
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleReject(managedUser)}
+                      disabled={savingUserId === managedUser.userId}
+                      className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-destructive/20 bg-destructive/10 px-4 text-[10px] font-black uppercase tracking-widest text-destructive transition-colors hover:bg-destructive/20"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                      Recusar
+                    </button>
                   </div>
                 </div>
-              </div>
-              <div className="min-w-0 text-sm font-medium text-on-surface-variant">
-                <div className="truncate text-on-surface">{managedUser.email}</div>
-                <div className="mt-1 truncate text-xs text-outline">{managedUser.loginId}</div>
-              </div>
-              <div className="text-xs font-bold uppercase tracking-widest text-on-surface-variant">
-                <div>{managedUser.setor}</div>
-                <div className="mt-1 text-outline">{managedUser.contrato}</div>
-              </div>
-              <Select
-                value={managedUser.role}
-                onValueChange={(value) => updateRole(managedUser, value as Role)}
-                disabled={savingUserId === managedUser.userId || managedUser.userId === user?.id}
-              >
-                <SelectTrigger className="h-10 rounded-lg border-outline-variant/20 bg-surface text-xs font-black uppercase tracking-widest text-on-surface shadow-none focus:ring-primary-container/30 disabled:opacity-50">
-                  <SelectValue>{ROLE_LABEL[managedUser.role]}</SelectValue>
-                </SelectTrigger>
-                <SelectContent className="rounded-xl border border-outline-variant/20 bg-surface-low p-1.5 text-on-surface shadow-2xl shadow-black/60">
-                  {ROLE_OPTIONS.map((role) => (
-                    <SelectItem
-                      key={role.value}
-                      value={role.value}
-                      className="cursor-pointer rounded-md px-3 py-2 text-xs font-bold uppercase tracking-widest text-on-surface-variant focus:bg-primary-container/15 focus:text-primary-container data-[state=checked]:bg-primary-container/20 data-[state=checked]:text-primary-container"
-                    >
-                      {role.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <button
-                type="button"
-                onClick={() => openPasswordDialog(managedUser)}
-                className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-outline-variant/20 bg-surface px-3 text-[10px] font-black uppercase tracking-widest text-on-surface-variant transition-colors hover:border-primary-container/40 hover:text-primary-container"
-                title="Alterar senha"
-              >
-                <KeyRound className="h-3.5 w-3.5" />
-                Senha
-              </button>
-            </div>
-          ))
+              );
+            }
+          })
         )}
       </section>
 

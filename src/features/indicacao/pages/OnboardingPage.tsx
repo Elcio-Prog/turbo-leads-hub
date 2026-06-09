@@ -24,7 +24,8 @@ export function OnboardingPage() {
   const hasSyntheticEmail = !!currentEmail && /@(ra|cpf)\.ntt-indicacoes\.local$/i.test(currentEmail);
   const hasRealEmail = !!currentEmail && !hasSyntheticEmail;
   // Pede e-mail sempre que o cadastro não tiver um e-mail real (RA, CPF ou conta sem e-mail).
-  const requiresEmail = !hasRealEmail;
+  // Não solicita e-mail para usuários com a role "usuario_ra" conforme requisitos.
+  const requiresEmail = !hasRealEmail && user?.role !== "usuario_ra";
   const [form, setForm] = useState({
     name: user?.name || "",
     loginId: user?.loginId || user?.email || "",

@@ -154,6 +154,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          aprovado: boolean
           avatar_url: string | null
           contrato: Database["public"]["Enums"]["contrato_tipo"]
           cpf: string | null
@@ -170,6 +171,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          aprovado?: boolean
           avatar_url?: string | null
           contrato?: Database["public"]["Enums"]["contrato_tipo"]
           cpf?: string | null
@@ -186,6 +188,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          aprovado?: boolean
           avatar_url?: string | null
           contrato?: Database["public"]["Enums"]["contrato_tipo"]
           cpf?: string | null
