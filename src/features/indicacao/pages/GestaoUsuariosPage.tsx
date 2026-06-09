@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ShieldCheck, UsersRound } from "lucide-react";
+import { KeyRound, ShieldCheck, UsersRound } from "lucide-react";
 import { toast } from "sonner";
+import { useServerFn } from "@tanstack/react-start";
 import {
   Select,
   SelectContent,
@@ -8,7 +9,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
+import { adminResetUserPassword } from "../authActions";
 import { useApp } from "../AppContext";
 import { Avatar } from "../components/Avatar";
 import type { Role, User } from "../types";
@@ -54,8 +66,51 @@ export function GestaoUsuariosPage() {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
   const [savingUserId, setSavingUserId] = useState<string | null>(null);
+  const [passwordTarget, setPasswordTarget] = useState<ManagedUser | null>(null);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [resettingPassword, setResettingPassword] = useState(false);
+  const resetPasswordFn = useServerFn(adminResetUserPassword);
 
   const isAdmin = user?.role === "admin";
+
+  const openPasswordDialog = (managedUser: ManagedUser) => {
+    setPasswordTarget(managedUser);
+    setNewPassword("");
+    setConfirmPassword("");
+  };
+
+  const handleResetPassword = async () => {
+    if (!passwordTarget) return;
+    if (newPassword.length < 6) {
+      toast.error("A senha deve ter pelo menos 6 caracteres.");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      toast.error("As senhas não coincidem.");
+      return;
+    }
+    setResettingPassword(true);
+    try {
+      const result = await resetPasswordFn({
+        data: { userId: passwordTarget.userId, password: newPassword },
+      });
+      if (!result.ok) {
+        toast.error(result.error || "Não foi possível alterar a senha.");
+        return;
+      }
+      toast.success(`Senha de ${passwordTarget.name} alterada com sucesso.`);
+      setPasswordTarget(null);
+      setNewPassword("");
+      setConfirmPassword("");
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Erro inesperado ao alterar a senha.",
+      );
+    } finally {
+      setResettingPassword(false);
+    }
+  };
 
   const loadUsers = useCallback(async () => {
     const currentUserRow = user ? mapCurrentUserToManagedUser(user) : null;
@@ -215,11 +270,12 @@ export function GestaoUsuariosPage() {
       </section>
 
       <section className="overflow-hidden border border-outline-variant/10 bg-surface-low">
-        <div className="grid grid-cols-[1.4fr_1.2fr_0.8fr_0.8fr] gap-4 border-b border-outline-variant/10 px-5 py-3 text-[10px] font-black uppercase tracking-[0.2em] text-outline max-lg:hidden">
+        <div className="grid grid-cols-[1.4fr_1.2fr_0.8fr_0.8fr_auto] gap-4 border-b border-outline-variant/10 px-5 py-3 text-[10px] font-black uppercase tracking-[0.2em] text-outline max-lg:hidden">
           <span>Usuário</span>
           <span>Email / login</span>
           <span>Perfil</span>
           <span>Role</span>
+          <span>Ações</span>
         </div>
 
         {loading && users.length === 0 ? (
@@ -245,7 +301,7 @@ export function GestaoUsuariosPage() {
           users.map((managedUser) => (
             <div
               key={managedUser.userId}
-              className="grid grid-cols-[1.4fr_1.2fr_0.8fr_0.8fr] gap-4 border-b border-outline-variant/10 px-5 py-4 last:border-b-0 max-lg:grid-cols-1"
+              className="grid grid-cols-[1.4fr_1.2fr_0.8fr_0.8fr_auto] gap-4 border-b border-outline-variant/10 px-5 py-4 last:border-b-0 max-lg:grid-cols-1"
             >
               <div className="flex items-center gap-3">
                 <Avatar 
@@ -291,10 +347,89 @@ export function GestaoUsuariosPage() {
                   ))}
                 </SelectContent>
               </Select>
+              <button
+                type="button"
+                onClick={() => openPasswordDialog(managedUser)}
+                className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-outline-variant/20 bg-surface px-3 text-[10px] font-black uppercase tracking-widest text-on-surface-variant transition-colors hover:border-primary-container/40 hover:text-primary-container"
+                title="Alterar senha"
+              >
+                <KeyRound className="h-3.5 w-3.5" />
+                Senha
+              </button>
             </div>
           ))
         )}
       </section>
+
+      <Dialog
+        open={passwordTarget !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setPasswordTarget(null);
+            setNewPassword("");
+            setConfirmPassword("");
+          }
+        }}
+      >
+        <DialogContent className="border border-outline-variant/20 bg-surface-low text-on-surface">
+          <DialogHeader>
+            <DialogTitle className="font-display uppercase tracking-tight">
+              Alterar senha
+            </DialogTitle>
+            <DialogDescription className="text-on-surface-variant">
+              {passwordTarget
+                ? `Defina uma nova senha para ${passwordTarget.name}.`
+                : ""}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <Label htmlFor="new-password" className="text-xs font-bold uppercase tracking-widest text-on-surface-variant">
+                Nova senha
+              </Label>
+              <Input
+                id="new-password"
+                type="password"
+                value={newPassword}
+                onChange={(event) => setNewPassword(event.target.value)}
+                placeholder="Mínimo de 6 caracteres"
+                autoComplete="new-password"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="confirm-password" className="text-xs font-bold uppercase tracking-widest text-on-surface-variant">
+                Confirmar senha
+              </Label>
+              <Input
+                id="confirm-password"
+                type="password"
+                value={confirmPassword}
+                onChange={(event) => setConfirmPassword(event.target.value)}
+                placeholder="Repita a nova senha"
+                autoComplete="new-password"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <button
+              type="button"
+              onClick={() => setPasswordTarget(null)}
+              disabled={resettingPassword}
+              className="rounded-lg border border-outline-variant/20 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-on-surface-variant transition-colors hover:bg-surface disabled:opacity-50"
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              onClick={handleResetPassword}
+              disabled={resettingPassword}
+              className="rounded-lg bg-primary-container px-4 py-2 text-[10px] font-black uppercase tracking-widest text-on-primary-container transition-opacity hover:opacity-90 disabled:opacity-50"
+            >
+              {resettingPassword ? "Salvando..." : "Salvar nova senha"}
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
