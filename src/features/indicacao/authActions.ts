@@ -10,6 +10,11 @@ const credentialsSchema = z.object({
   password: z.string().min(6).max(128),
 });
 
+const adminResetPasswordSchema = z.object({
+  userId: z.string().uuid(),
+  password: z.string().min(6).max(128),
+});
+
 function normalizeIdentifier(identifier: string) {
   const value = identifier.trim().toLowerCase();
   const digits = value.replace(/\D/g, "");
@@ -87,6 +92,35 @@ export const registerAuthUser = createServerFn({ method: "POST" })
     });
 
     return { ok: true, email };
+  });
+
+/**
+ * Admin-only: redefine a senha de qualquer usuário usando a Admin API.
+ */
+export const adminResetUserPassword = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input) => adminResetPasswordSchema.parse(input))
+  .handler(async ({ data, context }) => {
+    const { data: roleRow, error: roleError } = await supabaseAdmin
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", context.userId)
+      .eq("role", "admin")
+      .maybeSingle();
+
+    if (roleError || !roleRow) {
+      return { ok: false as const, error: "Apenas administradores podem alterar senhas." };
+    }
+
+    const { error } = await supabaseAdmin.auth.admin.updateUserById(data.userId, {
+      password: data.password,
+    });
+
+    if (error) {
+      return { ok: false as const, error: error.message || "Não foi possível alterar a senha." };
+    }
+
+    return { ok: true as const };
   });
 
 /**
