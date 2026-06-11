@@ -5,6 +5,22 @@ import { useApp } from "../AppContext";
 import { Avatar } from "../components/Avatar";
 import { PrimaryButton } from "../components/PrimaryButton";
 import type { Contato } from "../types";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 function fmtDate(iso: string) {
   const d = new Date(iso);
@@ -18,6 +34,7 @@ export function ContatosPage() {
   const [openMenu, setOpenMenu] = useState<string | null>(null);
   const [editing, setEditing] = useState<Contato | null>(null);
   const [viewingContato, setViewingContato] = useState<Contato | null>(null);
+  const [confirmDeleteContato, setConfirmDeleteContato] = useState<Contato | null>(null);
 
   const filtered = useMemo(() => {
     const q = fSearch.trim().toLowerCase();
@@ -244,49 +261,37 @@ export function ContatosPage() {
                     </td>
                     <td className="px-6 py-6 text-right">
                       {canEdit(c) || canDelete(c) ? (
-                        <div className="relative inline-block">
-                          <button
-                            type="button"
-                            onClick={() => setOpenMenu(openMenu === c.id ? null : c.id)}
-                            className="p-2 rounded-lg text-outline hover:text-white hover:bg-surface-highest transition-all"
-                          >
-                            <MoreVertical className="h-4 w-4" />
-                          </button>
-                          {openMenu === c.id && (
-                            <div
-                              className="absolute right-0 top-full z-20 mt-2 w-48 overflow-hidden rounded-xl bg-surface-high border border-outline-variant/20 shadow-2xl animate-in zoom-in-95 duration-200"
-                              onMouseLeave={() => setOpenMenu(null)}
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <button
+                              type="button"
+                              className="p-2 rounded-lg text-outline hover:text-white hover:bg-surface-highest transition-all"
                             >
-                              {canEdit(c) && (
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    setEditing(c);
-                                    setOpenMenu(null);
-                                  }}
-                                  className="flex w-full items-center gap-3 px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-white hover:bg-primary-container hover:text-on-primary-container transition-colors"
-                                >
-                                  <Pencil className="h-3.5 w-3.5" /> Editar
-                                </button>
-                              )}
-                              {canDelete(c) && (
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    if (confirm("Excluir este contato?")) {
-                                      deleteContato(c.id);
-                                      setOpenMenu(null);
-                                      toast.success("Excluído.");
-                                    }
-                                  }}
-                                  className="flex w-full items-center gap-3 px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-red-400 hover:bg-red-500 hover:text-white transition-colors"
-                                >
-                                  <Trash2 className="h-3.5 w-3.5" /> Excluir
-                                </button>
-                              )}
-                            </div>
-                          )}
-                        </div>
+                              <MoreVertical className="h-4 w-4" />
+                            </button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent
+                            align="end"
+                            className="w-48 overflow-hidden rounded-xl bg-surface-high border border-outline-variant/20 shadow-2xl p-0"
+                          >
+                            {canEdit(c) && (
+                              <DropdownMenuItem
+                                onClick={() => setEditing(c)}
+                                className="flex w-full cursor-pointer items-center gap-3 px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-white hover:bg-primary-container hover:text-on-primary-container transition-colors focus:bg-primary-container focus:text-on-primary-container"
+                              >
+                                <Pencil className="h-3.5 w-3.5" /> Editar
+                              </DropdownMenuItem>
+                            )}
+                            {canDelete(c) && (
+                              <DropdownMenuItem
+                                onClick={() => setConfirmDeleteContato(c)}
+                                className="flex w-full cursor-pointer items-center gap-3 px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-red-400 hover:bg-red-500 hover:text-white transition-colors focus:bg-red-500 focus:text-white"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" /> Excluir
+                              </DropdownMenuItem>
+                            )}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       ) : (
                         <span className="text-xs font-bold text-outline">—</span>
                       )}
@@ -317,6 +322,36 @@ export function ContatosPage() {
           onClose={() => setViewingContato(null)}
         />
       )}
+
+      <AlertDialog open={confirmDeleteContato !== null} onOpenChange={(open) => !open && setConfirmDeleteContato(null)}>
+        <AlertDialogContent className="border border-outline-variant/20 bg-surface-low text-on-surface rounded-2xl max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="font-display uppercase tracking-tight text-white">
+              Excluir Contato
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-on-surface-variant text-sm">
+              Tem certeza que deseja excluir permanentemente o contato de <span className="text-white font-bold">{confirmDeleteContato?.nome}</span>? Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="mt-4 gap-2 sm:gap-0">
+            <AlertDialogCancel className="rounded-lg border border-outline-variant/20 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-on-surface-variant transition-colors hover:bg-surface hover:text-white">
+              Cancelar
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (confirmDeleteContato) {
+                  deleteContato(confirmDeleteContato.id);
+                  setConfirmDeleteContato(null);
+                  toast.success("Excluído.");
+                }
+              }}
+              className="rounded-lg bg-red-600 hover:bg-red-700 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-white transition-colors"
+            >
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

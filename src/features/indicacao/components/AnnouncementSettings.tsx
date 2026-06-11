@@ -10,6 +10,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 type AnnouncementConfig = {
   id: string;
@@ -44,6 +54,7 @@ export function AnnouncementSettings() {
   const [config, setConfig] = useState<AnnouncementConfig>(DEFAULT_CONFIG);
   const [rowId, setRowId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -97,7 +108,6 @@ export function AnnouncementSettings() {
   };
 
   const handleDelete = async () => {
-    if (!window.confirm("Tem certeza que deseja excluir permanentemente este anúncio?")) return;
     if (rowId) {
       const { error } = await supabase.from("announcements").delete().eq("id", rowId);
       if (error) {
@@ -301,7 +311,7 @@ export function AnnouncementSettings() {
           <div className="pt-4 flex justify-end gap-3">
             {config.id && (
               <button 
-                onClick={handleDelete}
+                onClick={() => setConfirmDeleteOpen(true)}
                 className="flex items-center gap-2 px-6 py-3 text-xs font-black uppercase tracking-[0.2em] text-red-500 hover:bg-red-500/10 rounded-xl transition-colors border border-red-500/20"
               >
                 <Trash2 className="h-4 w-4" /> Excluir
@@ -354,6 +364,32 @@ export function AnnouncementSettings() {
             </div>
           </div>
         </div>
+      <AlertDialog open={confirmDeleteOpen} onOpenChange={setConfirmDeleteOpen}>
+        <AlertDialogContent className="border border-outline-variant/20 bg-surface-low text-on-surface rounded-2xl max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="font-display uppercase tracking-tight text-white">
+              Excluir Anúncio
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-on-surface-variant text-sm">
+              Tem certeza que deseja excluir permanentemente este anúncio? Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="mt-4 gap-2 sm:gap-0">
+            <AlertDialogCancel className="rounded-lg border border-outline-variant/20 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-on-surface-variant transition-colors hover:bg-surface hover:text-white">
+              Cancelar
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                handleDelete();
+                setConfirmDeleteOpen(false);
+              }}
+              className="rounded-lg bg-red-600 hover:bg-red-700 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-white transition-colors"
+            >
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       </div>
     </div>
   );

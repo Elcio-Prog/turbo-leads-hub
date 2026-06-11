@@ -17,6 +17,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
@@ -76,6 +86,7 @@ export function GestaoUsuariosPage() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [resettingPassword, setResettingPassword] = useState(false);
+  const [confirmRejectUser, setConfirmRejectUser] = useState<ManagedUser | null>(null);
   const resetPasswordFn = useServerFn(adminResetUserPassword);
 
   const isAuthorized = user?.role === "admin" || user?.role === "aprovador";
@@ -231,7 +242,6 @@ export function GestaoUsuariosPage() {
   };
 
   const handleReject = async (managedUser: ManagedUser) => {
-    if (!window.confirm(`Tem certeza que deseja recusar e excluir o cadastro de ${managedUser.name}?`)) return;
     setSavingUserId(managedUser.userId);
     try {
       await supabase.from("profiles").delete().eq("user_id", managedUser.userId);
@@ -497,7 +507,7 @@ export function GestaoUsuariosPage() {
                     </button>
                     <button
                       type="button"
-                      onClick={() => handleReject(managedUser)}
+                      onClick={() => setConfirmRejectUser(managedUser)}
                       disabled={savingUserId === managedUser.userId}
                       className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-destructive/20 bg-destructive/10 px-4 text-[10px] font-black uppercase tracking-widest text-destructive transition-colors hover:bg-destructive/20"
                     >
@@ -581,6 +591,35 @@ export function GestaoUsuariosPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={confirmRejectUser !== null} onOpenChange={(open) => !open && setConfirmRejectUser(null)}>
+        <AlertDialogContent className="border border-outline-variant/20 bg-surface-low text-on-surface rounded-2xl max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="font-display uppercase tracking-tight text-white">
+              Recusar Cadastro
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-on-surface-variant text-sm">
+              Tem certeza que deseja recusar e excluir o cadastro de <span className="text-white font-bold">{confirmRejectUser?.name}</span>? Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="mt-4 gap-2 sm:gap-0">
+            <AlertDialogCancel className="rounded-lg border border-outline-variant/20 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-on-surface-variant transition-colors hover:bg-surface hover:text-white">
+              Cancelar
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (confirmRejectUser) {
+                  handleReject(confirmRejectUser);
+                  setConfirmRejectUser(null);
+                }
+              }}
+              className="rounded-lg bg-red-600 hover:bg-red-700 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-white transition-colors"
+            >
+              Recusar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
