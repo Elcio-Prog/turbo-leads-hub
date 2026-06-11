@@ -17,6 +17,7 @@ export function ContatosPage() {
   const [fSearch, setFSearch] = useState("");
   const [openMenu, setOpenMenu] = useState<string | null>(null);
   const [editing, setEditing] = useState<Contato | null>(null);
+  const [viewingContato, setViewingContato] = useState<Contato | null>(null);
 
   const filtered = useMemo(() => {
     const q = fSearch.trim().toLowerCase();
@@ -180,7 +181,11 @@ export function ContatosPage() {
                 </tr>
               ) : (
                 filtered.map((c) => (
-                  <tr key={c.id} className="group hover:bg-surface-high/50 transition-colors">
+                  <tr
+                    key={c.id}
+                    className="group hover:bg-surface-high/50 transition-colors cursor-pointer"
+                    onDoubleClick={() => setViewingContato(c)}
+                  >
                     <td className="px-6 py-6">
                       <div className="flex items-center gap-3">
                         <Avatar
@@ -303,6 +308,13 @@ export function ContatosPage() {
             setEditing(null);
             toast.success("Contato atualizado.");
           }}
+        />
+      )}
+
+      {viewingContato && (
+        <DetailsContatoModal
+          contato={viewingContato}
+          onClose={() => setViewingContato(null)}
         />
       )}
     </div>
@@ -438,5 +450,119 @@ function ModalTextarea({
         className="w-full resize-none rounded-lg border border-[#2a2a2a] bg-[#111111] px-3.5 py-2.5 text-sm text-white outline-none focus:border-[#CCFF00]"
       />
     </label>
+  );
+}
+
+function DetailField({
+  label,
+  value,
+  copyable = true,
+}: {
+  label: string;
+  value: string;
+  copyable?: boolean;
+}) {
+  const handleCopy = () => {
+    if (!copyable || !value) return;
+    navigator.clipboard.writeText(value);
+    toast.success(`${label} copiado!`);
+  };
+
+  return (
+    <div className="block">
+      <span className="mb-1.5 block text-xs font-medium text-[#AAAAAA]">{label}</span>
+      <div
+        onClick={handleCopy}
+        className={`w-full rounded-lg border border-[#2a2a2a] bg-[#111111] px-3.5 py-2.5 text-sm text-white select-all transition-all min-h-[44px] flex items-center ${
+          copyable && value
+            ? "cursor-pointer hover:border-primary-container hover:bg-[#1a1a1a]"
+            : "opacity-80"
+        }`}
+        title={copyable && value ? "Clique para copiar" : undefined}
+      >
+        {value || "—"}
+      </div>
+    </div>
+  );
+}
+
+function DetailTextarea({
+  label,
+  value,
+  copyable = true,
+}: {
+  label: string;
+  value: string;
+  copyable?: boolean;
+}) {
+  const handleCopy = () => {
+    if (!copyable || !value) return;
+    navigator.clipboard.writeText(value);
+    toast.success(`${label} copiado!`);
+  };
+
+  return (
+    <div className="block md:col-span-2">
+      <span className="mb-1.5 block text-xs font-medium text-[#AAAAAA]">{label}</span>
+      <div
+        onClick={handleCopy}
+        className={`w-full resize-none rounded-lg border border-[#2a2a2a] bg-[#111111] px-3.5 py-2.5 text-sm text-white whitespace-pre-wrap select-all transition-all min-h-[100px] ${
+          copyable && value
+            ? "cursor-pointer hover:border-primary-container hover:bg-[#1a1a1a]"
+            : "opacity-80"
+        }`}
+        title={copyable && value ? "Clique para copiar" : undefined}
+      >
+        {value || "—"}
+      </div>
+    </div>
+  );
+}
+
+function DetailsContatoModal({
+  contato,
+  onClose,
+}: {
+  contato: Contato;
+  onClose: () => void;
+}) {
+  return (
+    <div className="fixed inset-0 z-50 grid place-items-center bg-black/70 p-4" onClick={onClose}>
+      <div
+        className="w-full max-w-xl rounded-2xl border border-[#2a2a2a] bg-[#1a1a1a] p-6"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between border-b border-[#2a2a2a] pb-4 mb-4">
+          <div>
+            <h3 className="text-lg font-bold text-white">Detalhes do Contato</h3>
+            <p className="text-[10px] text-outline-variant uppercase tracking-wider mt-1">
+              Clique no campo para copiar
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-md p-1 text-[#AAAAAA] hover:bg-[#2a2a2a] hover:text-white"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+        <div className="grid gap-3 md:grid-cols-2">
+          <DetailField label="Nome" value={contato.nome} copyable={true} />
+          <DetailField label="Email" value={contato.email} copyable={true} />
+          <DetailField label="CNPJ" value={contato.cnpj} copyable={true} />
+          <DetailField label="Telefone Fixo" value={contato.telefoneFixo} copyable={true} />
+          <DetailField label="Celular" value={contato.celular} copyable={true} />
+          <DetailField label="Razão Social" value={contato.razaoSocial} copyable={true} />
+          <DetailField label="Nome Fantasia" value={contato.nomeFantasia} copyable={true} />
+          <DetailField label="Criado por" value={contato.criadoPorNome} copyable={false} />
+          <DetailField label="Criado em" value={new Date(contato.criadoEm).toLocaleDateString("pt-BR")} copyable={false} />
+          <DetailTextarea label="Observações" value={contato.observacao} copyable={true} />
+        </div>
+        <div className="mt-6 flex justify-end">
+          <PrimaryButton onClick={onClose}>Fechar</PrimaryButton>
+        </div>
+      </div>
+    </div>
   );
 }

@@ -52,6 +52,8 @@ export function IndicacoesPage() {
   const [editing, setEditing] = useState<Indicacao | null>(null);
   const [editingContato, setEditingContato] = useState<Contato | null>(null);
   const [tab, setTab] = useState<"indicacoes" | "contatos">("indicacoes");
+  const [viewingIndicacao, setViewingIndicacao] = useState<Indicacao | null>(null);
+  const [viewingContato, setViewingContato] = useState<Contato | null>(null);
 
   const isAdmin = user?.role === "admin";
   const hasBroadAccess = user?.role === "admin" || user?.role === "aprovador";
@@ -310,7 +312,11 @@ export function IndicacoesPage() {
                     </tr>
                   ) : (
                     filtered.map((i) => (
-                      <tr key={i.id} className="group hover:bg-surface-high/50 transition-colors">
+                      <tr
+                        key={i.id}
+                        className="group hover:bg-surface-high/50 transition-colors cursor-pointer"
+                        onDoubleClick={() => setViewingIndicacao(i)}
+                      >
                         <td className="px-6 py-6">
                           {canChangeStatus ? (
                             <select
@@ -500,7 +506,11 @@ export function IndicacoesPage() {
                     </tr>
                   ) : (
                     contatos.map((c) => (
-                      <tr key={c.id} className="group hover:bg-surface-high/50 transition-colors">
+                      <tr
+                        key={c.id}
+                        className="group hover:bg-surface-high/50 transition-colors cursor-pointer"
+                        onDoubleClick={() => setViewingContato(c)}
+                      >
                         <td className="px-6 py-6">
                           <div className="flex items-center gap-3">
                             <Avatar
@@ -630,6 +640,20 @@ export function IndicacoesPage() {
             setEditingContato(null);
             toast.success("Contato atualizado.");
           }}
+        />
+      )}
+
+      {viewingIndicacao && (
+        <DetailsModal
+          indicacao={viewingIndicacao}
+          onClose={() => setViewingIndicacao(null)}
+        />
+      )}
+
+      {viewingContato && (
+        <DetailsContatoModal
+          contato={viewingContato}
+          onClose={() => setViewingContato(null)}
         />
       )}
     </div>
@@ -864,5 +888,166 @@ function ModalField({
         className="w-full rounded-lg border border-[#2a2a2a] bg-[#111111] px-3.5 py-2.5 text-sm text-white outline-none focus:border-[#CCFF00]"
       />
     </label>
+  );
+}
+
+function DetailField({
+  label,
+  value,
+  copyable = true,
+}: {
+  label: string;
+  value: string;
+  copyable?: boolean;
+}) {
+  const handleCopy = () => {
+    if (!copyable || !value) return;
+    navigator.clipboard.writeText(value);
+    toast.success(`${label} copiado!`);
+  };
+
+  return (
+    <div className="block">
+      <span className="mb-1.5 block text-xs font-medium text-[#AAAAAA]">{label}</span>
+      <div
+        onClick={handleCopy}
+        className={`w-full rounded-lg border border-[#2a2a2a] bg-[#111111] px-3.5 py-2.5 text-sm text-white select-all transition-all min-h-[44px] flex items-center ${
+          copyable && value
+            ? "cursor-pointer hover:border-primary-container hover:bg-[#1a1a1a]"
+            : "opacity-80"
+        }`}
+        title={copyable && value ? "Clique para copiar" : undefined}
+      >
+        {value || "—"}
+      </div>
+    </div>
+  );
+}
+
+function DetailTextarea({
+  label,
+  value,
+  copyable = true,
+}: {
+  label: string;
+  value: string;
+  copyable?: boolean;
+}) {
+  const handleCopy = () => {
+    if (!copyable || !value) return;
+    navigator.clipboard.writeText(value);
+    toast.success(`${label} copiado!`);
+  };
+
+  return (
+    <div className="block md:col-span-2">
+      <span className="mb-1.5 block text-xs font-medium text-[#AAAAAA]">{label}</span>
+      <div
+        onClick={handleCopy}
+        className={`w-full resize-none rounded-lg border border-[#2a2a2a] bg-[#111111] px-3.5 py-2.5 text-sm text-white whitespace-pre-wrap select-all transition-all min-h-[100px] ${
+          copyable && value
+            ? "cursor-pointer hover:border-primary-container hover:bg-[#1a1a1a]"
+            : "opacity-80"
+        }`}
+        title={copyable && value ? "Clique para copiar" : undefined}
+      >
+        {value || "—"}
+      </div>
+    </div>
+  );
+}
+
+function DetailsModal({
+  indicacao,
+  onClose,
+}: {
+  indicacao: Indicacao;
+  onClose: () => void;
+}) {
+  return (
+    <div className="fixed inset-0 z-50 grid place-items-center bg-black/70 p-4" onClick={onClose}>
+      <div
+        className="w-full max-w-xl rounded-2xl border border-[#2a2a2a] bg-[#1a1a1a] p-6"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between border-b border-[#2a2a2a] pb-4 mb-4">
+          <div>
+            <h3 className="text-lg font-bold text-white">Detalhes da Indicação</h3>
+            <p className="text-[10px] text-outline-variant uppercase tracking-wider mt-1">
+              Clique no campo para copiar
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-md p-1 text-[#AAAAAA] hover:bg-[#2a2a2a] hover:text-white"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+        <div className="grid gap-3 md:grid-cols-2">
+          <DetailField label="Lead" value={indicacao.leadNome} copyable={true} />
+          <DetailField label="Empresa" value={indicacao.empresa} copyable={true} />
+          <DetailField label="Telefone" value={indicacao.telefone} copyable={true} />
+          <DetailField label="Email" value={indicacao.emailLead} copyable={true} />
+          <DetailField label="Produto" value={indicacao.produto} copyable={false} />
+          <DetailField label="Status" value={indicacao.status} copyable={false} />
+          <DetailField label="Colaborador" value={indicacao.criadoPorNome} copyable={false} />
+          <DetailField label="Data de Criação" value={new Date(indicacao.criadoEm).toLocaleDateString("pt-BR")} copyable={false} />
+          <DetailTextarea label="Observação" value={indicacao.observacao} copyable={false} />
+        </div>
+        <div className="mt-6 flex justify-end">
+          <PrimaryButton onClick={onClose}>Fechar</PrimaryButton>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function DetailsContatoModal({
+  contato,
+  onClose,
+}: {
+  contato: Contato;
+  onClose: () => void;
+}) {
+  return (
+    <div className="fixed inset-0 z-50 grid place-items-center bg-black/70 p-4" onClick={onClose}>
+      <div
+        className="w-full max-w-xl rounded-2xl border border-[#2a2a2a] bg-[#1a1a1a] p-6"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between border-b border-[#2a2a2a] pb-4 mb-4">
+          <div>
+            <h3 className="text-lg font-bold text-white">Detalhes do Contato</h3>
+            <p className="text-[10px] text-outline-variant uppercase tracking-wider mt-1">
+              Clique no campo para copiar
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-md p-1 text-[#AAAAAA] hover:bg-[#2a2a2a] hover:text-white"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+        <div className="grid gap-3 md:grid-cols-2">
+          <DetailField label="Nome" value={contato.nome} copyable={true} />
+          <DetailField label="Email" value={contato.email} copyable={true} />
+          <DetailField label="CNPJ" value={contato.cnpj} copyable={true} />
+          <DetailField label="Telefone Fixo" value={contato.telefoneFixo} copyable={true} />
+          <DetailField label="Celular" value={contato.celular} copyable={true} />
+          <DetailField label="Razão Social" value={contato.razaoSocial} copyable={true} />
+          <DetailField label="Nome Fantasia" value={contato.nomeFantasia} copyable={true} />
+          <DetailField label="Criado por" value={contato.criadoPorNome} copyable={false} />
+          <DetailField label="Criado em" value={new Date(contato.criadoEm).toLocaleDateString("pt-BR")} copyable={false} />
+          <DetailTextarea label="Observações" value={contato.observacao} copyable={true} />
+        </div>
+        <div className="mt-6 flex justify-end">
+          <PrimaryButton onClick={onClose}>Fechar</PrimaryButton>
+        </div>
+      </div>
+    </div>
   );
 }
